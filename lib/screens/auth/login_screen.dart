@@ -7,12 +7,14 @@ class LoginScreen extends StatelessWidget {
   final List<String> _roles = ['Customer', 'Wholesaler', 'Shop Owner'];
   String _selectedRole = 'Customer';
 
+  LoginScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(60),
+        preferredSize: const Size.fromHeight(60),
         child: AppBar(
           systemOverlayStyle: SystemUiOverlayStyle.light,
           flexibleSpace: Container(
@@ -30,7 +32,7 @@ class LoginScreen extends StatelessWidget {
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
           title: Row(
@@ -43,8 +45,8 @@ class LoginScreen extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               ),
-              SizedBox(width: 10),
-              Text(
+              const SizedBox(width: 10),
+              const Text(
                 'নীতি মূল্য',
                 style: TextStyle(color: Colors.white),
               ),
@@ -55,7 +57,7 @@ class LoginScreen extends StatelessWidget {
       body: Stack(
         children: [
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               image: DecorationImage(
                 image: NetworkImage(
                   "https://cdn.photoroom.com/v2/image-cache?path=gs://background-7ef44.appspot.com/backgrounds_v3/black/47_-_black.jpg",
@@ -69,18 +71,18 @@ class LoginScreen extends StatelessWidget {
             child: Center(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(20),
                   child: Card(
                     elevation: 8,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: Padding(
-                      padding: EdgeInsets.all(24),
+                      padding: const EdgeInsets.all(24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(
+                          const Text(
                             "Login",
                             style: TextStyle(
                               fontSize: 24,
@@ -88,7 +90,7 @@ class LoginScreen extends StatelessWidget {
                               color: Colors.indigo,
                             ),
                           ),
-                          SizedBox(height: 30),
+                          const SizedBox(height: 30),
                           DropdownButtonFormField<String>(
                             value: _selectedRole,
                             items: _roles.map((role) {
@@ -100,67 +102,67 @@ class LoginScreen extends StatelessWidget {
                             onChanged: (value) {
                               _selectedRole = value!;
                             },
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Select Role',
                               border: OutlineInputBorder(),
                               prefixIcon: Icon(Icons.person_outline),
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           TextField(
                             controller: _emailController,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Email',
                               prefixIcon: Icon(Icons.email),
                               border: OutlineInputBorder(),
                             ),
                             keyboardType: TextInputType.emailAddress,
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           TextField(
                             controller: _passwordController,
                             obscureText: true,
-                            decoration: InputDecoration(
+                            decoration: const InputDecoration(
                               labelText: 'Password',
                               prefixIcon: Icon(Icons.lock),
                               border: OutlineInputBorder(),
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
                               onPressed: () {},
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.indigo,
-                                padding: EdgeInsets.symmetric(vertical: 15),
+                                padding: const EdgeInsets.symmetric(vertical: 15),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              child: Text("Login"),
+                              child: const Text("Login"),
                             ),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           TextButton(
                             onPressed: () {
                               // Navigate to forgot password screen
                             },
-                            child: Text(
+                            child: const Text(
                               "Forgot Password?",
                               style: TextStyle(color: Colors.indigo),
                             ),
                           ),
-                          SizedBox(height: 10),
+                          const SizedBox(height: 10),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text("Don't have an account?"),
+                              const Text("Don't have an account?"),
                               TextButton(
                                 onPressed: () {
                                   // Navigate to sign up screen
                                 },
-                                child: Text(
+                                child: const Text(
                                   "Sign Up",
                                   style: TextStyle(color: Colors.indigo),
                                 ),

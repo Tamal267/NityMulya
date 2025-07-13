@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'constants/app_constants.dart';
-import 'constants/app_theme.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/welcome_screen.dart';
 
@@ -14,8 +12,11 @@ class NitiMulyaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: AppConstants.appName,
-      theme: AppTheme.lightTheme,
+      title: 'নীতি মূল্য',
+      theme: ThemeData(
+        fontFamily: 'Poppins',
+        primarySwatch: Colors.indigo,
+      ),
       home: WelcomeScreen(),
       routes: {
         '/login': (context) => LoginScreen(),
