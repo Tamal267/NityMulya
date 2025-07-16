@@ -11,13 +11,10 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.0.5
-  http: ^1.1.0
-  flutter_local_notifications: ^13.0.0
   fl_chart: ^0.64.0
   shared_preferences: ^2.0.17
   intl: ^0.18.0
   cupertino_icons: ^1.0.8
-  supabase_flutter: ^2.0.1
 
 dev_dependencies:
   flutter_test:
@@ -30,3 +27,5 @@ flutter:
   assets:
     - assets/image/font.jpeg
     - assets/image/logo.jpeg
+    - assets/lang/en.json
+    - assets/lang/bn.json

@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-class LoginScreen extends StatelessWidget {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  final List<String> _roles = ['Customer', 'Wholesaler', 'Shop Owner'];
-  String _selectedRole = 'Customer';
+class LoginScreen extends StatefulWidget {
 
   LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+
+  final _passwordController = TextEditingController();
+
+  final List<String> _roles = ['Customer', 'Wholesaler', 'Shop Owner'];
+
+  String _selectedRole = 'Customer';
 
   @override
   Widget build(BuildContext context) {

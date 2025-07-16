@@ -1,24 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/screens/customers/ComplaintFormScreen.dart';
+import 'package:nitymulya/screens/customers/FavoriteProductsScreen.dart';
+import 'package:nitymulya/screens/customers/HomeScreen.dart';
+import 'package:nitymulya/screens/customers/PriceAlertScreen.dart';
+import 'package:nitymulya/screens/customers/ReviewScreen.dart';
+import 'package:nitymulya/screens/customers/RewardedShopsScreen.dart';
 
-import 'constants/app_constants.dart';
-import 'constants/app_theme.dart';
-import 'screens/auth/login_screen.dart';
-import 'screens/welcome_screen.dart';
 
-void main() => runApp(const NitiMulyaApp());
+void main() {
+  runApp(NitiMulyaApp());
+}
 
 class NitiMulyaApp extends StatelessWidget {
-  const NitiMulyaApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: AppConstants.appName,
-      theme: AppTheme.lightTheme,
-      home: WelcomeScreen(),
+      title: 'NitiMulya',
+      theme: ThemeData(
+        primarySwatch: Colors.indigo,
+        fontFamily: 'Poppins',
+      ),
+      initialRoute: '/',
       routes: {
-        '/login': (context) => LoginScreen(),
+        '/': (context) => HomeScreen(),
+        '/favorites': (context) => FavoriteProductsScreen(),
+        '/alerts': (context) => PriceAlertScreen(),
+        '/complaints': (context) => ComplaintFormScreen(),
+        '/reviews': (context) => ReviewScreen(),
+        '/rewards': (context) => RewardedShopsScreen(),
       },
     );
   }
