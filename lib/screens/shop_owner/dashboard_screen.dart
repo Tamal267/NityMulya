@@ -85,6 +85,13 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
               _showProfileSettings(context);
             },
           ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              _showLogoutConfirmation(context);
+            },
+            tooltip: "Logout",
+          ),
         ],
       ),
       body: Column(
@@ -944,20 +951,32 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Profile Settings"),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.person),
-              title: Text("Edit Profile"),
+              leading: const Icon(Icons.person),
+              title: const Text("Edit Profile"),
+              onTap: () {
+                Navigator.pop(context);
+                _editProfile();
+              },
             ),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text("Shop Settings"),
+              leading: const Icon(Icons.settings),
+              title: const Text("Shop Settings"),
+              onTap: () {
+                Navigator.pop(context);
+                _shopSettings();
+              },
             ),
             ListTile(
-              leading: Icon(Icons.logout),
-              title: Text("Logout"),
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text("Logout", style: TextStyle(color: Colors.red)),
+              onTap: () {
+                Navigator.pop(context);
+                _showLogoutConfirmation(context);
+              },
             ),
           ],
         ),
@@ -967,6 +986,60 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
             child: const Text("Close"),
           ),
         ],
+      ),
+    );
+  }
+
+  void _editProfile() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Edit Profile - Coming Soon!")),
+    );
+  }
+
+  void _shopSettings() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Shop Settings - Coming Soon!")),
+    );
+  }
+
+  void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _logout();
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text("Logout"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _logout() {
+    // Clear any stored user data/tokens here
+    // For now, just navigate back to login screen
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      '/login',
+      (Route<dynamic> route) => false,
+    );
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("Logged out successfully"),
+        backgroundColor: Colors.green,
       ),
     );
   }
