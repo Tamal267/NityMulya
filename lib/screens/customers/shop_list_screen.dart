@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../models/shop.dart';
 import '../../services/shop_service.dart';
+import '../../widgets/global_bottom_nav.dart';
 import 'shop_items_screen.dart';
 
 class ShopListScreen extends StatefulWidget {
@@ -256,6 +257,9 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   ),
           ),
         ],
+      ),
+      bottomNavigationBar: const GlobalBottomNav(
+        currentIndex: 1,
       ),
     );
   }

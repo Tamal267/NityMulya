@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nitymulya/screens/auth/forgot_password_screen.dart';
 import 'package:nitymulya/screens/auth/signup_screen.dart';
 import 'package:nitymulya/screens/customers/home_screen.dart';
+import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -46,8 +47,15 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
         ),
       );
+    } else if (selectedRole == 'Shop Owner') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const ShopOwnerDashboard(),
+        ),
+      );
     } else {
-      // For other roles, show coming soon message
+      // For other roles (Wholesaler), show coming soon message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('$selectedRole dashboard coming soon')),
       );

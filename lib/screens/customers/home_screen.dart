@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/screens/customers/shop_list_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
+import 'package:nitymulya/widgets/global_bottom_nav.dart';
 
 import 'product_detail_screen.dart';
 
@@ -351,25 +351,8 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        bottomNavigationBar: BottomNavigationBar(
+        bottomNavigationBar: const GlobalBottomNav(
           currentIndex: 0,
-          selectedItemColor: const Color(0xFF079b11),
-          onTap: (index) {
-            if (index == 1) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ShopListScreen()),
-              );
-            } else if (index == 2) {
-              Navigator.pushNamed(context, '/favorites');
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(icon: Icon(Icons.shop), label: "Shop"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite), label: "Favorites"),
-          ],
         ),
       ),
     );
