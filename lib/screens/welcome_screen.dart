@@ -8,7 +8,7 @@ import '../widgets/market_price_list_item.dart';
 import 'auth/login_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
-  WelcomeScreen({super.key});
+  const WelcomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +55,7 @@ class WelcomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => LoginScreen()),
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
                 );
               },
               style: TextButton.styleFrom(foregroundColor: Colors.white),

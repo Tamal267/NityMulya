@@ -7,10 +7,10 @@ class ShopListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFa6d58a),
+        backgroundColor: const Color(0xFFa6d58a),
         title: const Text("Shops"),
       ),
-      body: Center(
+      body: const Center(
         child: Text(
           "Shop list will be displayed here",
           style: TextStyle(fontSize: 18),

@@ -1,192 +1,154 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:nitymulya/screens/auth/forgot_password_screen.dart';
+import 'package:nitymulya/screens/auth/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-
-  LoginScreen({super.key});
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
+  String selectedRole = 'Customer';
+  final List<String> roles = ['Customer', 'Shop Owner', 'Wholesaler'];
 
-  final _passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
-  final List<String> _roles = ['Customer', 'Wholesaler', 'Shop Owner'];
+  void login() {
+    emailController.text.trim();
 
-  String _selectedRole = 'Customer';
+    // TODO: Add real login/authentication logic
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Logging in as $selectedRole')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60),
-        child: AppBar(
-          systemOverlayStyle: SystemUiOverlayStyle.light,
-          flexibleSpace: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.indigo.withOpacity(0.8),
-                  Colors.transparent,
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
-            onPressed: () => Navigator.pop(context),
-          ),
-          title: Row(
-            children: [
-              ClipOval(
-                child: Image.asset(
-                  "assets/image/logo.jpeg",
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              const SizedBox(width: 10),
-              const Text(
-                'নীতি মূল্য',
-                style: TextStyle(color: Colors.white),
-              ),
-            ],
-          ),
+      appBar: AppBar(
+        title: const Text("Login"),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF079b11),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            // Go directly to HomeScreen
+            Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+          },
         ),
       ),
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: NetworkImage(
-                  "https://cdn.photoroom.com/v2/image-cache?path=gs://background-7ef44.appspot.com/backgrounds_v3/black/47_-_black.jpg",
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Container(
-            color: Colors.black.withOpacity(0.6),
-            child: Center(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Card(
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Card(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            elevation: 5,
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Role Dropdown
+                  DropdownButtonFormField<String>(
+                    value: selectedRole,
+                    decoration: const InputDecoration(
+                      labelText: 'Select Role',
+                      border: OutlineInputBorder(),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text(
-                            "Login",
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.indigo,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          DropdownButtonFormField<String>(
-                            value: _selectedRole,
-                            items: _roles.map((role) {
-                              return DropdownMenuItem(
-                                value: role,
-                                child: Text(role),
-                              );
-                            }).toList(),
-                            onChanged: (value) {
-                              _selectedRole = value!;
-                            },
-                            decoration: const InputDecoration(
-                              labelText: 'Select Role',
-                              border: OutlineInputBorder(),
-                              prefixIcon: Icon(Icons.person_outline),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          TextField(
-                            controller: _emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: Icon(Icons.email),
-                              border: OutlineInputBorder(),
-                            ),
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          const SizedBox(height: 20),
-                          TextField(
-                            controller: _passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
-                              prefixIcon: Icon(Icons.lock),
-                              border: OutlineInputBorder(),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {},
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.indigo,
-                                padding: const EdgeInsets.symmetric(vertical: 15),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: const Text("Login"),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          TextButton(
-                            onPressed: () {
-                              // Navigate to forgot password screen
-                            },
-                            child: const Text(
-                              "Forgot Password?",
-                              style: TextStyle(color: Colors.indigo),
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Text("Don't have an account?"),
-                              TextButton(
-                                onPressed: () {
-                                  // Navigate to sign up screen
-                                },
-                                child: const Text(
-                                  "Sign Up",
-                                  style: TextStyle(color: Colors.indigo),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    items: roles.map((role) {
+                      return DropdownMenuItem(
+                        value: role,
+                        child: Text(role),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedRole = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Email TextField
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Password TextField
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+
+                  // Login Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: login,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF079b11),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        foregroundColor: Colors.white, // Text color
+                      ),
+                      child: const Text(
+                        'Login',
+                        style: TextStyle(fontSize: 16),
                       ),
                     ),
                   ),
-                ),
+
+                  const SizedBox(height: 20),
+
+                  // Forgot Password Button
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => const ForgotPasswordScreen()),
+                      );
+                    },
+                    child: const Text(
+                      "Forgot Password?",
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+
+                  // Sign Up Button
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) =>
+                                const SignupScreen()), // <-- Fixed class name
+                      );
+                    },
+                    child: const Text(
+                      "Don't have an account? Sign Up",
+                      style: TextStyle(color: Colors.blue),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

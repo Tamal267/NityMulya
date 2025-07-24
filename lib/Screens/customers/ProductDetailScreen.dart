@@ -6,7 +6,7 @@ class ProductDetailScreen extends StatelessWidget {
   final int low;
   final int high;
 
-  const ProductDetailScreen({
+  const ProductDetailScreen({super.key, 
     required this.title,
     required this.unit,
     required this.low,
@@ -18,21 +18,21 @@ class ProductDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Unit: $unit", style: TextStyle(fontSize: 18)),
-            SizedBox(height: 10),
-            Text("Current Price Range:", style: TextStyle(fontWeight: FontWeight.bold)),
-            Text("Low: ৳$low", style: TextStyle(color: Colors.green)),
-            Text("High: ৳$high", style: TextStyle(color: Colors.red)),
-            SizedBox(height: 20),
-            Text("Price History", style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 10),
+            Text("Unit: $unit", style: const TextStyle(fontSize: 18)),
+            const SizedBox(height: 10),
+            const Text("Current Price Range:", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text("Low: ৳$low", style: const TextStyle(color: Colors.green)),
+            Text("High: ৳$high", style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 20),
+            const Text("Price History", style: TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             Expanded(
               child: ListView(
-                children: [
+                children: const [
                   ListTile(title: Text("2025-07-14"), subtitle: Text("৳75 - 85")),
                   ListTile(title: Text("2025-07-13"), subtitle: Text("৳74 - 84")),
                   ListTile(title: Text("2025-07-12"), subtitle: Text("৳73 - 82")),

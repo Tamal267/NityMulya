@@ -13,23 +13,23 @@ class AppRoutes {
 
   static Map<String, WidgetBuilder> get routes {
     return {
-      welcome: (context) => WelcomeScreen(),
-      login: (context) => LoginScreen(),
-      signup: (context) => SignupScreen(),
-      forgotPassword: (context) => ForgotPasswordScreen(),
+      welcome: (context) => const WelcomeScreen(),
+      login: (context) => const LoginScreen(),
+      signup: (context) => const SignupScreen(),
+      forgotPassword: (context) => const ForgotPasswordScreen(),
     };
   }
 
   static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case welcome:
-        return MaterialPageRoute(builder: (context) => WelcomeScreen());
+        return MaterialPageRoute(builder: (context) => const WelcomeScreen());
       case login:
-        return MaterialPageRoute(builder: (context) => LoginScreen());
+        return MaterialPageRoute(builder: (context) => const LoginScreen());
       case signup:
-        return MaterialPageRoute(builder: (context) => SignupScreen());
+        return MaterialPageRoute(builder: (context) => const SignupScreen());
       case forgotPassword:
-        return MaterialPageRoute(builder: (context) => ForgotPasswordScreen());
+        return MaterialPageRoute(builder: (context) => const ForgotPasswordScreen());
       default:
         return MaterialPageRoute(
           builder: (context) => Scaffold(

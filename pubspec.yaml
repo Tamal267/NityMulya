@@ -1,6 +1,6 @@
 name: nitymulya
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
@@ -11,15 +11,17 @@ dependencies:
   flutter:
     sdk: flutter
   provider: ^6.0.5
-  fl_chart: ^0.64.0
+  fl_chart: ^1.0.0
   shared_preferences: ^2.0.17
-  intl: ^0.18.0
+  intl: ^0.20.2
   cupertino_icons: ^1.0.8
+  email_auth: ^2.0.0
+  fluttertoast: ^8.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
@@ -29,3 +31,12 @@ flutter:
     - assets/image/logo.jpeg
     - assets/lang/en.json
     - assets/lang/bn.json
+    - assets/image/im_1.jpg
+    - assets/image/im_2.jpg
+    - assets/image/im_3.jpg
+    - assets/image/im_4.jpg
+    - assets/image/im_5.jpg
+    - assets/image/im_6.jpg
+    - assets/image/im_7.jpg
+    - assets/image/im_8.jpg
+    - assets/image/im_9.jpg

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/screens/customers/ShopListScreen.dart';
+import 'package:nitymulya/screens/auth/login_screen.dart';
 import 'ProductDetailScreen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -16,57 +17,90 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isBangla = true;
 
   final List<String> categories = [
-    "All", "চাল", "আটা ও ময়দা", "তেল", "ডাল", "সবজি ও মসলা", "মাছ ও গোশত", "দুধ"
+    "All",
+    "চাল",
+    "আটা ও ময়দা",
+    "তেল",
+    "ডাল",
+    "সবজি ও মসলা",
+    "মাছ ও গোশত",
+    "দুধ"
   ];
-
-
 
   final List<Map<String, dynamic>> products = [
-    // চাল
-    {"title": "চাল সরু (নাজির/মিনিকেট)", "unit": "প্রতি কেজি", "low": 75, "high": 85, "category": "চাল", "image": "https://via.placeholder.com/150"},
-    {"title": "চাল (মাঝারী) পাইজাম/আটাশ", "unit": "প্রতি কেজি", "low": 60, "high": 70, "category": "চাল", "image": "https://via.placeholder.com/150"},
-    {"title": "চাল (মোটা)/স্বর্ণা/চায়না ইরি", "unit": "প্রতি কেজি", "low": 55, "high": 60, "category": "চাল", "image": "https://via.placeholder.com/150"},
-
-    // আটা ও ময়দা
-    {"title": "আটা সাদা (খোলা)", "unit": "প্রতি কেজি", "low": 40, "high": 45, "category": "আটা ও ময়দা", "image": "https://via.placeholder.com/150"},
-    {"title": "আটা (প্যাকেট)", "unit": "প্রতি কেজি প্যাঃ", "low": 50, "high": 55, "category": "আটা ও ময়দা", "image": "https://via.placeholder.com/150"},
-    {"title": "ময়দা (খোলা)", "unit": "প্রতি কেজি", "low": 50, "high": 60, "category": "আটা ও ময়দা", "image": "https://via.placeholder.com/150"},
-    {"title": "ময়দা (প্যাকেট)", "unit": "প্রতি কেজি প্যাঃ", "low": 65, "high": 70, "category": "আটা ও ময়দা", "image": "https://via.placeholder.com/150"},
-
-    // তেল
-    {"title": "সয়াবিন তেল (লুজ)", "unit": "প্রতি লিটার", "low": 160, "high": 170, "category": "তেল", "image": "https://via.placeholder.com/150"},
-    {"title": "সয়াবিন তেল (বোতল) ৫ লিটার", "unit": "৫ লিটার", "low": 880, "high": 920, "category": "তেল", "image": "https://via.placeholder.com/150"},
-    {"title": "সয়াবিন তেল (বোতল) ২ লিটার", "unit": "২ লিটার", "low": 370, "high": 378, "category": "তেল", "image": "https://via.placeholder.com/150"},
-    {"title": "সয়াবিন তেল (বোতল) ১ লিটার", "unit": "১ লিটার", "low": 185, "high": 190, "category": "তেল", "image": "https://via.placeholder.com/150"},
-    {"title": "পাম অয়েল (লুজ)", "unit": "প্রতি লিটার", "low": 147, "high": 155, "category": "তেল", "image": "https://via.placeholder.com/150"},
-    {"title": "সুপার পাম অয়েল (লুজ)", "unit": "প্রতি লিটার", "low": 152, "high": 160, "category": "তেল", "image": "https://via.placeholder.com/150"},
-    {"title": "রাইস ব্রান তেল (বোতল) ৫ লিটার", "unit": "৫ লিটার", "low": 1030, "high": 1080, "category": "তেল", "image": "https://via.placeholder.com/150"},
-
-    // ডাল
-    {"title": "মশুর ডাল (বড় দানা)", "unit": "প্রতি কেজি", "low": 100, "high": 110, "category": "ডাল", "image": "https://via.placeholder.com/150"},
-    {"title": "মশুর ডাল (মাঝারী দানা)", "unit": "প্রতি কেজি", "low": 105, "high": 120, "category": "ডাল", "image": "https://via.placeholder.com/150"},
-    {"title": "মশুর ডাল (ছোট দানা)", "unit": "প্রতি কেজি", "low": 125, "high": 135, "category": "ডাল", "image": "https://via.placeholder.com/150"},
-    {"title": "মুগ ডাল (মানভেদে)", "unit": "প্রতি কেজি", "low": 125, "high": 180, "category": "ডাল", "image": "https://via.placeholder.com/150"},
-    {"title": "এ্যাংকর ডাল", "unit": "প্রতি কেজি", "low": 50, "high": 80, "category": "ডাল", "image": "https://via.placeholder.com/150"},
-    {"title": "ছোলা (মানভেদে)", "unit": "প্রতি কেজি", "low": 90, "high": 110, "category": "ডাল", "image": "https://via.placeholder.com/150"},
-
-    // মাছ ও গোশত
-    {"title": "রুই", "unit": "প্রতি কেজি", "low": 300, "high": 450, "category": "মাছ ও গোশত", "image": "https://via.placeholder.com/150"},
-    {"title": "ইলিশ", "unit": "প্রতি কেজি", "low": 900, "high": 2000, "category": "মাছ ও গোশত", "image": "https://via.placeholder.com/150"},
-    {"title": "গরু", "unit": "প্রতি কেজি", "low": 750, "high": 800, "category": "মাছ ও গোশত", "image": "https://via.placeholder.com/150"},
-    {"title": "খাসী", "unit": "প্রতি কেজি", "low": 1100, "high": 1250, "category": "মাছ ও গোশত", "image": "https://via.placeholder.com/150"},
-    {"title": "মুরগী (ব্রয়লার)", "unit": "প্রতি কেজি", "low": 150, "high": 170, "category": "মাছ ও গোশত", "image": "https://via.placeholder.com/150"},
-    {"title": "মুরগী (দেশী)", "unit": "প্রতি কেজি", "low": 580, "high": 700, "category": "মাছ ও গোশত", "image": "https://via.placeholder.com/150"},
-
-    // দুধ
-    {"title": "ডানো গুঁড়া দুধ", "unit": "১ কেজি", "low": 720, "high": 860, "category": "দুধ", "image": "https://via.placeholder.com/150"},
-    {"title": "ডিপ্লোমা (নিউজিল্যান্ড) গুঁড়া দুধ", "unit": "১ কেজি", "low": 840, "high": 910, "category": "দুধ", "image": "https://via.placeholder.com/150"},
-    {"title": "ফ্রেশ গুঁড়া দুধ", "unit": "১ কেজি", "low": 830, "high": 890, "category": "দুধ", "image": "https://via.placeholder.com/150"},
-    {"title": "মার্কস গুঁড়া দুধ", "unit": "১ কেজি", "low": 830, "high": 900, "category": "দুধ", "image": "https://via.placeholder.com/150"},
+    {
+      "title": "চাল সরু (নাজির/মিনিকেট)",
+      "unit": "প্রতি কেজি",
+      "low": 75,
+      "high": 85,
+      "category": "চাল",
+      "image": "assets/images/im_1.jpg"
+    },
+    {
+      "title": "চাল মোটা (পাইলস)",
+      "unit": "প্রতি কেজি",
+      "low": 55,
+      "high": 65,
+      "category": "চাল",
+      "image": "assets/images/im_2.jpg"
+    },
+    {
+      "title": "গমের আটা (প্রিমিয়াম)",
+      "unit": "প্রতি কেজি",
+      "low": 45,
+      "high": 50,
+      "category": "আটা ও ময়দা",
+      "image": "assets/images/im_3.jpg"
+    },
+    {
+      "title": "সয়াবিন তেল (পিউর)",
+      "unit": "প্রতি লিটার",
+      "low": 160,
+      "high": 175,
+      "category": "তেল",
+      "image": "assets/images/im_4.jpg"
+    },
+    {
+      "title": "মসুর ডাল (ভালো মান)",
+      "unit": "প্রতি কেজি",
+      "low": 95,
+      "high": 110,
+      "category": "ডাল",
+      "image": "assets/images/im_5.jpg"
+    },
+    {
+      "title": "পেঁয়াজ (স্থানীয়)",
+      "unit": "প্রতি কেজি",
+      "low": 35,
+      "high": 45,
+      "category": "সবজি ও মসলা",
+      "image": "assets/images/im_6.jpg"
+    },
+    {
+      "title": "রুই মাছ (মাঝারি)",
+      "unit": "প্রতি কেজি",
+      "low": 180,
+      "high": 220,
+      "category": "মাছ ও গোশত",
+      "image": "assets/images/im_7.jpg"
+    },
+    {
+      "title": "গরুর মাংস (গরম)",
+      "unit": "প্রতি কেজি",
+      "low": 650,
+      "high": 700,
+      "category": "মাছ ও গোশত",
+      "image": "assets/images/im_8.jpg"
+    },
+    {
+      "title": "তাজা দুধ",
+      "unit": "প্রতি লিটার",
+      "low": 70,
+      "high": 80,
+      "category": "দুধ",
+      "image": "assets/images/im_9.jpg"
+    },
   ];
-
-
-
 
   List<Map<String, dynamic>> get filteredProducts {
     if (selectedCategory == "All") {
@@ -78,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,  // disable debug banner
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: isDarkMode ? Brightness.dark : Brightness.light,
         primaryColor: const Color(0xFF079b11),
@@ -113,33 +147,80 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+
+        // ✅ Updated Drawer
         drawer: Drawer(
-          child: ListView(
-            children: [
-              DrawerHeader(
-                decoration: const BoxDecoration(color: Color(0xFF079b11)),
-                child: Column(
-                  children: [
-                    Image.asset("assets/image/logo.jpeg", height: 60),
-                    const SizedBox(height: 10),
-                    const Text("NitiMulya", style: TextStyle(color: Colors.white, fontSize: 18)),
-                    const SizedBox(height: 5),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
-                      onPressed: () {},
-                      child: const Text("Login / Sign up", style: TextStyle(color: Colors.black)),
-                    ),
-                  ],
+          child: SafeArea(
+            child: ListView(
+              padding: EdgeInsets.zero,
+              children: [
+                Container(
+                  color: const Color(0xFF079b11),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        "assets/images/logo.png",
+                        height: 60,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(
+                          Icons.store,
+                          color: Colors.white,
+                          size: 60,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text("NitiMulya",
+                          style: TextStyle(color: Colors.white, fontSize: 18)),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white),
+                          onPressed: () {
+                            Navigator.pop(context); // Close drawer
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const LoginScreen()),
+                            );
+                          },
+                          child: const Text("Login / Sign up",
+                              style: TextStyle(color: Colors.black)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const ListTile(leading: Icon(Icons.info), title: Text("Information")),
-              ListTile(leading: const Icon(Icons.report_problem), title: const Text("Complain"),
-                  onTap: () => Navigator.pushNamed(context, '/complaints')),
-              const ListTile(leading: Icon(Icons.help), title: Text("Help")),
-              const ListTile(leading: Icon(Icons.support), title: Text("Customer Support")),
-            ],
+                const ListTile(
+                  leading: Icon(Icons.info),
+                  title: Text("Information"),
+                  dense: true,
+                ),
+                ListTile(
+                  leading: const Icon(Icons.report_problem),
+                  title: const Text("Complain"),
+                  dense: true,
+                  onTap: () => Navigator.pushNamed(context, '/complaints'),
+                ),
+                const ListTile(
+                  leading: Icon(Icons.help),
+                  title: Text("Help"),
+                  dense: true,
+                ),
+                const ListTile(
+                  leading: Icon(Icons.support),
+                  title: Text("Customer Support"),
+                  dense: true,
+                ),
+              ],
+            ),
           ),
         ),
+
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -154,28 +235,40 @@ class _HomeScreenState extends State<HomeScreen> {
                 decoration: InputDecoration(
                   hintText: "Search products",
                   prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8)),
                 ),
               ),
             ),
-            // typeahead suggestion box
             if (searchQuery.isNotEmpty)
               Container(
-                constraints: const BoxConstraints(maxHeight: 150),
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.3,
+                ),
                 margin: const EdgeInsets.symmetric(horizontal: 12),
                 child: Card(
                   child: ListView(
                     shrinkWrap: true,
                     children: products
-                        .where((p) => p["title"].contains(searchQuery))
+                        .where((p) => p["title"]
+                            .toLowerCase()
+                            .contains(searchQuery.toLowerCase()))
                         .map((p) => ListTile(
-                      title: Text(p["title"]),
-                      onTap: () {
-                        setState(() {
-                          searchQuery = p["title"];
-                        });
-                      },
-                    ))
+                              title: Text(p["title"]),
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ProductDetailScreen(
+                                      title: p["title"],
+                                      unit: p["unit"],
+                                      low: p["low"],
+                                      high: p["high"],
+                                    ),
+                                  ),
+                                );
+                              },
+                            ))
                         .toList(),
                   ),
                 ),
@@ -184,7 +277,8 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Text(
                 isBangla ? "Daily Price Update" : "দৈনিক মূল্য আপডেট",
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
@@ -228,52 +322,94 @@ class _HomeScreenState extends State<HomeScreen> {
                 itemCount: filteredProducts.length,
                 itemBuilder: (context, index) {
                   final product = filteredProducts[index];
-                  if (searchQuery.isNotEmpty && !product["title"].contains(searchQuery)) {
+                  if (searchQuery.isNotEmpty &&
+                      !product["title"]
+                          .toLowerCase()
+                          .contains(searchQuery.toLowerCase())) {
                     return const SizedBox.shrink();
                   }
-                  return MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
+                  return Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
                       onTap: () {
-                        Navigator.push(context, MaterialPageRoute(
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
                             builder: (_) => ProductDetailScreen(
                               title: product["title"],
                               unit: product["unit"],
                               low: product["low"],
                               high: product["high"],
-                            )));
+                            ),
+                          ),
+                        );
                       },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 6,
-                              offset: const Offset(0, 4)
-                          )],
-                          color: isDarkMode ? Colors.grey[800] : Colors.white,
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(product["title"],
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                            Text(product["unit"],
-                                style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                            Expanded(
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(product["image"], fit: BoxFit.cover),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              product["title"],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Text(
+                              product["unit"],
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: Text("৳${product["low"]} - ৳${product["high"]}",
-                                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(
+                                  product["image"],
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[200],
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.image_not_supported,
+                                          size: 40,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                          ],
-                        ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: 8, left: 8, right: 8),
+                            child: Text(
+                              "৳${product["low"]} - ৳${product["high"]}",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   );
@@ -282,12 +418,16 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 0,
           selectedItemColor: const Color(0xFF079b11),
           onTap: (index) {
             if (index == 1) {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const ShopListScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ShopListScreen()),
+              );
             } else if (index == 2) {
               Navigator.pushNamed(context, '/favorites');
             }
@@ -295,7 +435,8 @@ class _HomeScreenState extends State<HomeScreen> {
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
             BottomNavigationBarItem(icon: Icon(Icons.shop), label: "Shop"),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorites"),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.favorite), label: "Favorites"),
           ],
         ),
       ),
