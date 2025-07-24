@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/screens/customers/ShopListScreen.dart';
-import 'package:nitymulya/screens/auth/login_screen.dart';
-import 'ProductDetailScreen.dart';
+import 'package:nitymulya/screens/customers/shop_list_screen.dart';
+import 'package:nitymulya/widgets/custom_drawer.dart';
+
+import 'product_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String? userName;
+  final String? userEmail;
+  final String? userRole;
+
+  const HomeScreen({
+    super.key,
+    this.userName,
+    this.userEmail,
+    this.userRole,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -19,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final List<String> categories = [
     "All",
     "চাল",
-    "আটা ও ময়দা",
+    "আটা ও ময়দা",
     "তেল",
     "ডাল",
     "সবজি ও মসলা",
@@ -45,15 +55,15 @@ class _HomeScreenState extends State<HomeScreen> {
       "image": "assets/images/im_2.jpg"
     },
     {
-      "title": "গমের আটা (প্রিমিয়াম)",
+      "title": "গমের আটা (প্রিমিয়াম)",
       "unit": "প্রতি কেজি",
       "low": 45,
       "high": 50,
-      "category": "আটা ও ময়দা",
+      "category": "আটা ও ময়দা",
       "image": "assets/images/im_3.jpg"
     },
     {
-      "title": "সয়াবিন তেল (পিউর)",
+      "title": "সয়াবিন তেল (পিউর)",
       "unit": "প্রতি লিটার",
       "low": 160,
       "high": 175,
@@ -61,44 +71,36 @@ class _HomeScreenState extends State<HomeScreen> {
       "image": "assets/images/im_4.jpg"
     },
     {
-      "title": "মসুর ডাল (ভালো মান)",
+      "title": "মসুর ডাল",
       "unit": "প্রতি কেজি",
-      "low": 95,
-      "high": 110,
+      "low": 115,
+      "high": 125,
       "category": "ডাল",
       "image": "assets/images/im_5.jpg"
     },
     {
-      "title": "পেঁয়াজ (স্থানীয়)",
+      "title": "পেঁয়াজ (দেশি)",
       "unit": "প্রতি কেজি",
-      "low": 35,
-      "high": 45,
+      "low": 50,
+      "high": 60,
       "category": "সবজি ও মসলা",
       "image": "assets/images/im_6.jpg"
     },
     {
-      "title": "রুই মাছ (মাঝারি)",
+      "title": "রুই মাছ",
       "unit": "প্রতি কেজি",
-      "low": 180,
-      "high": 220,
+      "low": 350,
+      "high": 400,
       "category": "মাছ ও গোশত",
       "image": "assets/images/im_7.jpg"
     },
     {
-      "title": "গরুর মাংস (গরম)",
-      "unit": "প্রতি কেজি",
-      "low": 650,
-      "high": 700,
-      "category": "মাছ ও গোশত",
-      "image": "assets/images/im_8.jpg"
-    },
-    {
-      "title": "তাজা দুধ",
+      "title": "গরুর দুধ",
       "unit": "প্রতি লিটার",
-      "low": 70,
-      "high": 80,
+      "low": 60,
+      "high": 70,
       "category": "দুধ",
-      "image": "assets/images/im_9.jpg"
+      "image": "assets/images/im_8.jpg"
     },
   ];
 
@@ -118,6 +120,11 @@ class _HomeScreenState extends State<HomeScreen> {
         primaryColor: const Color(0xFF079b11),
       ),
       home: Scaffold(
+        drawer: CustomDrawer(
+          userName: widget.userName ?? 'Guest User',
+          userEmail: widget.userEmail ?? 'guest@example.com',
+          userRole: widget.userRole ?? 'Customer',
+        ),
         appBar: AppBar(
           backgroundColor: const Color(0xFF079b11),
           title: Row(
@@ -147,80 +154,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-
-        // ✅ Updated Drawer
-        drawer: Drawer(
-          child: SafeArea(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                Container(
-                  color: const Color(0xFF079b11),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.asset(
-                        "assets/images/logo.png",
-                        height: 60,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(
-                          Icons.store,
-                          color: Colors.white,
-                          size: 60,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text("NitiMulya",
-                          style: TextStyle(color: Colors.white, fontSize: 18)),
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white),
-                          onPressed: () {
-                            Navigator.pop(context); // Close drawer
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const LoginScreen()),
-                            );
-                          },
-                          child: const Text("Login / Sign up",
-                              style: TextStyle(color: Colors.black)),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const ListTile(
-                  leading: Icon(Icons.info),
-                  title: Text("Information"),
-                  dense: true,
-                ),
-                ListTile(
-                  leading: const Icon(Icons.report_problem),
-                  title: const Text("Complain"),
-                  dense: true,
-                  onTap: () => Navigator.pushNamed(context, '/complaints'),
-                ),
-                const ListTile(
-                  leading: Icon(Icons.help),
-                  title: Text("Help"),
-                  dense: true,
-                ),
-                const ListTile(
-                  leading: Icon(Icons.support),
-                  title: Text("Customer Support"),
-                  dense: true,
-                ),
-              ],
-            ),
-          ),
-        ),
-
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -418,7 +351,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 0,
           selectedItemColor: const Color(0xFF079b11),
