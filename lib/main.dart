@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/screens/customers/ComplaintFormScreen.dart';
-import 'package:nitymulya/screens/customers/FavoriteProductsScreen.dart';
-import 'package:nitymulya/screens/customers/HomeScreen.dart';
-import 'package:nitymulya/screens/customers/PriceAlertScreen.dart';
-import 'package:nitymulya/screens/customers/ReviewScreen.dart';
-import 'package:nitymulya/screens/customers/RewardedShopsScreen.dart';
 import 'package:nitymulya/screens/auth/login_screen.dart';
+import 'package:nitymulya/screens/customers/complaint_form_screen.dart';
+import 'package:nitymulya/screens/customers/favorite_products_screen.dart';
+import 'package:nitymulya/screens/customers/home_screen.dart';
+import 'package:nitymulya/screens/customers/price_alert_screen.dart';
+import 'package:nitymulya/screens/customers/review_screen.dart';
+import 'package:nitymulya/screens/customers/rewarded_shops_screen.dart';
 
 void main() {
   runApp(const NitiMulyaApp());
@@ -26,6 +26,7 @@ class NitiMulyaApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const HomeScreen(),
+        '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/favorites': (context) => const FavoriteProductsScreen(),
         '/alerts': (context) => const PriceAlertScreen(),

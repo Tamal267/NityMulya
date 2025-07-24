@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/screens/auth/forgot_password_screen.dart';
 import 'package:nitymulya/screens/auth/signup_screen.dart';
+import 'package:nitymulya/screens/customers/home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,12 +18,40 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   void login() {
-    emailController.text.trim();
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
 
-    // TODO: Add real login/authentication logic
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Logging in as $selectedRole')),
-    );
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    // TODO: Add real authentication logic here
+    // For now, we'll simulate a successful login
+    
+    // Extract user name from email (simple simulation)
+    final userName = email.split('@')[0];
+    
+    // Redirect based on role
+    if (selectedRole == 'Customer') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomeScreen(
+            userName: userName,
+            userEmail: email,
+            userRole: selectedRole,
+          ),
+        ),
+      );
+    } else {
+      // For other roles, show coming soon message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('$selectedRole dashboard coming soon')),
+      );
+    }
   }
 
   @override
