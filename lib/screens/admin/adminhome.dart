@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AdminPage extends StatefulWidget {
-  const AdminPage({Key? key}) : super(key: key);
+  const AdminPage({super.key});
 
   @override
   State<AdminPage> createState() => _AdminPageState();
@@ -182,8 +182,8 @@ class _AdminPageState extends State<AdminPage> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF079b11),
-        child: Icon(Icons.add),
         onPressed: showAddProductSheet,
+        child: Icon(Icons.add),
       ),
     );
   }
