@@ -48,7 +48,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "কেজি",
       "low": 50,
       "high": 55,
-      "image": "assets/images/rice.jpg",
+      "image": "assets/image/1.jpg",
       "category": "চাল"
     },
     {
@@ -56,7 +56,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "কেজি",
       "low": 30,
       "high": 35,
-      "image": "assets/images/flour.jpg",
+      "image": "assets/image/2.jpg",
       "category": "আটা ও ময়দা"
     },
     {
@@ -64,7 +64,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "লিটার",
       "low": 120,
       "high": 130,
-      "image": "assets/images/oil.jpg",
+      "image": "assets/image/14.jpg",
       "category": "তেল"
     },
     {
@@ -72,7 +72,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "কেজি",
       "low": 70,
       "high": 75,
-      "image": "assets/images/lentils.jpg",
+      "image": "assets/image/3.jpg",
       "category": "ডাল"
     },
     {
@@ -80,7 +80,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "",
       "low": 20,
       "high": 25,
-      "image": "assets/images/vegetables.jpg",
+      "image": "assets/image/4.jpg",
       "category": "সবজি ও মসলা"
     },
     {
@@ -88,7 +88,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "",
       "low": 200,
       "high": 250,
-      "image": "assets/images/fish_meat.jpg",
+      "image": "assets/image/5.jpg",
       "category": "মাছ ও গোশত"
     },
   ];
