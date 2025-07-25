@@ -7,6 +7,7 @@ import 'package:nitymulya/screens/customers/price_alert_screen.dart';
 import 'package:nitymulya/screens/customers/review_screen.dart';
 import 'package:nitymulya/screens/customers/rewarded_shops_screen.dart';
 import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
+import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
 
 void main() {
@@ -27,7 +28,8 @@ class NitiMulyaApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const WholesalerDashboardScreen(),
+        '/': (context) => const WelcomeScreen(),
+        // '/': (context) => const WholesalerDashboardScreen(),
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
         '/favorites': (context) => const FavoriteProductsScreen(),
