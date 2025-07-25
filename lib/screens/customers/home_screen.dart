@@ -44,7 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "low": 75,
       "high": 85,
       "category": "চাল",
-      "image": "assets/images/im_1.jpg"
+      "image": "assets/image/1.jpg"
     },
     {
       "title": "চাল মোটা (পাইলস)",
@@ -52,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "low": 55,
       "high": 65,
       "category": "চাল",
-      "image": "assets/images/im_2.jpg"
+      "image": "assets/image/2.jpg"
     },
     {
       "title": "গমের আটা (প্রিমিয়াম)",
@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "low": 45,
       "high": 50,
       "category": "আটা ও ময়দা",
-      "image": "assets/images/im_3.jpg"
+      "image": "assets/image/3.jpg"
     },
     {
       "title": "সয়াবিন তেল (পিউর)",
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "low": 160,
       "high": 175,
       "category": "তেল",
-      "image": "assets/images/im_4.jpg"
+      "image": "assets/image/4.jpg"
     },
     {
       "title": "মসুর ডাল",
@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "low": 115,
       "high": 125,
       "category": "ডাল",
-      "image": "assets/images/im_5.jpg"
+      "image": "assets/image/5.jpg"
     },
     {
       "title": "পেঁয়াজ (দেশি)",
@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "low": 50,
       "high": 60,
       "category": "সবজি ও মসলা",
-      "image": "assets/images/im_6.jpg"
+      "image": "assets/image/6.jpg"
     },
     {
       "title": "রুই মাছ",
@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "low": 350,
       "high": 400,
       "category": "মাছ ও গোশত",
-      "image": "assets/images/im_7.jpg"
+      "image": "assets/images/7.jpg"
     },
     {
       "title": "গরুর দুধ",
@@ -100,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
       "low": 60,
       "high": 70,
       "category": "দুধ",
-      "image": "assets/images/im_8.jpg"
+      "image": "assets/image/8.jpg"
     },
   ];
 

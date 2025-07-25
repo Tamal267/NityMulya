@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/Screens/admin/adminhome.dart';
 import 'package:nitymulya/screens/auth/login_screen.dart';
 import 'package:nitymulya/screens/customers/complaint_form_screen.dart';
 import 'package:nitymulya/screens/customers/favorite_products_screen.dart';
@@ -30,7 +29,7 @@ class NitiMulyaApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         //'/': (context) => const AdminPage(),
-        '/': (context) => const WelcomeScreen(),
+       '/': (context) => const WelcomeScreen(),
         //'/WelcomeScreen': (context) => const WelcomeScreen(),
         //nahid
         // '/': (context) => const WholesalerDashboardScreen(),
@@ -41,7 +40,8 @@ class NitiMulyaApp extends StatelessWidget {
         '/complaints': (context) => const ComplaintFormScreen(),
         '/reviews': (context) => const ReviewScreen(),
         '/rewards': (context) => const RewardedShopsScreen(),
-        '/shop-dashboard': (context) => const ShopOwnerDashboard(),
+       // '/': (context) => const ShopOwnerDashboard(),
+       '/shop-dashboard': (context) => const ShopOwnerDashboard(),
         '/wholesaler-dashboard': (context) => const WholesalerDashboardScreen(),
       },
     );

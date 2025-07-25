@@ -182,6 +182,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
             const SizedBox(height: 16),
 
             // Product Selection
+            // Product Selection
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -196,11 +197,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
+
+                    // ✅ Fixed DropdownButtonFormField
                     DropdownButtonFormField<String>(
                       value: _selectedProduct,
                       decoration: InputDecoration(
-                        hintText: _selectedCategory == null 
-                            ? "Select category first" 
+                        hintText: _selectedCategory == null
+                            ? "Select category first"
                             : "Select a product",
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -210,29 +213,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       items: _currentProducts.map((product) {
                         return DropdownMenuItem<String>(
                           value: product['name'] as String,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                product['name'] as String,
-                                style: const TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'Gov. Price: ${product['fixedPrice']}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            product['name'] as String,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis, // ✅ fixes overflow
                           ),
                         );
                       }).toList(),
-                      onChanged: _selectedCategory == null ? null : (value) {
-                        setState(() {
-                          _selectedProduct = value;
-                        });
-                      },
+                      onChanged: _selectedCategory == null
+                          ? null
+                          : (value) {
+                              setState(() {
+                                _selectedProduct = value;
+                              });
+                            },
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please select a product';
@@ -240,6 +234,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         return null;
                       },
                     ),
+
+                    // Price Info
                     if (_selectedProductFixedPrice != null) ...[
                       const SizedBox(height: 8),
                       Container(
@@ -251,8 +247,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.price_check, 
-                                 color: Colors.green[600], size: 16),
+                            Icon(Icons.price_check,
+                                color: Colors.green[600], size: 16),
                             const SizedBox(width: 4),
                             Text(
                               'Government Fixed Price: $_selectedProductFixedPrice',
@@ -270,6 +266,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
               ),
             ),
+
+//--------------------tush -----------
+
             const SizedBox(height: 16),
 
             // Quantity Input
@@ -302,7 +301,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter quantity';
                         }
-                        if (int.tryParse(value) == null || int.parse(value) <= 0) {
+                        if (int.tryParse(value) == null ||
+                            int.parse(value) <= 0) {
                           return 'Please enter a valid positive number';
                         }
                         return null;
@@ -352,7 +352,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter selling price';
                         }
-                        if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                        if (double.tryParse(value) == null ||
+                            double.parse(value) <= 0) {
                           return 'Please enter a valid price';
                         }
                         return null;

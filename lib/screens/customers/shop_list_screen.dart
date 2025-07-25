@@ -135,7 +135,7 @@ class _ShopListScreenState extends State<ShopListScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.indigo,
+         backgroundColor: const Color(0xFF079b11),
         foregroundColor: Colors.white,
         title: const Text("Shop List"),
         actions: [
@@ -177,7 +177,7 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: "Search by product or shop name...",
-                    prefixIcon: const Icon(Icons.search, color: Colors.indigo),
+                    prefixIcon: const Icon(Icons.search, color: Color(0xFF079b11)),
                     suffixIcon: searchQuery.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear),
@@ -270,7 +270,7 @@ class _ShopListScreenState extends State<ShopListScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.indigo.withValues(alpha: 0.1),
+          color: const Color.fromRGBO(63, 81, 181, 1).withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: Colors.indigo.withValues(alpha: 0.3)),
         ),

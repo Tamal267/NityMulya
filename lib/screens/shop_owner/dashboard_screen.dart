@@ -3,6 +3,7 @@ import 'package:nitymulya/screens/shop_owner/add_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/update_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_chat_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_list_screen.dart';
+import 'package:nitymulya/widgets/custom_drawer.dart';
 
 class ShopOwnerDashboard extends StatefulWidget {
   const ShopOwnerDashboard({super.key});
@@ -32,182 +33,394 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
     super.dispose();
   }
 
+//-----------------------------------------------------tush
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: const Text(
-          "Shop Dashboard",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.green[600],
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications),
-                onPressed: () {
-                  _showNotifications(context);
-                },
-              ),
-              if (unreadNotifications > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
+  /*
+  @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.grey[50],
+    appBar: AppBar(
+      title: const Text(
+        "Shop Dashboard",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      backgroundColor: Colors.green[600],
+      foregroundColor: Colors.white,
+      elevation: 0,
+      actions: [
+        Stack(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () {
+                _showNotifications(context);
+              },
+            ),
+            if (unreadNotifications > 0)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    '$unreadNotifications',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '$unreadNotifications',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
+              ),
+          ],
+        ),
+        IconButton(
+          icon: const Icon(Icons.person),
+          onPressed: () {
+            _showProfileSettings(context);
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            _showLogoutConfirmation(context);
+          },
+          tooltip: "Logout",
+        ),
+      ],
+    ),
+    body: ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // Summary Cards
+        Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryCard(
+                    "Total Products",
+                    "$totalProducts",
+                    Icons.inventory,
+                    Colors.blue,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSummaryCard(
+                    "Pending Orders",
+                    "$pendingOrders",
+                    Icons.shopping_cart,
+                    Colors.orange,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildSummaryCard(
+                    "Stock Alerts",
+                    "$stockAlerts",
+                    Icons.warning,
+                    Colors.red,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSummaryCard(
+                    "VAT Reward",
+                    vatRewardStatus,
+                    Icons.card_giftcard,
+                    Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 24),
+
+        // Tab Content
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildInventoryTab(),
+              _buildOrdersTab(),
+              _buildChatTab(),
+              _buildPricesTab(),
+              _buildOffersTab(),
             ],
           ),
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () {
-              _showProfileSettings(context);
-            },
+        ),
+      ],
+    ),
+    bottomNavigationBar: Material(
+      color: Colors.white,
+      elevation: 8,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
           ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              _showLogoutConfirmation(context);
-            },
-            tooltip: "Logout",
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Summary Cards Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Total Products",
-                        "$totalProducts",
-                        Icons.inventory,
-                        Colors.blue,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Pending Orders",
-                        "$pendingOrders",
-                        Icons.shopping_cart,
-                        Colors.orange,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Stock Alerts",
-                        "$stockAlerts",
-                        Icons.warning,
-                        Colors.red,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "VAT Reward",
-                        vatRewardStatus,
-                        Icons.card_giftcard,
-                        Colors.green,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 5,
+              offset: const Offset(0, -1),
             ),
-          ),
-
-          // Tab Bar
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.2),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                ),
-              ],
-            ),
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              labelColor: Colors.green[600],
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: Colors.green[600],
-              tabs: const [
-                Tab(icon: Icon(Icons.inventory), text: "Inventory"),
-                Tab(icon: Icon(Icons.shopping_cart), text: "Orders"),
-                Tab(icon: Icon(Icons.chat), text: "Chat"),
-                Tab(icon: Icon(Icons.price_check), text: "Prices"),
-                Tab(icon: Icon(Icons.local_offer), text: "Offers"),
-              ],
-            ),
-          ),
-
-          // Tab Content
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildInventoryTab(),
-                _buildOrdersTab(),
-                _buildChatTab(),
-                _buildPricesTab(),
-                _buildOffersTab(),
-              ],
-            ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          _showQuickActions(context);
-        },
-        backgroundColor: Colors.green[600],
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          "Quick Add",
-          style: TextStyle(color: Colors.white),
+          ],
+        ),
+        child: TabBar(
+          controller: _tabController,
+          isScrollable: true,
+          labelColor: Colors.green[600],
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: Colors.green[600],
+          tabs: const [
+            Tab(icon: Icon(Icons.inventory), text: "Inventory"),
+            Tab(icon: Icon(Icons.shopping_cart), text: "Orders"),
+            Tab(icon: Icon(Icons.chat), text: "Chat"),
+            Tab(icon: Icon(Icons.price_check), text: "Prices"),
+            Tab(icon: Icon(Icons.local_offer), text: "Offers"),
+          ],
         ),
       ),
-    );
-  }
+    ),
+    floatingActionButton: FloatingActionButton.extended(
+      onPressed: () {
+        _showQuickActions(context);
+      },
+      backgroundColor: Colors.green[600],
+      icon: const Icon(Icons.add, color: Colors.white),
+      label: const Text(
+        "Quick Add",
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
+  );
+}
+*/
 
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.grey[50],
+    drawer: CustomDrawer( // ✅ This is newly added
+    userName: "Shop Owner",
+    userEmail: "owner@example.com",
+    userRole: "Shop",
+  ),
+    appBar: AppBar(
+      title: const Text(
+        "Shop Dashboard",
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      backgroundColor: Colors.green[600],
+      foregroundColor: Colors.white,
+      elevation: 0,
+      actions: [
+        Stack(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.notifications),
+              onPressed: () {
+                _showNotifications(context);
+              },
+            ),
+            if (unreadNotifications > 0)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    '$unreadNotifications',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        IconButton(
+          icon: const Icon(Icons.person),
+          onPressed: () {
+            _showProfileSettings(context);
+          },
+        ),
+        IconButton(
+          icon: const Icon(Icons.logout),
+          onPressed: () {
+            _showLogoutConfirmation(context);
+          },
+          tooltip: "Logout",
+        ),
+      ],
+    ),
+    body: ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        // ✅ UPDATED: Summary Cards in One Row
+        Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  debugPrint("Tapped Total Products");
+                },
+                child: _buildSummaryCard(
+                  "Total Products",
+                  "$totalProducts",
+                  Icons.inventory,
+                  Colors.blue,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  debugPrint("Tapped Pending Orders");
+                },
+                child: _buildSummaryCard(
+                  "Pending Orders",
+                  "$pendingOrders",
+                  Icons.shopping_cart,
+                  Colors.orange,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  debugPrint("Tapped Stock Alerts");
+                },
+                child: _buildSummaryCard(
+                  "Stock Alerts",
+                  "$stockAlerts",
+                  Icons.warning,
+                  Colors.red,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  debugPrint("Tapped VAT Reward");
+                },
+                child: _buildSummaryCard(
+                  "VAT Reward",
+                  vatRewardStatus,
+                  Icons.card_giftcard,
+                  Colors.green,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 24),
+
+        // Tab Content
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              _buildInventoryTab(),
+              _buildOrdersTab(),
+              _buildChatTab(),
+              _buildPricesTab(),
+              _buildOffersTab(),
+            ],
+          ),
+        ),
+      ],
+    ),
+    bottomNavigationBar: Material(
+      color: Colors.white,
+      elevation: 8,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              // ignore: deprecated_member_use
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 5,
+              offset: const Offset(0, -1),
+            ),
+          ],
+        ),
+        child: TabBar(
+          controller: _tabController,
+          isScrollable: false,
+          labelColor: Colors.green[600],
+          unselectedLabelColor: Colors.grey,
+          indicatorColor: Colors.green[600],
+          tabs: const [
+            Tab(icon: Icon(Icons.inventory), text: "Inventory"),
+            Tab(icon: Icon(Icons.shopping_cart), text: "Orders"),
+            Tab(icon: Icon(Icons.chat), text: "Chat"),
+            Tab(icon: Icon(Icons.price_check), text: "Prices"),
+            Tab(icon: Icon(Icons.local_offer), text: "Offers"),
+          ],
+        ),
+      ),
+    ),
+    floatingActionButton: FloatingActionButton.extended(
+      onPressed: () {
+        _showQuickActions(context);
+      },
+      backgroundColor: Colors.green[600],
+      icon: const Icon(Icons.add, color: Colors.white),
+      label: const Text(
+        "Quick Add",
+        style: TextStyle(color: Colors.white),
+      ),
+    ),
+  );
+}
+
+//--------------------------tush---------------
+/*
+  Widget _buildSummaryCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -230,7 +443,8 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
               const Spacer(),
               if (title == "Stock Alerts" && stockAlerts > 0)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.red,
                     borderRadius: BorderRadius.circular(10),
@@ -263,6 +477,71 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
       ),
     );
   }
+
+*/
+
+
+Widget _buildSummaryCard(
+    String title, String value, IconData icon, Color color) {
+  return Container(
+    padding: const EdgeInsets.all(12), // reduced padding
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10), // slightly smaller corners
+      boxShadow: [
+        BoxShadow(
+          // ignore: deprecated_member_use
+          color: Colors.grey.withOpacity(0.1),
+          spreadRadius: 1,
+          blurRadius: 2,
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, color: color, size: 20), // smaller icon
+            const Spacer(),
+            if (title == "Stock Alerts" && stockAlerts > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  "!",
+                  style: TextStyle(color: Colors.white, fontSize: 10),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 1), // reduced spacing
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 15, // slightly smaller
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11, // slightly smaller
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+
+//-----------------------------------------------
 
   Widget _buildInventoryTab() {
     return Padding(
@@ -302,14 +581,34 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
 
   Widget _buildProductCard(int index) {
     final products = [
-      {"name": "চাল সরু (নাজির/মিনিকেট)", "quantity": 50, "price": 80, "lowStock": false},
-      {"name": "সয়াবিন তেল (পিউর)", "quantity": 5, "price": 170, "lowStock": true},
+      {
+        "name": "চাল সরু (নাজির/মিনিকেট)",
+        "quantity": 50,
+        "price": 80,
+        "lowStock": false
+      },
+      {
+        "name": "সয়াবিন তেল (পিউর)",
+        "quantity": 5,
+        "price": 170,
+        "lowStock": true
+      },
       {"name": "মসুর ডাল", "quantity": 25, "price": 120, "lowStock": false},
       {"name": "পেঁয়াজ (দেশি)", "quantity": 3, "price": 55, "lowStock": true},
-      {"name": "গমের আটা (প্রিমিয়াম)", "quantity": 30, "price": 48, "lowStock": false},
+      {
+        "name": "গমের আটা (প্রিমিয়াম)",
+        "quantity": 30,
+        "price": 48,
+        "lowStock": false
+      },
       {"name": "রুই মাছ", "quantity": 15, "price": 375, "lowStock": false},
       {"name": "গরুর দুধ", "quantity": 2, "price": 65, "lowStock": true},
-      {"name": "চাল মোটা (পাইলস)", "quantity": 40, "price": 60, "lowStock": false},
+      {
+        "name": "চাল মোটা (পাইলস)",
+        "quantity": 40,
+        "price": 60,
+        "lowStock": false
+      },
     ];
 
     final product = products[index];
@@ -337,14 +636,16 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
             if (isLowStock)
               const Text(
                 "⚠️ Low Stock",
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                style:
+                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
               ),
           ],
         ),
         trailing: PopupMenuButton(
           itemBuilder: (context) => [
             const PopupMenuItem(value: "edit", child: Text("Edit")),
-            const PopupMenuItem(value: "toggle", child: Text("Toggle Visibility")),
+            const PopupMenuItem(
+                value: "toggle", child: Text("Toggle Visibility")),
             const PopupMenuItem(value: "delete", child: Text("Delete")),
           ],
           onSelected: (value) {
@@ -383,7 +684,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // Action Buttons
           Row(
             children: [
@@ -417,7 +718,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
             ],
           ),
           const SizedBox(height: 16),
-          
+
           Expanded(
             child: ListView.builder(
               itemCount: 5,
@@ -433,21 +734,51 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
 
   Widget _buildOrderCard(int index) {
     final orders = [
-      {"customer": "আহমেদ সাহেব", "item": "চাল সরু", "quantity": 5, "time": "10:30 AM", "status": "Pending"},
-      {"customer": "ফাতিমা বেগম", "item": "সয়াবিন তেল", "quantity": 2, "time": "11:15 AM", "status": "Confirmed"},
-      {"customer": "করিম উদ্দিন", "item": "মসুর ডাল", "quantity": 3, "time": "12:00 PM", "status": "Pending"},
-      {"customer": "রহিমা খাতুন", "item": "পেঁয়াজ", "quantity": 10, "time": "01:30 PM", "status": "Delivered"},
-      {"customer": "নাসির সাহেব", "item": "গমের আটা", "quantity": 2, "time": "02:15 PM", "status": "Rejected"},
+      {
+        "customer": "আহমেদ সাহেব",
+        "item": "চাল সরু",
+        "quantity": 5,
+        "time": "10:30 AM",
+        "status": "Pending"
+      },
+      {
+        "customer": "ফাতিমা বেগম",
+        "item": "সয়াবিন তেল",
+        "quantity": 2,
+        "time": "11:15 AM",
+        "status": "Confirmed"
+      },
+      {
+        "customer": "করিম উদ্দিন",
+        "item": "মসুর ডাল",
+        "quantity": 3,
+        "time": "12:00 PM",
+        "status": "Pending"
+      },
+      {
+        "customer": "রহিমা খাতুন",
+        "item": "পেঁয়াজ",
+        "quantity": 10,
+        "time": "01:30 PM",
+        "status": "Delivered"
+      },
+      {
+        "customer": "নাসির সাহেব",
+        "item": "গমের আটা",
+        "quantity": 2,
+        "time": "02:15 PM",
+        "status": "Rejected"
+      },
     ];
 
     final order = orders[index];
     final status = order["status"] as String;
-    
+
     // Define colors and background for different statuses
     Color statusColor;
     Color backgroundColor;
     IconData statusIcon;
-    
+
     switch (status) {
       case "Pending":
         statusColor = Colors.orange[700]!;
@@ -537,7 +868,8 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
                     child: IconButton(
                       icon: const Icon(Icons.check, color: Colors.white),
                       onPressed: () {
-                        _showConfirmOrderDialog(order["customer"] as String, order);
+                        _showConfirmOrderDialog(
+                            order["customer"] as String, order);
                       },
                       tooltip: "Confirm Order",
                     ),
@@ -551,7 +883,8 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
                     child: IconButton(
                       icon: const Icon(Icons.close, color: Colors.white),
                       onPressed: () {
-                        _showRejectOrderDialog(order["customer"] as String, order);
+                        _showRejectOrderDialog(
+                            order["customer"] as String, order);
                       },
                       tooltip: "Reject Order",
                     ),
@@ -560,7 +893,8 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
               )
             : status == "Confirmed"
                 ? Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.blue[100],
                       borderRadius: BorderRadius.circular(12),
@@ -608,7 +942,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Recent Chats Preview
           Container(
             padding: const EdgeInsets.all(12),
@@ -633,7 +967,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           Expanded(
             child: ListView.builder(
               itemCount: 4,
@@ -649,10 +983,22 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
 
   Widget _buildWholesalerCard(int index) {
     final wholesalers = [
-      {"name": "রহমান ট্রেডার্স", "unread": 2, "lastMessage": "নতুন দামের তালিকা আপডেট"},
-      {"name": "করিম এন্টারপ্রাইজ", "unread": 0, "lastMessage": "অর্ডার কনফার্ম করেছি"},
+      {
+        "name": "রহমান ট্রেডার্স",
+        "unread": 2,
+        "lastMessage": "নতুন দামের তালিকা আপডেট"
+      },
+      {
+        "name": "করিম এন্টারপ্রাইজ",
+        "unread": 0,
+        "lastMessage": "অর্ডার কনফার্ম করেছি"
+      },
       {"name": "আলম ইমপোর্ট", "unread": 1, "lastMessage": "স্টক আভেইলেবল আছে"},
-      {"name": "নিউ সুন্দরবন", "unread": 3, "lastMessage": "আগামীকাল ডেলিভারি দেব"},
+      {
+        "name": "নিউ সুন্দরবন",
+        "unread": 3,
+        "lastMessage": "আগামীকাল ডেলিভারি দেব"
+      },
     ];
 
     final wholesaler = wholesalers[index];
@@ -745,11 +1091,23 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
 
   Widget _buildPriceCard(int index) {
     final prices = [
-      {"product": "চাল সরু (নাজির/মিনিকেট)", "price": "৳78-82/কেজি", "category": "চাল"},
-      {"product": "সয়াবিন তেল (পিউর)", "price": "৳165-175/লিটার", "category": "তেল"},
+      {
+        "product": "চাল সরু (নাজির/মিনিকেট)",
+        "price": "৳78-82/কেজি",
+        "category": "চাল"
+      },
+      {
+        "product": "সয়াবিন তেল (পিউর)",
+        "price": "৳165-175/লিটার",
+        "category": "তেল"
+      },
       {"product": "মসুর ডাল", "price": "৳115-125/কেজি", "category": "ডাল"},
       {"product": "পেঁয়াজ (দেশি)", "price": "৳50-60/কেজি", "category": "সবজি"},
-      {"product": "গমের আটা (প্রিমিয়াম)", "price": "৳45-50/কেজি", "category": "আটা"},
+      {
+        "product": "গমের আটা (প্রিমিয়াম)",
+        "price": "৳45-50/কেজি",
+        "category": "আটা"
+      },
       {"product": "গরুর দুধ", "price": "৳60-70/লিটার", "category": "দুগ্ধজাত"},
     ];
 
@@ -1035,7 +1393,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
       '/login',
       (Route<dynamic> route) => false,
     );
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Logged out successfully"),
@@ -1097,7 +1455,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
         builder: (context) => const AddProductScreen(),
       ),
     );
-    
+
     if (result == true) {
       // Refresh the dashboard data
       setState(() {
@@ -1110,19 +1468,40 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
 
   void _handleProductAction(String action, String productName) async {
     final products = [
-      {"name": "চাল সরু (নাজির/মিনিকেট)", "quantity": 50, "price": 80, "lowStock": false},
-      {"name": "সয়াবিন তেল (পিউর)", "quantity": 5, "price": 170, "lowStock": true},
+      {
+        "name": "চাল সরু (নাজির/মিনিকেট)",
+        "quantity": 50,
+        "price": 80,
+        "lowStock": false
+      },
+      {
+        "name": "সয়াবিন তেল (পিউর)",
+        "quantity": 5,
+        "price": 170,
+        "lowStock": true
+      },
       {"name": "মসুর ডাল", "quantity": 25, "price": 120, "lowStock": false},
       {"name": "পেঁয়াজ (দেশি)", "quantity": 3, "price": 55, "lowStock": true},
-      {"name": "গমের আটা (প্রিমিয়াম)", "quantity": 30, "price": 48, "lowStock": false},
+      {
+        "name": "গমের আটা (প্রিমিয়াম)",
+        "quantity": 30,
+        "price": 48,
+        "lowStock": false
+      },
       {"name": "রুই মাছ", "quantity": 15, "price": 375, "lowStock": false},
       {"name": "গরুর দুধ", "quantity": 2, "price": 65, "lowStock": true},
-      {"name": "চাল মোটা (পাইলস)", "quantity": 40, "price": 60, "lowStock": false},
+      {
+        "name": "চাল মোটা (পাইলস)",
+        "quantity": 40,
+        "price": 60,
+        "lowStock": false
+      },
     ];
 
     final product = products.firstWhere(
       (p) => p['name'] == productName,
-      orElse: () => {"name": productName, "quantity": 0, "price": 0, "lowStock": false},
+      orElse: () =>
+          {"name": productName, "quantity": 0, "price": 0, "lowStock": false},
     );
 
     if (action == "edit") {
@@ -1132,11 +1511,12 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
           builder: (context) => UpdateProductScreen(product: product),
         ),
       );
-      
+
       if (result != null) {
         if (result == 'deleted') {
           setState(() {
-            totalProducts = (totalProducts - 1).clamp(0, double.infinity).toInt();
+            totalProducts =
+                (totalProducts - 1).clamp(0, double.infinity).toInt();
           });
         } else {
           // Product was updated
@@ -1238,7 +1618,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
 
   void _showRejectOrderDialog(String customer, Map<String, dynamic> order) {
     final TextEditingController reasonController = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1336,7 +1716,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
     setState(() {
       pendingOrders = (pendingOrders - 1).clamp(0, double.infinity).toInt();
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -1361,11 +1741,12 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
     );
   }
 
-  void _rejectOrder(String customer, Map<String, dynamic> order, String reason) {
+  void _rejectOrder(
+      String customer, Map<String, dynamic> order, String reason) {
     setState(() {
       pendingOrders = (pendingOrders - 1).clamp(0, double.infinity).toInt();
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -1404,7 +1785,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
   void _openChatWithWholesaler(String wholesaler) {
     // Extract the first character for the avatar
     final initial = wholesaler.isNotEmpty ? wholesaler[0] : 'W';
-    
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -1442,13 +1823,17 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildStatRow("Pending Orders", "3", Colors.orange, Icons.access_time),
-            _buildStatRow("Confirmed Orders", "1", Colors.blue, Icons.check_circle),
-            _buildStatRow("Delivered Orders", "1", Colors.green, Icons.delivery_dining),
+            _buildStatRow(
+                "Pending Orders", "3", Colors.orange, Icons.access_time),
+            _buildStatRow(
+                "Confirmed Orders", "1", Colors.blue, Icons.check_circle),
+            _buildStatRow(
+                "Delivered Orders", "1", Colors.green, Icons.delivery_dining),
             _buildStatRow("Rejected Orders", "1", Colors.red, Icons.cancel),
             const Divider(),
             _buildStatRow("Total Today", "6", Colors.purple, Icons.today),
-            _buildStatRow("Success Rate", "83%", Colors.green, Icons.trending_up),
+            _buildStatRow(
+                "Success Rate", "83%", Colors.green, Icons.trending_up),
           ],
         ),
         actions: [
@@ -1461,7 +1846,8 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
               Navigator.pop(context);
               // TODO: Navigate to detailed analytics
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Detailed analytics - Coming Soon!")),
+                const SnackBar(
+                    content: Text("Detailed analytics - Coming Soon!")),
               );
             },
             style: ElevatedButton.styleFrom(

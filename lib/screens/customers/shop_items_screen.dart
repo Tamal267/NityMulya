@@ -43,7 +43,7 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
         "low": 75,
         "high": 85,
         "category": "চাল",
-        "image": "assets/images/im_1.jpg",
+        "image": "assets/image/1.jpg",
         "description": "উন্নত মানের সরু চাল। রান্নার পর ঝরঝরে এবং স্বাদযুক্ত।",
         "availability": "In Stock",
       },
@@ -53,7 +53,7 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
         "low": 55,
         "high": 65,
         "category": "চাল",
-        "image": "assets/images/im_2.jpg",
+        "image": "assets/image/2.jpg",
         "description": "মোটা ধানের চাল। পুষ্টিকর এবং সাশ্রয়ী।",
         "availability": "In Stock",
       },
@@ -63,8 +63,9 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
         "low": 45,
         "high": 50,
         "category": "আটা ও ময়দা",
-        "image": "assets/images/im_3.jpg",
-        "description": "প্রিমিয়াম মানের গমের আটা। রুটি এবং পরোটার জন্য উপযুক্ত।",
+        "image": "assets/image/6.jpg",
+        "description":
+            "প্রিমিয়াম মানের গমের আটা। রুটি এবং পরোটার জন্য উপযুক্ত।",
         "availability": "In Stock",
       },
       "সয়াবিন তেল (পিউর)": {
@@ -73,7 +74,7 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
         "low": 160,
         "high": 175,
         "category": "তেল",
-        "image": "assets/images/im_4.jpg",
+        "image": "assets/image/10.jpg",
         "description": "বিশুদ্ধ সয়াবিন তেল। রান্নার জন্য স্বাস্থ্যকর।",
         "availability": "In Stock",
       },
@@ -83,7 +84,7 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
         "low": 115,
         "high": 125,
         "category": "ডাল",
-        "image": "assets/images/im_5.jpg",
+        "image": "assets/image/4.jpg",
         "description": "উন্নত মানের মসুর ডাল। প্রোটিনের ভালো উৎস।",
         "availability": "In Stock",
       },
@@ -93,7 +94,7 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
         "low": 50,
         "high": 60,
         "category": "সবজি ও মসলা",
-        "image": "assets/images/im_6.jpg",
+        "image": "assets/image/5.jpg",
         "description": "তাজা দেশি পেঁয়াজ। রান্নার জন্য অপরিহার্য।",
         "availability": "In Stock",
       },
@@ -103,7 +104,7 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
         "low": 350,
         "high": 400,
         "category": "মাছ ও গোশত",
-        "image": "assets/images/im_7.jpg",
+        "image": "assets/image/10.jpg",
         "description": "তাজা রুই মাছ। প্রোটিনের চমৎকার উৎস।",
         "availability": "In Stock",
       },
@@ -113,22 +114,23 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
         "low": 60,
         "high": 70,
         "category": "দুধ",
-        "image": "assets/images/im_8.jpg",
+        "image": "assets/image/11.jpg",
         "description": "বিশুদ্ধ গরুর দুধ। ক্যালসিয়াম এবং প্রোটিনে ভরপুর।",
         "availability": "In Stock",
       },
     };
 
-    return productData[productName] ?? {
-      "title": productName,
-      "unit": "প্রতি কেজি",
-      "low": 50,
-      "high": 60,
-      "category": "অন্যান্য",
-      "image": "assets/images/placeholder.jpg",
-      "description": "পণ্যের বিবরণ উপলব্ধ নেই।",
-      "availability": "In Stock",
-    };
+    return productData[productName] ??
+        {
+          "title": productName,
+          "unit": "প্রতি কেজি",
+          "low": 50,
+          "high": 60,
+          "category": "অন্যান্য",
+          "image": "assets/image/6.jpg",
+          "description": "পণ্যের বিবরণ উপলব্ধ নেই।",
+          "availability": "In Stock",
+        };
   }
 
   List<Map<String, dynamic>> get filteredProducts {
@@ -136,9 +138,8 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
       return shopProducts;
     }
     return shopProducts
-        .where((product) => product["title"]
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase()))
+        .where((product) =>
+            product["title"].toLowerCase().contains(searchQuery.toLowerCase()))
         .toList();
   }
 
@@ -255,7 +256,7 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
               ],
             ),
           ),
-          
+
           // Search Bar
           Padding(
             padding: const EdgeInsets.all(16),
@@ -288,7 +289,7 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
               ),
             ),
           ),
-          
+
           // Products Grid
           Expanded(
             child: filteredProducts.isEmpty
@@ -316,7 +317,8 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
                   )
                 : GridView.builder(
                     padding: const EdgeInsets.all(16),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       crossAxisSpacing: 12,
                       mainAxisSpacing: 12,
@@ -357,7 +359,8 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
                                     child: Image.asset(
                                       product["image"],
                                       fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) {
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
                                         return Container(
                                           color: Colors.grey[200],
                                           child: const Center(
@@ -378,7 +381,8 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         product["title"],
