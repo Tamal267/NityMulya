@@ -28,8 +28,9 @@ class NitiMulyaApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const AdminPage(),
-        '/WelcomeScreen': (context) => const WelcomeScreen(),
+        //'/': (context) => const AdminPage(),
+        '/': (context) => const WelcomeScreen(),
+        //'/WelcomeScreen': (context) => const WelcomeScreen(),
         // '/': (context) => const WholesalerDashboardScreen(),
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
