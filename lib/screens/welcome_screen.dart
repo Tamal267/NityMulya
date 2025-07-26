@@ -538,6 +538,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         .toList();
   }
 
+
+
 //-----------------------------------Mithila --------------------//
   @override
   void initState() {
@@ -594,7 +596,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
 //---------Mithila----------
 
-  Widget buildDrawer() {
+   Widget buildDrawer() {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero, // Remove default padding
@@ -688,44 +690,44 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   @override
   Widget build(BuildContext context) {
     if (showSplash) {
-      return Scaffold(
-        backgroundColor: Colors.green.shade100,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Circular image with border
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.green.shade800, // Border color
-                    width: 3.0, // Border width
-                  ),
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/image/logo.jpeg',
-                    height: 150, // Adjust size as needed
-                    width: 150,
-                    fit: BoxFit.cover, // Ensures the image fills the circle
-                  ),
+    return Scaffold(
+      backgroundColor: Colors.green.shade100,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Circular image with border
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.green.shade800, // Border color
+                  width: 3.0, // Border width
                 ),
               ),
-              SizedBox(height: 20),
-              Text(
-                "Welcome to NityMulya App!",
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green.shade800,
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/image/logo.jpeg',
+                  height: 150, // Adjust size as needed
+                  width: 150,
+                  fit: BoxFit.cover, // Ensures the image fills the circle
                 ),
               ),
-            ],
-          ),
+            ),
+            SizedBox(height: 20),
+            Text(
+              "Welcome to NityMulya App!",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.green.shade800,
+              ),
+            ),
+          ],
         ),
-      );
-    }
+      ),
+    );
+  }
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -956,29 +958,26 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           ],
         ),
 
-        //  bottomNavigationBar: const GlobalBottomNav(currentIndex: 0),
-        //----------Mithila---------//
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0, // Current selected index
-          selectedItemColor:
-              const Color(0xFF079b11), // Green color for selected tab
-          unselectedItemColor: Colors.grey, // Grey for unselected tabs
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shops'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite), label: 'Favorites'),
-          ],
-          onTap: (index) {
-            if (index == 1 || index == 2) {
-              // Both Shops and Favorites tabs
-              _handleRestrictedAction();
-            }
-            // Home tab (index 0) does nothing since we're already there
-          },
-        ),
+      //  bottomNavigationBar: const GlobalBottomNav(currentIndex: 0),
+       //----------Mithila---------//
+       bottomNavigationBar: BottomNavigationBar(
+  currentIndex: 0, // Current selected index
+  selectedItemColor: const Color(0xFF079b11), // Green color for selected tab
+  unselectedItemColor: Colors.grey, // Grey for unselected tabs
+  items: const [
+    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+    BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shops'),
+    BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
+  ],
+  onTap: (index) {
+    if (index == 1 || index == 2) { // Both Shops and Favorites tabs
+      _handleRestrictedAction();
+    }
+    // Home tab (index 0) does nothing since we're already there
+  },
+),
+        
       ),
     );
   }
 }
-//tush
