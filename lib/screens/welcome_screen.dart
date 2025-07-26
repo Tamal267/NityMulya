@@ -42,56 +42,437 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     "দুধ"
   ];
 
+//----------Sakif-------------------------------------------------///
+
   final List<Map<String, dynamic>> products = [
     {
-      "title": "চাল",
-      "unit": "কেজি",
+      "title": "চাল সরু (নাজির/মিনিকেট)",
+      "unit": "প্রতি কেজি",
+      "low": 75,
+      "high": 85,
+      "image": "assets/image/1.jpg",
+      "category": "চাল সরু (নাজির/মিনিকেট)"
+    },
+    {
+      "title": "চাল (মাঝারী)পাইজাম/আটাশ )",
+      "unit": "প্রতি কেজি",
+      "low": 60,
+      "high": 70,
+      "image": "assets/image/1.jpg",
+      "category": "চাল (মাঝারী)পাইজাম/আটাশ)"
+    },
+    {
+      "title": "চাল (মোটা)/স্বর্ণা/চায়না ইরি",
+      "unit": "প্রতি কেজি",
+      "low": 55,
+      "high": 60,
+      "image": "assets/image/1.jpg",
+      "category": "চাল (মোটা)/স্বর্ণা/চায়না ইরি"
+    },
+
+    {
+      "title": "আটা সাদা (খোলা)",
+      "unit": "প্রতি কেজি",
+      "low": 40,
+      "high": 45,
+      "image": "assets/image/2.jpg",
+      "category": "আটা সাদা (খোলা)"
+    },
+
+    {
+      "title": "আটা (প্যাকেট)",
+      "unit": "প্রতি কেজি প্যাঃ",
       "low": 50,
       "high": 55,
-      "image": "assets/image/1.jpg",
-      "category": "চাল"
-    },
-    {
-      "title": "আটা ও ময়দা",
-      "unit": "কেজি",
-      "low": 30,
-      "high": 35,
       "image": "assets/image/2.jpg",
-      "category": "আটা ও ময়দা"
+      "category": "আটা (প্যাকেট)"
     },
     {
-      "title": "তেল",
-      "unit": "লিটার",
-      "low": 120,
-      "high": 130,
+      "title": "ময়দা (খোলা)",
+      "unit": "প্রতি কেজি",
+      "low": 50,
+      "high": 60,
+      "image": "assets/image/2.jpg",
+      "category": "ময়দা (খোলা)"
+    },
+
+    {
+      "title": "ময়দা (প্যাকেট)",
+      "unit": "প্রতি কেজি প্যাঃ",
+      "low": 50,
+      "high": 60,
+      "image": "assets/image/2.jpg",
+      "category": "ময়দা (প্যাকেট)"
+    },
+    {
+      "title": "সয়াবিন তেল (লুজ)",
+      "unit": "১ লিটার",
+      "low": 162,
+      "high": 170,
       "image": "assets/image/14.jpg",
-      "category": "তেল"
+      "category": "সয়াবিন তেল (লুজ)"
+    },
+
+    {
+      "title": "সয়াবিন তেল (বোতল)",
+      "unit": "5 লিটার",
+      "low": 890,
+      "high": 920,
+      "image": "assets/image/14.jpg",
+      "category": "সয়াবিন তেল (বোতল)"
     },
     {
-      "title": "ডাল",
-      "unit": "কেজি",
-      "low": 70,
-      "high": 75,
+      "title": "সয়াবিন তেল (বোতল)",
+      "unit": "2 লিটার)",
+      "low": 370,
+      "high": 378,
+      "image": "assets/image/14.jpg",
+      "category": "সয়াবিন তেল (বোতল)"
+    },
+    {
+      "title": "সয়াবিন তেল (বোতল)",
+      "unit": "১ লিটার",
+      "low": 185,
+      "high": 190,
+      "image": "assets/image/14.jpg",
+      "category": "সয়াবিন তেল (বোতল)"
+    },
+    {
+      "title": "পাম অয়েল (লুজ)",
+      "unit": "প্রতি লিটার",
+      "low": 150,
+      "high": 155,
+      "image": "assets/image/14.jpg",
+      "category": "পাম অয়েল (লুজ)"
+    },
+    {
+      "title": "সুপার পাম অয়েল (লুজ)",
+      "unit": "প্রতি লিটার",
+      "low": 152,
+      "high": 155,
+      "image": "assets/image/14.jpg",
+      "category": "সুপার পাম অয়েল (লুজ)"
+    },
+    {
+      "title": "রাইস ব্রান তেল (বোতল)",
+      "unit": "৫ লিটার",
+      "low": 1030,
+      "high": 1080,
+      "image": "assets/image/14.jpg",
+      "category": "রাইস ব্রান তেল (বোতল)"
+    },
+
+    {
+      "title": "মশুর ডাল (বড় দানা)  ",
+      "unit": "প্রতি কেজি",
+      "low": 95,
+      "high": 110,
       "image": "assets/image/3.jpg",
-      "category": "ডাল"
+      "category": "মশুর ডাল (বড় দানা)"
     },
     {
-      "title": "সবজি ও মসলা",
-      "unit": "",
-      "low": 20,
-      "high": 25,
+      "title": "মশুর ডাল (মাঝারী দানা)",
+      "unit": "প্রতি কেজি",
+      "low": 105,
+      "high": 120,
+      "image": "assets/image/3.jpg",
+      "category": "মশুর ডাল (মাঝারী দানা)"
+    },
+    {
+      "title": "মশুর ডাল (ছোট দানা)",
+      "unit": "প্রতি কেজি",
+      "low": 130,
+      "high": 140,
+      "image": "assets/image/3.jpg",
+      "category": "মশুর ডাল (ছোট দানা)"
+    },
+    {
+      "title": "মুগ ডাল (মানভেদে)",
+      "unit": "প্রতি কেজি",
+      "low": 110,
+      "high": 180,
+      "image": "assets/image/3.jpg",
+      "category": "মুগ ডাল (মানভেদে)"
+    },
+    {
+      "title": "এ্যাংকর ডাল",
+      "unit": "প্রতি কেজি ",
+      "low": 55,
+      "high": 80,
+      "image": "assets/image/3.jpg",
+      "category": "এ্যাংকর ডাল"
+    },
+    {
+      "title": "ছোলা (মানভেদে)",
+      "unit": "প্রতি কেজি",
+      "low": 90,
+      "high": 110,
+      "image": "assets/image/3.jpg",
+      "category": "ছোলা (মানভেদে)"
+    },
+    {
+      "title": "আলু (মানভেদে)",
+      "unit": "প্রতি কেজি",
+      "low": 25,
+      "high": 30,
+      "image": "assets/image/3.jpg",
+      "category": "আলু (মানভেদে)"
+    },
+    {
+      "title": "পিঁয়াজ (দেশী)",
+      "unit": "প্রতি কেজি",
+      "low": 55,
+      "high": 65,
       "image": "assets/image/4.jpg",
-      "category": "সবজি ও মসলা"
+      "category": "পিঁয়াজ (দেশী)"
     },
     {
-      "title": "মাছ ও গোশত",
-      "unit": "",
-      "low": 200,
-      "high": 250,
-      "image": "assets/image/5.jpg",
-      "category": "মাছ ও গোশত"
+      "title": "পিঁয়াজ (আমদানি)",
+      "unit": "প্রতি কেজি",
+      "low": "",
+      "high": "",
+      "image": "assets/image/4.jpg",
+      "category": "পিঁয়াজ (আমদানি)"
     },
+    {
+      "title": " রসুন (দেশী)",
+      "unit": "প্রতি কেজি",
+      "low": 100,
+      "high": 150,
+      "image": "assets/image/4.jpg",
+      "category": "রসুন (দেশী)"
+    },
+    {
+      "title": "রসুন (আমদানি)",
+      "unit": "প্রতি কেজি",
+      "low": 160,
+      "high": 200,
+      "image": "assets/image/4.jpg",
+      "category": "রসুন (আমদানি)"
+    },
+    {
+      "title": "শুকনা মরিচ (দেশী)  ",
+      "unit": "প্রতি কেজি",
+      "low": 240,
+      "high": 350,
+      "image": "assets/image/4.jpg",
+      "category": "শুকনা মরিচ (দেশী)"
+    },
+    {
+      "title": "শুকনা মরিচ (আমদানি)",
+      "unit": "প্রতি কেজি ",
+      "low": 300,
+      "high": 450,
+      "image": "assets/image/4.jpg",
+      "category": "শুকনা মরিচ (আমদানি)"
+    },
+    {
+      "title": "হলুদ (দেশী)",
+      "unit": "প্রতি কেজি",
+      "low": 300,
+      "high": 400,
+      "image": "assets/image/4.jpg",
+      "category": "হলুদ (দেশী)"
+    },
+    {
+      "title": "হলুদ (আমদানি)",
+      "unit": "প্রতি কেজি",
+      "low": 300,
+      "high": 420,
+      "image": "assets/image/4.jpg",
+      "category": "হলুদ (আমদানি)"
+    },
+    {
+      "title": "আদা (দেশী)",
+      "unit": "প্রতি কেজি",
+      "low": "",
+      "high": "",
+      "image": "assets/image/4.jpg",
+      "category": "আদা (দেশী)"
+    },
+    {
+      "title": "আদা (আমদানি)",
+      "unit": "প্রতি কেজি",
+      "low": 120,
+      "high": 180,
+      "image": "assets/image/4.jpg",
+      "category": "আদা (আমদানি)"
+    },
+    {
+      "title": "জিরা",
+      "unit": "প্রতি কেজি",
+      "low": 600,
+      "high": 750,
+      "image": "assets/image/4.jpg",
+      "category": "জিরা"
+    },
+    {
+      "title": "দারুচিনি",
+      "unit": "প্রতি কেজি",
+      "low": 500,
+      "high": 600,
+      "image": "assets/image/4.jpg",
+      "category": "দারুচিনি"
+    },
+    {
+      "title": "লবঙ্গ",
+      "unit": "প্রতি কেজি",
+      "low": 1400,
+      "high": 1600,
+      "image": "assets/image/4.jpg",
+      "category": "লবঙ্গ"
+    },
+    {
+      "title": "এলাচ(ছোট)",
+      "unit": "প্রতি কেজি",
+      "low": 4400,
+      "high": 5200,
+      "image": "assets/image/4.jpg",
+      "category": "এলাচ(ছোট)"
+    },
+    {
+      "title": "ধনে পাতা",
+      "unit": "প্রতি কেজি",
+      "low": 180,
+      "high": 280,
+      "image": "assets/image/4.jpg",
+      "category": "ধনে পাতা"
+    },
+    {
+      "title": "তেজপাতা",
+      "unit": "প্রতি কেজি",
+      "low": 180,
+      "high": 220,
+      "image": "assets/image/4.jpg",
+      "category": "তেজপাতা"
+    },
+
+    {
+      "title": "রুই  মাছ",
+      "unit": "প্রতি কেজি",
+      "low": 300,
+      "high": 450,
+      "image": "assets/image/5.jpg",
+      "category": "রুই মাছ"
+    },
+    {
+      "title": "ইলিশ মাছ",
+      "unit": "প্রতি কেজি",
+      "low": 1000,
+      "high": 2000,
+      "image": "assets/image/5.jpg",
+      "category": "ইলিশ মাছ"
+    },
+    {
+      "title": "গরু গোশত",
+      "unit": "প্রতি কেজি",
+      "low": 750,
+      "high": 800,
+      "image": "assets/image/5.jpg",
+      "category": "গরু গোশত"
+    },
+    {
+      "title": "খাসী গোশত",
+      "unit": "প্রতি কেজি",
+      "low": 1100,
+      "high": 1250,
+      "image": "assets/image/5.jpg",
+      "category": "খাসী গোশত"
+    },
+    {
+      "title": "মুরগী(ব্রয়লার)",
+      "unit": "প্রতি কেজি",
+      "low": 150,
+      "high": 170,
+      "image": "assets/image/5.jpg",
+      "category": "মুরগী(ব্রয়লার)"
+    },
+    {
+      "title": "মুরগী (দেশী)",
+      "unit": "প্রতি কেজি",
+      "low": 580,
+      "high": 700,
+      "image": "assets/image/5.jpg",
+      "category": "মুরগী (দেশী)"
+    },
+    {
+      "title": "ডানো",
+      "unit": "প্রতি কেজি",
+      "low": 720,
+      "high": 860,
+      "image": "assets/image/5.jpg",
+      "category": "ডানো"
+    },
+    {
+      "title": "ডিপ্লোমা (নিউজিল্যান্ড)",
+      "unit": "প্রতি কেজি",
+      "low": 840,
+      "high": 910,
+      "image": "assets/image/5.jpg",
+      "category": "ডিপ্লোমা (নিউজিল্যান্ড)"
+    },
+    {
+      "title": "ফ্রেশ",
+      "unit": "প্রতি কেজি",
+      "low": 830,
+      "high": 890,
+      "image": "assets/image/5.jpg",
+      "category": "ফ্রেশ"
+    },
+    {
+      "title": "মার্কস",
+      "unit": "প্রতি কেজি",
+      "low": 830,
+      "high": 900,
+      "image": "assets/image/5.jpg",
+      "category": "মার্কস"
+    },
+    {
+      "title": "চিনি",
+      "unit": "প্রতি কেজি",
+      "low": 105,
+      "high": 115,
+      "image": "assets/image/5.jpg",
+      "category": "চিনি"
+    },
+    {
+      "title": "খেজুর(সাধারণ মানের)",
+      "unit": "প্রতি কেজি",
+      "low": 250,
+      "high": 550,
+      "image": "assets/image/5.jpg",
+      "category": "খেজুর(সাধারণ মানের)"
+    },
+    {
+      "title": "লবণ(প্যাঃ)আয়োডিনযুক্ত",
+      "unit": "প্রতি কেজি",
+      "low": 38,
+      "high": 42,
+      "image": "assets/image/5.jpg",
+      "category": "লবণ(প্যাঃ)আয়োডিনযুক্ত"
+    },
+    {
+      "title": "ডিম (ফার্ম)",
+      "unit": "প্রতি হালি",
+      "low": 38,
+      "high": 46,
+      "image": "assets/image/5.jpg",
+      "category": "ডিম (ফার্ম)"
+    },
+
+    {
+      "title": "লেখার কাগজ(সাদা)",
+      "unit": "প্রতি দিস্তা",
+      "low": 30,
+      "high": 40,
+      "image": "assets/image/5.jpg",
+      "category": "লেখার কাগজ(সাদা)"
+    },
+
+//Pubsecx - assets/image/Sakif/14.jpg
   ];
+
+//----------Sakif-------------------------------------------------///
 
   List<Map<String, dynamic>> get filteredProducts {
     if (selectedCategory == "All") return products;
