@@ -958,8 +958,24 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           ],
         ),
 
-        bottomNavigationBar: const GlobalBottomNav(currentIndex: 0),
-
+      //  bottomNavigationBar: const GlobalBottomNav(currentIndex: 0),
+       //----------Mithila---------//
+       bottomNavigationBar: BottomNavigationBar(
+  currentIndex: 0, // Current selected index
+  selectedItemColor: const Color(0xFF079b11), // Green color for selected tab
+  unselectedItemColor: Colors.grey, // Grey for unselected tabs
+  items: const [
+    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+    BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shops'),
+    BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favorites'),
+  ],
+  onTap: (index) {
+    if (index == 1 || index == 2) { // Both Shops and Favorites tabs
+      _handleRestrictedAction();
+    }
+    // Home tab (index 0) does nothing since we're already there
+  },
+),
         
       ),
     );
