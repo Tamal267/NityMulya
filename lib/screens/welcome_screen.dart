@@ -594,39 +594,70 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     }
   }
 
-  Widget buildDrawer() {
+   Widget buildDrawer() {
     return Drawer(
       child: ListView(
+        padding: EdgeInsets.zero, // Remove default padding
         children: [
-          DrawerHeader(
-            decoration: const BoxDecoration(color: Color(0xFF079b11)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Image.asset('assets/image/logo.jpeg', height: 50),
-                const SizedBox(height: 10),
-                widget.userName == null
-                    ? ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.green,
-                        ),
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/login');
-                        },
-                        child: const Text("Login / Sign Up"),
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(widget.userName!,
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 18)),
-                          Text(widget.userEmail ?? '',
-                              style: const TextStyle(color: Colors.white70)),
-                        ],
+          SizedBox(
+            height: 220, // Fixed height instead of DrawerHeader
+            child: Container(
+              decoration: const BoxDecoration(color: Color(0xFF079b11)),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/image/logo.jpeg',
+                        height: 90,
+                        width: 90,
+                        fit: BoxFit.cover,
                       ),
-              ],
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+                  if (widget.userName == null)
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.green,
+                        minimumSize:
+                            const Size(150, 40), // Constrained button size
+                      ),
+                      onPressed: () => Navigator.pushNamed(context, '/login'),
+                      child: const Text(
+                        "Login / Sign Up",
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    )
+                  else
+                    Column(
+                      children: [
+                        Text(
+                          widget.userName!,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16, // Slightly smaller
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.userEmail ?? '',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12, // Smaller email text
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
             ),
           ),
           ListTile(
@@ -642,12 +673,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text("About Our App"),
-            onTap: () {}, // optional: implement About screen
+            onTap: () {},
           ),
           ListTile(
             leading: const Icon(Icons.help),
             title: const Text("Help & Support"),
-            onTap: () {}, // optional: implement Help screen
+            onTap: () {},
           ),
         ],
       ),
@@ -657,21 +688,44 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   @override
   Widget build(BuildContext context) {
     if (showSplash) {
-      return Scaffold(
-        backgroundColor: Colors.green.shade100,
-        body: Center(
-          child: Text(
-            "Welcome to NityMulya App!",
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-              color: Colors.green.shade800,
+    return Scaffold(
+      backgroundColor: Colors.green.shade100,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Circular image with border
+            Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Colors.green.shade800, // Border color
+                  width: 3.0, // Border width
+                ),
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/image/logo.jpeg',
+                  height: 150, // Adjust size as needed
+                  width: 150,
+                  fit: BoxFit.cover, // Ensures the image fills the circle
+                ),
+              ),
             ),
-          ),
+            SizedBox(height: 20),
+            Text(
+              "Welcome to NityMulya App!",
+              style: TextStyle(
+                fontSize: 26,
+                fontWeight: FontWeight.bold,
+                color: Colors.green.shade800,
+              ),
+            ),
+          ],
         ),
-      );
-    }
-
+      ),
+    );
+  }
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -901,7 +955,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ),
           ],
         ),
+
         bottomNavigationBar: const GlobalBottomNav(currentIndex: 0),
+
+        
       ),
     );
   }
