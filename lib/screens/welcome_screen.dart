@@ -41,8 +41,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     "দুধ"
   ];
 
-//----------Sakif-------------------------------------------------///
-
   final List<Map<String, dynamic>> products = [
     // চাল (Rice)
     {
@@ -50,7 +48,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 75,
       "high": 85,
-      "image": "assets/image/miniket.jpeg",
+      "image": "assets/image/1.jpg",
       "category": "চাল সরু (নাজির/মিনিকেট)",
       "mainCategory": "চাল"
     },
@@ -59,7 +57,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 60,
       "high": 70,
-      "image": "assets/image/1.jpg",
+      "image": "assets/image/2.jpg",
       "category": "চাল (মাঝারী)পাইজাম/আটাশ)",
       "mainCategory": "চাল"
     },
@@ -68,7 +66,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 55,
       "high": 60,
-      "image": "assets/image/ataschal.jpeg",
+      "image": "assets/image/3.jpg",
       "category": "চাল (মোটা)/স্বর্ণা/চায়না ইরি",
       "mainCategory": "চাল"
     },
@@ -79,7 +77,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 40,
       "high": 45,
-      "image": "assets/image/2.jpg",
+      "image": "assets/image/6.jpg",
       "category": "আটা সাদা (খোলা)",
       "mainCategory": "আটা ও ময়দা"
     },
@@ -88,7 +86,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি প্যাঃ",
       "low": 50,
       "high": 55,
-      "image": "assets/image/2.jpg",
+      "image": "assets/image/atapacket.jpeg",
       "category": "আটা (প্যাকেট)",
       "mainCategory": "আটা ও ময়দা"
     },
@@ -97,7 +95,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 50,
       "high": 60,
-      "image": "assets/image/2.jpg",
+      "image": "assets/image/moydakhola.jpeg",
       "category": "ময়দা (খোলা)",
       "mainCategory": "আটা ও ময়দา"
     },
@@ -106,7 +104,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি প্যাঃ",
       "low": 50,
       "high": 60,
-      "image": "assets/image/2.jpg",
+      "image": "assets/image/moydapacket.jpeg",
       "category": "ময়দা (প্যাকেট)",
       "mainCategory": "আটা ও ময়দা"
     },
@@ -117,7 +115,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "১ লিটার",
       "low": 162,
       "high": 170,
-      "image": "assets/image/14.jpg",
+      "image": "assets/image/TElkhola.jpeg",
       "category": "সয়াবিন তেল (লুজ)",
       "mainCategory": "তেল"
     },
@@ -126,7 +124,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "5 লিটার",
       "low": 890,
       "high": 920,
-      "image": "assets/image/14.jpg",
+      "image": "assets/image/8.jpg",
       "category": "সয়াবিন তেল (বোতল)",
       "mainCategory": "তেল"
     },
@@ -135,7 +133,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "2 লিটার)",
       "low": 370,
       "high": 378,
-      "image": "assets/image/14.jpg",
+      "image": "assets/image/tel2liter.jpeg",
       "category": "সয়াবিন তেল (বোতল)",
       "mainCategory": "তেল"
     },
@@ -144,7 +142,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "১ লিটার",
       "low": 185,
       "high": 190,
-      "image": "assets/image/14.jpg",
+      "image": "assets/image/12.jpg",
       "category": "সয়াবিন তেল (বোতল)",
       "mainCategory": "তেল"
     },
@@ -153,7 +151,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি লিটার",
       "low": 150,
       "high": 155,
-      "image": "assets/image/14.jpg",
+      "image": "assets/image/pumoil.jpeg",
       "category": "পাম অয়েল (লুজ)",
       "mainCategory": "তেল"
     },
@@ -162,7 +160,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি লিটার",
       "low": 152,
       "high": 155,
-      "image": "assets/image/14.jpg",
+      "image": "assets/image/superpumoil.jpeg",
       "category": "সুপার পাম অয়েল (লুজ)",
       "mainCategory": "তেল"
     },
@@ -171,7 +169,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "৫ লিটার",
       "low": 1030,
       "high": 1080,
-      "image": "assets/image/14.jpg",
+      "image": "assets/image/ricebunoil.jpeg",
       "category": "রাইস ব্রান তেল (বোতল)",
       "mainCategory": "তেল"
     },
@@ -182,7 +180,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 95,
       "high": 110,
-      "image": "assets/image/3.jpg",
+      "image": "assets/image/dalmota.jpeg",
       "category": "মশুর ডাল (বড় দানা)",
       "mainCategory": "ডাল"
     },
@@ -191,7 +189,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 105,
       "high": 120,
-      "image": "assets/image/3.jpg",
+      "image": "assets/image/dalmajhari.jpeg",
       "category": "মশুর ডাল (মাঝারী দানা)",
       "mainCategory": "ডাল"
     },
@@ -200,7 +198,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 130,
       "high": 140,
-      "image": "assets/image/3.jpg",
+      "image": "assets/image/dalchoto.jpeg",
       "category": "মশুর ডাল (ছোট দানা)",
       "mainCategory": "ডাল"
     },
@@ -209,7 +207,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 110,
       "high": 180,
-      "image": "assets/image/3.jpg",
+      "image": "assets/image/mugdal.jpeg",
       "category": "মুগ ডাল (মানভেদে)",
       "mainCategory": "ডাল"
     },
@@ -218,7 +216,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 55,
       "high": 80,
-      "image": "assets/image/3.jpg",
+      "image": "assets/image/ankorDal.jpeg",
       "category": "এ্যাংকর ডাল",
       "mainCategory": "ডাল"
     },
@@ -227,7 +225,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 90,
       "high": 110,
-      "image": "assets/image/3.jpg",
+      "image": "assets/image/chola.jpeg",
       "category": "ছোলা (মানভেদে)",
       "mainCategory": "ডাল"
     },
@@ -238,7 +236,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 25,
       "high": 30,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/alu.jpeg",
       "category": "আলু (মানভেদে)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -247,7 +245,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 55,
       "high": 65,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/deshipeyaj.jpeg",
       "category": "পিঁয়াজ (দেশী)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -256,7 +254,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": "",
       "high": "",
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/bideshipeyej.jpeg",
       "category": "পিঁয়াজ (আমদানি)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -265,7 +263,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 100,
       "high": 150,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/rushundeshi.jpeg",
       "category": "রসুন (দেশী)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -274,7 +272,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 160,
       "high": 200,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/rushunbideshi.jpeg",
       "category": "রসুন (আমদানি)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -283,7 +281,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 240,
       "high": 350,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/morichdeshi.jpeg",
       "category": "শুকনা মরিচ (দেশী)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -292,7 +290,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 300,
       "high": 450,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/morichbideshi.jpeg",
       "category": "শুকনা মরিচ (আমদানি)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -301,7 +299,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 300,
       "high": 400,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/deshiholud.jpeg",
       "category": "হলুদ (দেশী)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -310,7 +308,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 300,
       "high": 420,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/bideshiholud.jpeg",
       "category": "হলুদ (আমদানি)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -319,7 +317,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": "",
       "high": "",
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/deshiada.jpeg",
       "category": "আদা (দেশী)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -328,7 +326,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 120,
       "high": 180,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/bideshiada.jpeg",
       "category": "আদা (আমদানি)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -337,7 +335,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 600,
       "high": 750,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/jera.jpeg",
       "category": "জিরা",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -346,7 +344,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 500,
       "high": 600,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/daruchini.jpeg",
       "category": "দারুচিনি",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -355,7 +353,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 1400,
       "high": 1600,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/lobonggo.jpeg",
       "category": "লবঙ্গ",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -364,7 +362,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 4400,
       "high": 5200,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/alach.jpeg",
       "category": "এলাচ(ছোট)",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -373,7 +371,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 180,
       "high": 280,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/dhonepata.jpeg",
       "category": "ধনে পাতা",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -382,7 +380,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 180,
       "high": 220,
-      "image": "assets/image/4.jpg",
+      "image": "assets/image/tejpata.jpeg",
       "category": "তেজপাতা",
       "mainCategory": "সবজি ও মসলা"
     },
@@ -393,7 +391,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 300,
       "high": 450,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/ruimach.jpeg",
       "category": "রুই মাছ",
       "mainCategory": "মাছ ও গোশত"
     },
@@ -402,7 +400,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 1000,
       "high": 2000,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/elishmach.jpeg",
       "category": "ইলিশ মাছ",
       "mainCategory": "মাছ ও গোশত"
     },
@@ -411,7 +409,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 750,
       "high": 800,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/gorurmansho.jpeg",
       "category": "গরু গোশত",
       "mainCategory": "মাছ ও গোশত"
     },
@@ -420,7 +418,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 1100,
       "high": 1250,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/chagolmeat.jpeg",
       "category": "খাসী গোশত",
       "mainCategory": "মাছ ও গোশت"
     },
@@ -429,7 +427,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 150,
       "high": 170,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/boilarmansho.jpeg",
       "category": "মুরগী(ব্রয়লার)",
       "mainCategory": "মাছ ও গোশত"
     },
@@ -438,7 +436,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 580,
       "high": 700,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/deshimurgi.jpeg",
       "category": "মুরগী (দেশী)",
       "mainCategory": "মাছ ও গোশত"
     },
@@ -449,7 +447,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 720,
       "high": 860,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/dano.jpeg",
       "category": "ডানো",
       "mainCategory": "দুধ"
     },
@@ -458,7 +456,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 840,
       "high": 910,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/diplomadudh.jpeg",
       "category": "ডিপ্লোমা (নিউজিল্যান্ড)",
       "mainCategory": "দুধ"
     },
@@ -467,7 +465,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 830,
       "high": 890,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/freshdudh.jpeg",
       "category": "ফ্রেশ",
       "mainCategory": "দুধ"
     },
@@ -476,7 +474,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 830,
       "high": 900,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/marks.jpeg",
       "category": "মার্কস",
       "mainCategory": "দুধ"
     },
@@ -487,7 +485,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 105,
       "high": 115,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/suger.jpeg",
       "category": "চিনি",
       "mainCategory": "All" // Or create new category
     },
@@ -496,7 +494,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 250,
       "high": 550,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/khejur.jpeg",
       "category": "খেজুর(সাধারণ মানের)",
       "mainCategory": "All" // Or create new category
     },
@@ -505,7 +503,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 38,
       "high": 42,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/salt.jpeg",
       "category": "লবণ(প্যাঃ)আয়োডিনযুক্ত",
       "mainCategory": "All" // Or create new category
     },
@@ -514,7 +512,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি হালি",
       "low": 38,
       "high": 46,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/egg.jpeg",
       "category": "ডিম (ফার্ম)",
       "mainCategory": "All" // Or create new category
     },
@@ -523,12 +521,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি দিস্তা",
       "low": 30,
       "high": 40,
-      "image": "assets/image/5.jpg",
+      "image": "assets/image/khagoj.jpeg",
       "category": "লেখার কাগজ(সাদা)",
       "mainCategory": "All" // Or create new category
     }
   ];
-//----------Sakif-------------------------------------------------///
 
   List<Map<String, dynamic>> get filteredProducts {
     if (selectedCategory == "All") return products;
