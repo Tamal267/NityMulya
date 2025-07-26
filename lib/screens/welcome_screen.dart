@@ -50,7 +50,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 75,
       "high": 85,
-      "image": "assets/image/1.jpg",
+      "image": "assets/image/miniket.jpeg",
       "category": "চাল সরু (নাজির/মিনিকেট)",
       "mainCategory": "চাল"
     },
@@ -68,7 +68,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 55,
       "high": 60,
-      "image": "assets/image/1.jpg",
+      "image": "assets/image/ataschal.jpeg",
       "category": "চাল (মোটা)/স্বর্ণা/চায়না ইরি",
       "mainCategory": "চাল"
     },
