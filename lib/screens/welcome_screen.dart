@@ -594,6 +594,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     }
   }
 
+//---------Mithila----------
+
    Widget buildDrawer() {
     return Drawer(
       child: ListView(
