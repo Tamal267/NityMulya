@@ -1,29 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
-import 'package:nitymulya/screens/wholesaler/wholesaler_edit_product_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
 
 class WholesalerDashboardScreen extends StatefulWidget {
   const WholesalerDashboardScreen({super.key});
 
   @override
-  State<WholesalerDashboardScreen> createState() =>
-      _WholesalerDashboardScreenState();
+  State<WholesalerDashboardScreen> createState() => _WholesalerDashboardScreenState();
 }
 
 class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  int unreadNotifications = 8;
   int totalShops = 45;
   int newRequests = 12;
   int lowStockProducts = 8;
-  int unreadMessages = 15;
-
+  String supplyStatus = "Active";
+  
   String selectedProduct = "All Products";
   String selectedLocation = "All Areas";
   int quantityThreshold = 10;
-
+  
   final List<String> products = [
     "All Products",
     "Rice (চাল)",
@@ -33,7 +32,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     "Onion (পেঁয়াজ)",
     "Flour (আটা)",
   ];
-
+  
   final List<String> locations = [
     "All Areas",
     "Dhaka (ঢাকা)",
@@ -55,18 +54,21 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     super.dispose();
   }
 
-/*
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-       
+      drawer: const CustomDrawer(
+        userName: "Wholesaler Name",
+        userEmail: "wholesaler@example.com",
+        userRole: "Wholesaler",
+      ),
       appBar: AppBar(
         title: const Text(
-          "Wholesaler Panel",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+          "Wholesaler Dashboard",
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.green[800],
+        backgroundColor: Colors.green[600],
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -74,16 +76,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             children: [
               IconButton(
                 icon: const Icon(Icons.notifications),
-                onPressed: () => _showNotifications(),
+                onPressed: () {
+                  _showNotifications(context);
+                },
               ),
-              if (newRequests > 0)
+              if (unreadNotifications > 0)
                 Positioned(
                   right: 8,
                   top: 8,
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: Colors.yellow[600],
+                      color: Colors.red,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     constraints: const BoxConstraints(
@@ -91,44 +95,10 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       minHeight: 16,
                     ),
                     child: Text(
-                      '$newRequests',
+                      '$unreadNotifications',
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: Colors.white,
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.message),
-                onPressed: () => _openMessageCenter(),
-              ),
-              if (unreadMessages > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: Colors.yellow[600],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
-                    ),
-                    child: Text(
-                      '$unreadMessages',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -137,111 +107,93 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ],
           ),
           IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => _showSettings(),
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              _showProfileSettings(context);
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => _showLogoutConfirmation(),
+            onPressed: () {
+              _showLogoutConfirmation(context);
+            },
             tooltip: "Logout",
           ),
         ],
       ),
-      body: Column(
+      body: ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          // Summary Cards Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Total Shops\nSupplied",
-                        "$totalShops",
-                        Icons.store,
-                        Colors.green[700]!,
-                        Colors.green[50]!,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "New Stock\nRequests",
-                        "$newRequests",
-                        Icons.shopping_cart,
-                        Colors.yellow[700]!,
-                        Colors.yellow[50]!,
-                      ),
-                    ),
-                  ],
+          // Summary Cards in One Row
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    debugPrint("Tapped Total Shops");
+                  },
+                  child: _buildSummaryCard(
+                    "Total Shops",
+                    "$totalShops",
+                    Icons.store,
+                    Colors.blue,
+                  ),
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Products Low\nin Shops",
-                        "$lowStockProducts",
-                        Icons.warning,
-                        Colors.red[700]!,
-                        Colors.red[50]!,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Messages from\nShops",
-                        "$unreadMessages",
-                        Icons.chat,
-                        Colors.blue[700]!,
-                        Colors.blue[50]!,
-                      ),
-                    ),
-                  ],
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    debugPrint("Tapped New Requests");
+                  },
+                  child: _buildSummaryCard(
+                    "New Requests",
+                    "$newRequests",
+                    Icons.shopping_cart,
+                    Colors.orange,
+                  ),
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    debugPrint("Tapped Low Stock");
+                  },
+                  child: _buildSummaryCard(
+                    "Low Stock",
+                    "$lowStockProducts",
+                    Icons.warning,
+                    Colors.red,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    debugPrint("Tapped Supply Status");
+                  },
+                  child: _buildSummaryCard(
+                    "Supply Status",
+                    supplyStatus,
+                    Icons.local_shipping,
+                    Colors.green,
+                  ),
+                ),
+              ),
+            ],
           ),
 
-          // Tab Bar
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.2),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                ),
-              ],
-            ),
-            child: TabBar(
-              controller: _tabController,
-              isScrollable: true,
-              labelColor: Colors.green[800],
-              unselectedLabelColor: Colors.grey,
-              indicatorColor: Colors.green[800],
-              labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              tabs: const [
-                Tab(icon: Icon(Icons.monitor, size: 20), text: "Monitor"),
-                Tab(icon: Icon(Icons.inventory, size: 20), text: "Inventory"),
-                Tab(icon: Icon(Icons.chat, size: 20), text: "Chat"),
-                Tab(icon: Icon(Icons.history, size: 20), text: "History"),
-                Tab(icon: Icon(Icons.campaign, size: 20), text: "Offers"),
-              ],
-            ),
-          ),
+          const SizedBox(height: 24),
 
           // Tab Content
-          Expanded(
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.75,
             child: TabBarView(
               controller: _tabController,
               children: [
-                _buildLowStockMonitorTab(),
+                _buildMonitorTab(),
                 _buildInventoryTab(),
                 _buildChatTab(),
                 _buildHistoryTab(),
@@ -251,161 +203,31 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showQuickActions(),
-        backgroundColor: Colors.green[800],
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          "Quick Action",
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-    );
-  }
-
-*/
-//----------------
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[50],
-      drawer: CustomDrawer(
-        // ✅ This is newly added
-        userName: "Wholesaler Name",
-        userEmail: "Wholesaler@example.com",
-        userRole: "Shop",
-      ),
-      appBar: AppBar(
-        title: const Text(
-          "Wholesaler Panel",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: Colors.green[800],
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications),
-                onPressed: () => _showNotifications(),
-              ),
-              if (newRequests > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: _buildBadge('$newRequests'),
-                ),
-            ],
-          ),
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.message),
-                onPressed: () => _openMessageCenter(),
-              ),
-              if (unreadMessages > 0)
-                Positioned(
-                  right: 8,
-                  top: 8,
-                  child: _buildBadge('$unreadMessages'),
-                ),
-            ],
-          ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () => _showSettings(),
-          ),
-        ],
-      ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Summary Cards
-            Column(
-              children: [
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Total Shops",
-                        "$totalShops",
-                        Icons.store,
-                        Colors.green[700]!,
-                        Colors.green[50]!,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Stock Requests",
-                        "$newRequests",
-                        Icons.shopping_cart,
-                        Colors.yellow[700]!,
-                        Colors.yellow[50]!,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "Low Stock",
-                        "$lowStockProducts",
-                        Icons.warning,
-                        Colors.red[700]!,
-                        Colors.red[50]!,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        "New Messages",
-                        "$unreadMessages",
-                        Icons.chat,
-                        Colors.blue[700]!,
-                        Colors.blue[50]!,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-
-            // Tab Content Area
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.65,
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildLowStockMonitorTab(),
-                  _buildInventoryTab(),
-                  _buildChatTab(),
-                  _buildHistoryTab(),
-                  _buildOffersTab(),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-
-      // Bottom Navigation TabBar
       bottomNavigationBar: Material(
         color: Colors.white,
+        elevation: 8,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: Colors.grey[300]!)),
+            color: Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withValues(alpha: 0.2),
+                blurRadius: 5,
+                offset: const Offset(0, -1),
+              ),
+            ],
           ),
           child: TabBar(
             controller: _tabController,
             isScrollable: false,
-            labelColor: Colors.green[800],
+            labelColor: Colors.green[600],
             unselectedLabelColor: Colors.grey,
-            indicatorColor: Colors.green[800],
+            indicatorColor: Colors.green[600],
             tabs: const [
               Tab(icon: Icon(Icons.monitor), text: "Monitor"),
               Tab(icon: Icon(Icons.inventory), text: "Inventory"),
@@ -416,54 +238,33 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
         ),
       ),
-
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showQuickActions(),
-        backgroundColor: Colors.green[800],
+        onPressed: () {
+          _showQuickActions(context);
+        },
+        backgroundColor: Colors.green[600],
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
-          "Quick Action",
+          "Quick Add",
           style: TextStyle(color: Colors.white),
         ),
       ),
     );
   }
 
-  Widget _buildBadge(String count) {
+  // Summary Card Builder - Matches Shop Owner Dashboard Style
+  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.all(2),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.yellow[600],
-        borderRadius: BorderRadius.circular(10),
-      ),
-      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-      child: Text(
-        count,
-        style: const TextStyle(
-          color: Colors.black,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-
-//--------------------
-
-  Widget _buildSummaryCard(
-      String title, String value, IconData icon, Color color, Color bgColor) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bgColor,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 3,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -472,22 +273,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         children: [
           Row(
             children: [
-              Icon(icon, color: color, size: 28),
+              Icon(icon, color: color, size: 24),
               const Spacer(),
               if (title.contains("Low") || title.contains("Requests"))
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text(
                     "!",
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold),
+                    style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                   ),
                 ),
             ],
@@ -496,7 +293,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           Text(
             value,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -505,9 +302,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           Text(
             title,
             style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[700],
-              fontWeight: FontWeight.w600,
+              fontSize: 10,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -515,328 +312,127 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-//--------------------------------Tush---------------
-/*
-  Widget _buildLowStockMonitorTab() {
+  // Monitor Tab - Low Stock Monitor with Filters
+  Widget _buildMonitorTab() {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Filter Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.1),
-                  spreadRadius: 1,
-                  blurRadius: 3,
+          // Filter Section - Accordion Style
+          Card(
+            elevation: 2,
+            child: ExpansionTile(
+              initiallyExpanded: false,
+              leading: Icon(Icons.filter_list, color: Colors.green[800], size: 20),
+              title: const Text(
+                "🛒 Low Stock Monitor Filters",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              ),
               children: [
-                Row(
-                  children: [
-                    Icon(Icons.monitor, color: Colors.green[800]),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "🛒 Low Stock Monitor",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Product Filter
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Product:",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          DropdownButtonFormField<String>(
-                            value: selectedProduct,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              isDense: true,
-                            ),
-                            items: products
-                                .map((product) => DropdownMenuItem(
-                                      value: product,
-                                      child: Text(product,
-                                          style: const TextStyle(fontSize: 14)),
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedProduct = value!;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Location:",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          DropdownButtonFormField<String>(
-                            value: selectedLocation,
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              isDense: true,
-                            ),
-                            items: locations
-                                .map((location) => DropdownMenuItem(
-                                      value: location,
-                                      child: Text(location,
-                                          style: const TextStyle(fontSize: 14)),
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              setState(() {
-                                selectedLocation = value!;
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Quantity Threshold
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("Quantity Threshold:",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          TextFormField(
-                            initialValue: quantityThreshold.toString(),
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              isDense: true,
-                              suffixText: "units",
-                              prefixText: "< ",
-                            ),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              quantityThreshold = int.tryParse(value) ?? 10;
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text("",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          ElevatedButton.icon(
-                            onPressed: () => _applyFilters(),
-                            icon: const Icon(Icons.search, color: Colors.white),
-                            label: const Text("Apply Filter",
-                                style: TextStyle(color: Colors.white)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green[800],
-                              minimumSize: const Size(double.infinity, 48),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Results List
-          Expanded(
-            child: ListView.builder(
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return _buildLowStockItem(index);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-*/
-
-  Widget _buildLowStockMonitorTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Filter Section
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  // ignore: deprecated_member_use
-                  color: Colors.grey.withOpacity(0.1),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.monitor, color: Colors.green[800]),
-                    const SizedBox(width: 8),
-                    const Text(
-                      "🛒 Low Stock Monitor",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-
-                // Product & Location Filter Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        isExpanded: true,
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Product Dropdown (Full Width)
+                      DropdownButtonFormField<String>(
                         value: selectedProduct,
                         decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                          labelText: "Product",
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
-                        items: products
-                            .map((product) => DropdownMenuItem(
-                                  value: product,
-                                  child: Text(product,
-                                      style: const TextStyle(fontSize: 14)),
-                                ))
-                            .toList(),
+                        items: products.map((product) => DropdownMenuItem(
+                          value: product,
+                          child: Text(
+                            product,
+                            style: const TextStyle(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )).toList(),
                         onChanged: (value) {
                           setState(() {
                             selectedProduct = value!;
                           });
                         },
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: DropdownButtonFormField<String>(
-                        isExpanded: true,
+                      const SizedBox(height: 12),
+                      
+                      // Location Dropdown (Full Width)
+                      DropdownButtonFormField<String>(
                         value: selectedLocation,
                         decoration: InputDecoration(
-                          border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                          labelText: "Location",
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         ),
-                        items: locations
-                            .map((location) => DropdownMenuItem(
-                                  value: location,
-                                  child: Text(location,
-                                      style: const TextStyle(fontSize: 14)),
-                                ))
-                            .toList(),
+                        items: locations.map((location) => DropdownMenuItem(
+                          value: location,
+                          child: Text(
+                            location,
+                            style: const TextStyle(fontSize: 14),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )).toList(),
                         onChanged: (value) {
                           setState(() {
                             selectedLocation = value!;
                           });
                         },
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-
-                // Quantity Threshold & Apply Filter Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 12),
+                      
+                      // Threshold Input and Filter Button
+                      Row(
                         children: [
-                          const Text("Quantity Threshold:",
-                              style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          TextFormField(
-                            initialValue: quantityThreshold.toString(),
-                            decoration: InputDecoration(
-                              border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              isDense: true,
-                              suffixText: "units",
-                              prefixText: "< ",
+                          Expanded(
+                            child: TextFormField(
+                              initialValue: quantityThreshold.toString(),
+                              decoration: InputDecoration(
+                                labelText: "Threshold (units)",
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                isDense: true,
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              ),
+                              style: const TextStyle(fontSize: 14),
+                              keyboardType: TextInputType.number,
+                              onChanged: (value) {
+                                setState(() {
+                                  quantityThreshold = int.tryParse(value) ?? 10;
+                                });
+                              },
                             ),
-                            keyboardType: TextInputType.number,
-                            onChanged: (value) {
-                              quantityThreshold = int.tryParse(value) ?? 10;
-                            },
+                          ),
+                          const SizedBox(width: 12),
+                          SizedBox(
+                            height: 48,
+                            width: 48,
+                            child: IconButton(
+                              onPressed: () => _applyFilters(),
+                              icon: const Icon(Icons.search, color: Colors.white, size: 20),
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.green[800],
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () => _applyFilters(),
-                        icon: const Icon(Icons.search, color: Colors.white),
-                        label: const Text("Apply Filter",
-                            style: TextStyle(color: Colors.white)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green[800],
-                          minimumSize: const Size(double.infinity, 48),
-                        ),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-
+          const SizedBox(height: 12),
+          
           // Results List
           Expanded(
             child: ListView.builder(
@@ -853,76 +449,14 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
   Widget _buildLowStockItem(int index) {
     final shops = [
-      {
-        "name": "আহমেদ স্টোর",
-        "location": "ধানমন্ডি, ঢাকা",
-        "product": "চাল সরু",
-        "quantity": 3,
-        "urgent": true
-      },
-      {
-        "name": "করিম ট্রেডার্স",
-        "location": "চট্টগ্রাম",
-        "product": "সয়াবিন তেল",
-        "quantity": 5,
-        "urgent": true
-      },
-      {
-        "name": "রহিম মার্ট",
-        "location": "সিলেট",
-        "product": "মসুর ডাল",
-        "quantity": 8,
-        "urgent": false
-      },
-      {
-        "name": "ফাতিমা স্টোর",
-        "location": "রাজশাহী",
-        "product": "পেঁয়াজ",
-        "quantity": 2,
-        "urgent": true
-      },
-      {
-        "name": "নাসির এন্টারপ্রাইজ",
-        "location": "খুলনা",
-        "product": "চিনি",
-        "quantity": 6,
-        "urgent": false
-      },
-      {
-        "name": "সালমা ট্রেডিং",
-        "location": "বরিশাল",
-        "product": "গমের আটা",
-        "quantity": 4,
-        "urgent": true
-      },
-      {
-        "name": "আব্দুল মার্ট",
-        "location": "ঢাকা",
-        "product": "ছোলা ডাল",
-        "quantity": 7,
-        "urgent": false
-      },
-      {
-        "name": "রশিদ স্টোর",
-        "location": "চট্টগ্রাম",
-        "product": "সরিষার তেল",
-        "quantity": 1,
-        "urgent": true
-      },
-      {
-        "name": "Tushar স্টোর",
-        "location": "Mohammadpur, Dhaka",
-        "product": "সরিষার তেল",
-        "quantity": 1,
-        "urgent": true
-      },
-      {
-        "name": "Nahid স্টোর",
-        "location": "Dhaka",
-        "product": "সরিষার তেল",
-        "quantity": 1,
-        "urgent": true
-      },
+      {"name": "আহমেদ স্টোর", "location": "ধানমন্ডি, ঢাকা", "product": "চাল সরু", "quantity": 3, "urgent": true},
+      {"name": "করিম ট্রেডার্স", "location": "চট্টগ্রাম", "product": "সয়াবিন তেল", "quantity": 5, "urgent": true},
+      {"name": "রহিম মার্ট", "location": "সিলেট", "product": "মসুর ডাল", "quantity": 8, "urgent": false},
+      {"name": "ফাতিমা স্টোর", "location": "রাজশাহী", "product": "পেঁয়াজ", "quantity": 2, "urgent": true},
+      {"name": "নাসির এন্টারপ্রাইজ", "location": "খুলনা", "product": "চিনি", "quantity": 6, "urgent": false},
+      {"name": "সালমা ট্রেডিং", "location": "বরিশাল", "product": "গমের আটা", "quantity": 4, "urgent": true},
+      {"name": "আব্দুল মার্ট", "location": "ঢাকা", "product": "ছোলা ডাল", "quantity": 7, "urgent": false},
+      {"name": "রশিদ স্টোর", "location": "চট্টগ্রাম", "product": "সরিষার তেল", "quantity": 1, "urgent": true},
     ];
 
     final shop = shops[index];
@@ -974,18 +508,33 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               children: [
                 Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
                 const SizedBox(width: 4),
-                Text(shop["location"] as String),
+                Flexible(
+                  child: Text(
+                    shop["location"] as String,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 4),
             Row(
               children: [
-                Text(
-                  "${shop["product"]} - ",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    shop["product"] as String,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.inventory,
+                  size: 14,
+                  color: quantity < 5 ? Colors.red[700] : Colors.orange[700],
+                ),
+                const SizedBox(width: 4),
                 Text(
-                  "Current: $quantity units",
+                  "$quantity units",
                   style: TextStyle(
                     color: quantity < 5 ? Colors.red[700] : Colors.orange[700],
                     fontWeight: FontWeight.bold,
@@ -995,41 +544,37 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
           ],
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.blue[600],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.chat, color: Colors.white, size: 20),
-                onPressed: () => _contactShop(shop["name"] as String),
-                tooltip: "Contact Shop",
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.yellow[700],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.local_offer,
-                    color: Colors.white, size: 20),
-                onPressed: () => _bulkOffer(shop["name"] as String),
-                tooltip: "Bulk Offer",
+        trailing: Container(
+          decoration: BoxDecoration(
+            color: Colors.blue[600],
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => WholesalerChatScreen(
+                  shopName: shop["name"] as String,
+                  shopId: (shop["name"] as String).toLowerCase().replaceAll(' ', '_'),
+                ),
               ),
             ),
-          ],
+            onLongPress: () => _contactShop(shop["name"] as String),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(
+                minWidth: 32,
+                minHeight: 32,
+              ),
+              child: const Icon(Icons.chat, color: Colors.white, size: 16),
+            ),
+          ),
         ),
       ),
     );
   }
 
-//-------------------------
-
+  // Inventory Tab
   Widget _buildInventoryTab() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -1039,10 +584,16 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _addProduct(),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const WholesalerAddProductScreen(),
+                      ),
+                    );
+                  },
                   icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text("Add Product",
-                      style: TextStyle(color: Colors.white)),
+                  label: const Text("Add Product", style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[800],
                   ),
@@ -1053,8 +604,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _uploadCatalog(),
                   icon: const Icon(Icons.upload, color: Colors.white),
-                  label: const Text("Upload Catalog",
-                      style: TextStyle(color: Colors.white)),
+                  label: const Text("Upload Catalog", style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[600],
                   ),
@@ -1083,93 +633,66 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         "unit": "কেজি",
         "price": 85,
         "stock": 500,
-        "priority": true
       },
       {
         "name": "সয়াবিন তেল (পিউর)",
         "unit": "লিটার",
         "price": 170,
         "stock": 200,
-        "priority": false
       },
       {
         "name": "মসুর ডাল",
         "unit": "কেজি",
         "price": 125,
         "stock": 150,
-        "priority": false
       },
       {
         "name": "পেঁয়াজ (দেশি)",
         "unit": "কেজি",
         "price": 55,
         "stock": 80,
-        "priority": true
       },
       {
         "name": "চিনি (সাদা)",
         "unit": "কেজি",
         "price": 65,
         "stock": 300,
-        "priority": false
       },
       {
         "name": "গমের আটা",
         "unit": "কেজি",
         "price": 50,
         "stock": 250,
-        "priority": false
       },
       {
         "name": "ছোলা ডাল",
         "unit": "কেজি",
         "price": 95,
         "stock": 120,
-        "priority": true
       },
       {
         "name": "সরিষার তেল",
         "unit": "লিটার",
         "price": 180,
         "stock": 90,
-        "priority": false
       },
     ];
 
     final product = products[index];
-    final isPriority = product["priority"] as bool;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isPriority ? Colors.yellow[100] : Colors.green[100],
+          backgroundColor: Colors.green[100],
           child: Icon(
             Icons.inventory_2,
-            color: isPriority ? Colors.yellow[700] : Colors.green[700],
+            color: Colors.green[700],
           ),
         ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                product["name"] as String,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-            ),
-            if (isPriority)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.yellow[600],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  "⭐",
-                  style: TextStyle(fontSize: 12),
-                ),
-              ),
-          ],
+        title: Text(
+          product["name"] as String,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1178,8 +701,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             Text(
               "Stock: ${product["stock"]} ${product["unit"]}",
               style: TextStyle(
-                color:
-                    (product["stock"] as int) < 100 ? Colors.red : Colors.green,
+                color: (product["stock"] as int) < 100 ? Colors.red : Colors.green,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1188,10 +710,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         trailing: PopupMenuButton(
           itemBuilder: (context) => [
             const PopupMenuItem(value: "edit", child: Text("Edit")),
-            const PopupMenuItem(
-                value: "history", child: Text("Supply History")),
-            const PopupMenuItem(
-                value: "priority", child: Text("Toggle Priority")),
+            const PopupMenuItem(value: "history", child: Text("Supply History")),
             const PopupMenuItem(value: "delete", child: Text("Delete")),
           ],
           onSelected: (value) {
@@ -1206,62 +725,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Chat Filter Tabs
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withValues(alpha: 0.1),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.green[800],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      "Recent",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: const Text(
-                      "Unread",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    child: const Text(
-                      "By Product",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
+          Text(
+            "Shop Communications",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.green[700],
             ),
           ),
           const SizedBox(height: 16),
-
+          
           Expanded(
             child: ListView.builder(
               itemCount: 6,
@@ -1282,42 +757,36 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         "message": "চাল সরুর দাম কত?",
         "time": "২ মিনিট আগে",
         "unread": 2,
-        "product": "চাল"
       },
       {
         "shop": "করিম ট্রেডার্স",
         "message": "তেলের স্টক আছে?",
         "time": "১৫ মিনিট আগে",
         "unread": 0,
-        "product": "তেল"
       },
       {
         "shop": "রহিম মার্ট",
         "message": "অর্ডার কনফার্ম",
         "time": "৩০ মিনিট আগে",
         "unread": 1,
-        "product": "ডাল"
       },
       {
         "shop": "ফাতিমা স্টোর",
         "message": "ডেলিভারি কবে?",
         "time": "১ ঘণ্টা আগে",
         "unread": 3,
-        "product": "পেঁয়াজ"
       },
       {
         "shop": "নাসির এন্টারপ্রাইজ",
         "message": "নতুন দামের তালিকা চাই",
         "time": "২ ঘণ্টা আগে",
         "unread": 0,
-        "product": "চিনি"
       },
       {
         "shop": "সালমা ট্রেডিং",
         "message": "বাল্ক অর্ডার দিতে চাই",
         "time": "৩ ঘণ্টা আগে",
         "unread": 1,
-        "product": "আটা"
       },
     ];
 
@@ -1328,11 +797,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.blue[100],
+          backgroundColor: Colors.green[100],
           child: Text(
             (chat["shop"] as String)[0],
             style: TextStyle(
-              color: Colors.blue[700],
+              color: Colors.green[700],
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -1347,15 +816,15 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
             if (unreadCount > 0)
               Container(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.yellow[600],
+                  color: Colors.red,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   "$unreadCount",
                   style: const TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                   ),
@@ -1372,54 +841,22 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
-            Row(
-              children: [
-                Icon(Icons.access_time, size: 12, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(
-                  chat["time"] as String,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.green[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    chat["product"] as String,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.green[700],
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
+            Text(
+              chat["time"] as String,
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.attach_file, color: Colors.grey),
-              onPressed: () => _attachFile(chat["shop"] as String),
-              tooltip: "Attach Catalog",
-            ),
-            IconButton(
-              icon: Icon(Icons.chat, color: Colors.green[800]),
-              onPressed: () => _openChat(chat["shop"] as String),
-              tooltip: "Open Chat",
-            ),
-          ],
+        trailing: IconButton(
+          icon: Icon(Icons.chat, color: Colors.green[800]),
+          onPressed: () => _openChatWithShop(chat["shop"] as String),
+          tooltip: "Open Chat",
         ),
       ),
     );
   }
 
+  // History Tab (previously Supply Tab)
   Widget _buildHistoryTab() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -1587,28 +1024,47 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           children: [
             Text("${transaction["product"]} - ${transaction["quantity"]}"),
             const SizedBox(height: 4),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.calendar_today, size: 12, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Text(
-                  transaction["date"] as String,
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                Row(
+                  children: [
+                    Icon(Icons.calendar_today, size: 12, color: Colors.grey[600]),
+                    const SizedBox(width: 4),
+                    Text(
+                      transaction["date"] as String,
+                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: statusColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    status,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: () => _changeTransactionStatus(transaction, index),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: statusColor.withValues(alpha: 0.3), width: 1),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          status,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 3),
+                        const Icon(
+                          Icons.edit,
+                          color: Colors.white,
+                          size: 9,
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -1676,35 +1132,30 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       {
         "title": "চাল সরু বাল্ক ডিসকাউন্ট",
         "description": "১০০ কেজির উপর ১০% ছাড়",
-        "target": "সব দোকান",
         "validUntil": "৩১ জুলাই পর্যন্ত",
         "active": true
       },
       {
         "title": "তেল ও ডাল কম্বো অফার",
         "description": "একসাথে কিনলে ১৫% ছাড়",
-        "target": "নির্বাচিত দোকান",
         "validUntil": "২৮ জুলাই পর্যন্ত",
         "active": true
       },
       {
         "title": "নতুন গ্রাহক বোনাস",
         "description": "প্রথম অর্ডারে ২০% ছাড়",
-        "target": "নতুন দোকান",
         "validUntil": "৩০ জুলাই পর্যন্ত",
         "active": true
       },
       {
         "title": "দ্রুত ডেলিভারি অফার",
         "description": "২৪ ঘণ্টায় ডেলিভারি",
-        "target": "ঢাকার দোকান",
         "validUntil": "মেয়াদ শেষ",
         "active": false
       },
       {
         "title": "ঈদ স্পেশাল ডিল",
         "description": "সব পণ্যে ২৫% ছাড়",
-        "target": "সব দোকান",
         "validUntil": "মেয়াদ শেষ",
         "active": false
       },
@@ -1743,17 +1194,6 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             Row(
               children: [
                 Icon(
-                  Icons.people,
-                  size: 14,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  "Target: ${offer["target"]}",
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                ),
-                const SizedBox(width: 12),
-                Icon(
                   isActive ? Icons.check_circle : Icons.cancel,
                   size: 14,
                   color: isActive ? Colors.green : Colors.red,
@@ -1786,31 +1226,37 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  // Action Methods
-  void _showNotifications() {
+  // Notification Methods
+  void _showNotifications(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Notifications"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(Icons.shopping_cart, color: Colors.yellow[700]),
-              title: const Text("New Stock Request"),
-              subtitle: const Text("আহমেদ স্টোর থেকে চাল সরুর অর্ডার"),
-            ),
-            ListTile(
-              leading: Icon(Icons.warning, color: Colors.red[700]),
-              title: const Text("Urgent Stock Alert"),
-              subtitle: const Text("৩টি দোকানে পণ্য শেষ হয়ে যাচ্ছে"),
-            ),
-            ListTile(
-              leading: Icon(Icons.message, color: Colors.blue[700]),
-              title: const Text("New Messages"),
-              subtitle: const Text("৫টি নতুন বার্তা এসেছে"),
-            ),
-          ],
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.info, color: Colors.blue),
+                title: const Text("New Order Request"),
+                subtitle: const Text("Rahman Store needs 50kg rice"),
+                trailing: const Text("2 min"),
+              ),
+              ListTile(
+                leading: const Icon(Icons.warning, color: Colors.orange),
+                title: const Text("Low Stock Alert"),
+                subtitle: const Text("Oil running low in 3 shops"),
+                trailing: const Text("5 min"),
+              ),
+              ListTile(
+                leading: const Icon(Icons.message, color: Colors.green),
+                title: const Text("New Message"),
+                subtitle: const Text("Ahmed Store: Thanks for delivery"),
+                trailing: const Text("10 min"),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -1822,42 +1268,36 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _openMessageCenter() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Opening Message Center...")),
-    );
-  }
-
-  void _showSettings() {
+  void _showProfileSettings(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Settings"),
+        title: const Text("Profile Settings"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
               leading: const Icon(Icons.person),
-              title: const Text("Profile Settings"),
+              title: const Text("Edit Profile"),
               onTap: () {
                 Navigator.pop(context);
-                _profileSettings();
+                // Navigate to profile edit screen
               },
             ),
             ListTile(
-              leading: const Icon(Icons.business),
-              title: const Text("Business Info"),
+              leading: const Icon(Icons.settings),
+              title: const Text("App Settings"),
               onTap: () {
                 Navigator.pop(context);
-                _businessInfo();
+                // Navigate to settings screen
               },
             ),
             ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text("Notification Settings"),
+              leading: const Icon(Icons.help),
+              title: const Text("Help & Support"),
               onTap: () {
                 Navigator.pop(context);
-                _notificationSettings();
+                // Navigate to help screen
               },
             ),
             ListTile(
@@ -1865,7 +1305,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               title: const Text("Logout", style: TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.pop(context);
-                _showLogoutConfirmation();
+                _showLogoutConfirmation(context);
               },
             ),
           ],
@@ -1880,31 +1320,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _profileSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Profile Settings - Coming Soon!")),
-    );
-  }
-
-  void _businessInfo() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Business Info - Coming Soon!")),
-    );
-  }
-
-  void _notificationSettings() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Notification Settings - Coming Soon!")),
-    );
-  }
-
-  void _showLogoutConfirmation() {
+  void _showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Logout"),
-        content: const Text(
-            "Are you sure you want to logout from your wholesaler account?"),
+        title: const Text("Confirm Logout"),
+        content: const Text("Are you sure you want to logout?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1913,35 +1334,20 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              _logout();
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/login',
+                (route) => false,
+              );
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text("Logout"),
+            child: const Text("Logout", style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
     );
   }
 
-  void _logout() {
-    // Clear any stored user data/tokens here
-    // For now, just navigate back to login screen
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      '/login',
-      (Route<dynamic> route) => false,
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Logged out successfully"),
-        backgroundColor: Colors.green,
-      ),
-    );
-  }
-
-  void _showQuickActions() {
+  void _showQuickActions(BuildContext context) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -1954,29 +1360,77 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            ListTile(
-              leading: Icon(Icons.campaign, color: Colors.yellow[700]),
-              title: const Text("Broadcast Offer"),
-              onTap: () {
-                Navigator.pop(context);
-                _createOffer();
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WholesalerAddProductScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text("Add Product"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[600],
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _createOffer();
+                    },
+                    icon: const Icon(Icons.local_offer),
+                    label: const Text("Create Offer"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[600],
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            ListTile(
-              leading: Icon(Icons.add_box, color: Colors.green[800]),
-              title: const Text("Add Product"),
-              onTap: () {
-                Navigator.pop(context);
-                _addProduct();
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.message, color: Colors.blue[700]),
-              title: const Text("Send Message to All"),
-              onTap: () {
-                Navigator.pop(context);
-                _broadcastToAll();
-              },
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _showBulkActions();
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text("Bulk Update"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange[600],
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _tabController.animateTo(0); // Go to Monitor tab
+                    },
+                    icon: const Icon(Icons.monitor_heart),
+                    label: const Text("Monitor"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple[600],
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -1984,217 +1438,172 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _applyFilters() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          "Filtering: $selectedProduct in $selectedLocation with < $quantityThreshold units",
+  // Inventory Management Methods
+  void _uploadCatalog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Upload Product Catalog"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text("Upload an Excel or CSV file with your product catalog."),
+            const SizedBox(height: 16),
+            Container(
+              width: double.infinity,
+              height: 100,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.cloud_upload, size: 40, color: Colors.grey),
+                  Text("Click to select file or drag and drop"),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "Supported formats: .xlsx, .xls, .csv",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
         ),
-        backgroundColor: Colors.green[800],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Catalog upload started!")),
+              );
+            },
+            child: const Text("Upload"),
+          ),
+        ],
       ),
     );
   }
 
-  void _contactShop(String shopName) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WholesalerChatScreen(
-          shopName: shopName,
-          shopId: shopName.toLowerCase().replaceAll(' ', '_'),
-        ),
-      ),
-    );
+  void _handleInventoryAction(String action, String productName) {
+    switch (action) {
+      case "edit":
+        _editProduct(productName);
+        break;
+      case "history":
+        _viewSupplyHistory(productName);
+        break;
+      case "delete":
+        _deleteProduct(productName);
+        break;
+    }
   }
 
-  void _bulkOffer(String shopName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Creating bulk offer for $shopName")),
-    );
-  }
-
-  void _addProduct() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const WholesalerAddProductScreen(),
-      ),
-    );
-
-    if (result == true) {
-      // Refresh the dashboard data
-      setState(() {
-        // In a real app, you would reload data from your database
-        // For now, we'll just show a success message
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Row(
+  void _editProduct(String productName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Edit $productName"),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, color: Colors.white),
-              SizedBox(width: 8),
-              Text("Product added successfully!"),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: "Price per Unit",
+                  prefixText: "৳",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: "Current Stock",
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
             ],
           ),
-          backgroundColor: Colors.green[800],
-          behavior: SnackBarBehavior.floating,
         ),
-      );
-    }
-  }
-
-  void _uploadCatalog() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Upload Catalog - Coming Soon!")),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("$productName updated successfully!")),
+              );
+            },
+            child: const Text("Update"),
+          ),
+        ],
+      ),
     );
   }
 
-  void _handleInventoryAction(String action, String productName) async {
-    // Get the product data based on product name
-    final products = [
-      {
-        "name": "চাল সরু (প্রিমিয়াম)",
-        "unit": "কেজি",
-        "price": 85,
-        "stock": 500,
-        "priority": true
-      },
-      {
-        "name": "সয়াবিন তেল (পিউর)",
-        "unit": "লিটার",
-        "price": 170,
-        "stock": 200,
-        "priority": false
-      },
-      {
-        "name": "মসুর ডাল",
-        "unit": "কেজি",
-        "price": 125,
-        "stock": 150,
-        "priority": false
-      },
-      {
-        "name": "পেঁয়াজ (দেশি)",
-        "unit": "কেজি",
-        "price": 55,
-        "stock": 80,
-        "priority": true
-      },
-      {
-        "name": "চিনি (সাদা)",
-        "unit": "কেজি",
-        "price": 65,
-        "stock": 300,
-        "priority": false
-      },
-      {
-        "name": "গমের আটা",
-        "unit": "কেজি",
-        "price": 50,
-        "stock": 250,
-        "priority": false
-      },
-      {
-        "name": "ছোলা ডাল",
-        "unit": "কেজি",
-        "price": 95,
-        "stock": 120,
-        "priority": true
-      },
-      {
-        "name": "সরিষার তেল",
-        "unit": "লিটার",
-        "price": 180,
-        "stock": 90,
-        "priority": false
-      },
-    ];
-
-    final product = products.firstWhere(
-      (p) => p['name'] == productName,
-      orElse: () => {
-        "name": productName,
-        "unit": "কেজি",
-        "price": 0,
-        "stock": 0,
-        "priority": false
-      },
-    );
-
-    if (action == "edit") {
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => WholesalerEditProductScreen(product: product),
+  void _viewSupplyHistory(String productName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Supply History - $productName"),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: ListView.builder(
+            itemCount: 5,
+            itemBuilder: (context, index) {
+              final dates = ["2024-01-15", "2024-01-10", "2024-01-05", "2023-12-28", "2023-12-20"];
+              final quantities = [100, 150, 200, 80, 120];
+              return ListTile(
+                leading: const Icon(Icons.history),
+                title: Text("${quantities[index]} kg supplied"),
+                subtitle: Text("Date: ${dates[index]}"),
+                trailing: const Icon(Icons.check_circle, color: Colors.green),
+              );
+            },
+          ),
         ),
-      );
-
-      if (result != null) {
-        if (result == 'deleted') {
-          setState(() {
-            // In a real app, you would remove the product from your database
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Row(
-                children: [
-                  Icon(Icons.delete, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text("Product deleted successfully"),
-                ],
-              ),
-              backgroundColor: Colors.red[600],
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        } else {
-          // Product was updated
-          setState(() {
-            // In a real app, you would update the product in your database
-          });
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Row(
-                children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text("Product updated successfully!"),
-                ],
-              ),
-              backgroundColor: Colors.green[800],
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      }
-    } else if (action == "history") {
-      _showSupplyHistory(productName);
-    } else if (action == "priority") {
-      _togglePriority(productName);
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("$action $productName - Coming Soon!")),
-      );
-    }
-  }
-
-  void _attachFile(String shopName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Attaching file for $shopName")),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+        ],
+      ),
     );
   }
 
-  void _openChat(String shopName) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => WholesalerChatScreen(
-          shopName: shopName,
-          shopId: shopName.toLowerCase().replaceAll(' ', '_'),
-        ),
+  void _deleteProduct(String productName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Delete $productName"),
+        content: Text("Are you sure you want to delete $productName from your inventory?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("$productName deleted from inventory")),
+              );
+            },
+            child: const Text("Delete", style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
@@ -2212,14 +1621,348 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   void _viewReceipt(Map<String, dynamic> transaction) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Viewing receipt for ${transaction["shop"]}")),
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: _buildReceiptWidget(transaction),
+      ),
     );
   }
 
-  void _createOffer() {
+  void _changeTransactionStatus(Map<String, dynamic> transaction, int index) {
+    final currentStatus = transaction["status"] as String;
+    String selectedStatus = currentStatus;
+    
+    final statuses = ["Pending", "Processing", "Delivered", "Cancelled"];
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text("Change Status - ${transaction["shop"]}"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Product: ${transaction["product"]} - ${transaction["quantity"]}",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              const Text("Select new status:"),
+              const SizedBox(height: 8),
+              ...statuses.map((status) => RadioListTile<String>(
+                title: Text(status),
+                value: status,
+                groupValue: selectedStatus,
+                onChanged: (value) {
+                  setDialogState(() {
+                    selectedStatus = value!;
+                  });
+                },
+                dense: true,
+              )),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: selectedStatus == currentStatus ? null : () {
+                Navigator.pop(context);
+                setState(() {
+                  // In a real app, this would update the database
+                  // For now, we'll just show a snackbar
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Status changed from '$currentStatus' to '$selectedStatus'"),
+                    backgroundColor: Colors.green[800],
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[800],
+              ),
+              child: const Text("Confirm", style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptWidget(Map<String, dynamic> transaction) {
+    final receiptNumber = "R${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+    final currentDate = DateTime.now();
+    final formattedDate = "${currentDate.day}/${currentDate.month}/${currentDate.year}";
+    final formattedTime = "${currentDate.hour}:${currentDate.minute.toString().padLeft(2, '0')}";
+    
+    // Sample pricing calculation
+    final unitPrice = _getUnitPrice(transaction["product"] as String);
+    final quantity = _extractQuantity(transaction["quantity"] as String);
+    final subtotal = unitPrice * quantity;
+    final tax = subtotal * 0.05; // 5% tax
+    final total = subtotal + tax;
+    
+    return Container(
+      width: 350,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.green[800],
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.receipt, color: Colors.white, size: 24),
+                SizedBox(width: 8),
+                Text(
+                  "TRANSACTION RECEIPT",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Receipt Body
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(12),
+                bottomRight: Radius.circular(12),
+              ),
+              border: Border.all(color: Colors.grey[300]!),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Receipt Info
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Receipt #: $receiptNumber",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Text("Date: $formattedDate"),
+                        Text("Time: $formattedTime"),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(transaction["status"] as String),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        transaction["status"] as String,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                const Divider(),
+                
+                // Shop Details
+                _buildReceiptRow("Shop Name:", transaction["shop"] as String, isTitle: true),
+                _buildReceiptRow("Location:", _getShopLocation(transaction["shop"] as String)),
+                _buildReceiptRow("Contact:", "+880 1712-345678"),
+                
+                const SizedBox(height: 12),
+                const Divider(),
+                
+                // Product Details
+                const Text(
+                  "Product Details:",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
+                const SizedBox(height: 8),
+                _buildReceiptRow("Product:", transaction["product"] as String),
+                _buildReceiptRow("Quantity:", transaction["quantity"] as String),
+                _buildReceiptRow("Unit Price:", "৳${unitPrice.toStringAsFixed(2)}"),
+                
+                const SizedBox(height: 12),
+                const Divider(),
+                
+                // Pricing
+                _buildReceiptRow("Subtotal:", "৳${subtotal.toStringAsFixed(2)}"),
+                _buildReceiptRow("Tax (5%):", "৳${tax.toStringAsFixed(2)}"),
+                const Divider(thickness: 2),
+                _buildReceiptRow("Total Amount:", "৳${total.toStringAsFixed(2)}", isTotal: true),
+                
+                const SizedBox(height: 16),
+                
+                // Footer
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Column(
+                    children: [
+                      Text(
+                        "Thank you for your business!",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        "NityMulya Wholesale Platform",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Action Buttons
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                  label: const Text("Close"),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => _printReceipt(transaction, receiptNumber),
+                  icon: const Icon(Icons.print, color: Colors.white),
+                  label: const Text("Print", style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[800],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value, {bool isTitle = false, bool isTotal = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: isTitle || isTotal ? FontWeight.bold : FontWeight.normal,
+              fontSize: isTotal ? 16 : 14,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontWeight: isTitle || isTotal ? FontWeight.bold : FontWeight.normal,
+              fontSize: isTotal ? 16 : 14,
+              color: isTotal ? Colors.green[800] : Colors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  double _getUnitPrice(String product) {
+    // Sample pricing based on product
+    final prices = {
+      "চাল সরু": 85.0,
+      "সয়াবিন তেল": 170.0,
+      "মসুর ডাল": 125.0,
+      "পেঁয়াজ": 55.0,
+      "চিনি": 65.0,
+      "গমের আটা": 50.0,
+      "ছোলা ডাল": 95.0,
+      "সরিষার তেল": 180.0,
+      "চাল মোটা": 75.0,
+      "তুলসী ডাল": 115.0,
+    };
+    return prices[product] ?? 100.0;
+  }
+
+  double _extractQuantity(String quantityString) {
+    // Extract number from strings like "50 কেজি", "20 লিটার"
+    final regex = RegExp(r'(\d+)');
+    final match = regex.firstMatch(quantityString);
+    return match != null ? double.parse(match.group(1)!) : 1.0;
+  }
+
+  String _getShopLocation(String shopName) {
+    final locations = {
+      "আহমেদ স্টোর": "ধানমন্ডি, ঢাকা",
+      "করিম ট্রেডার্স": "চট্টগ্রাম",
+      "রহিম মার্ট": "সিলেট",
+      "ফাতিমা স্টোর": "রাজশাহী",
+      "নাসির এন্টারপ্রাইজ": "খুলনা",
+      "সালমা ট্রেডিং": "বরিশাল",
+      "আব্দুল মার্ট": "ঢাকা",
+      "রশিদ স্টোর": "চট্টগ্রাম",
+      "হাসান ট্রেডার্স": "সিলেট",
+      "কবির স্টোর": "রাজশাহী",
+    };
+    return locations[shopName] ?? "ঢাকা, বাংলাদেশ";
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case "Delivered":
+        return Colors.green;
+      case "Pending":
+        return Colors.orange;
+      case "Processing":
+        return Colors.blue;
+      case "Cancelled":
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  void _printReceipt(Map<String, dynamic> transaction, String receiptNumber) {
+    Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Create Offer - Coming Soon!")),
+      SnackBar(
+        content: Text("Receipt $receiptNumber sent to printer"),
+        backgroundColor: Colors.green[800],
+      ),
     );
   }
 
@@ -2235,28 +1978,52 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _showSupplyHistory(String productName) {
+  void _openChatWithShop(String shopName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WholesalerChatScreen(
+          shopName: shopName,
+          shopId: shopName.toLowerCase().replaceAll(' ', '_'),
+        ),
+      ),
+    );
+  }
+
+  // Communication Methods
+  void _contactShop(String shopName) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Supply History: $productName"),
-        content: const Column(
+        title: Text("Contact $shopName"),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.history),
-              title: Text("Last 30 days"),
-              subtitle: Text("145 units supplied to 8 shops"),
+              leading: const Icon(Icons.phone),
+              title: const Text("Call Shop"),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Calling $shopName...")),
+                );
+              },
             ),
             ListTile(
-              leading: Icon(Icons.trending_up),
-              title: Text("Average demand"),
-              subtitle: Text("4.8 units per day"),
-            ),
-            ListTile(
-              leading: Icon(Icons.store),
-              title: Text("Top customer"),
-              subtitle: Text("আহমেদ স্টোর (35 units)"),
+              leading: const Icon(Icons.message),
+              title: const Text("Send Message"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => WholesalerChatScreen(
+                      shopName: shopName,
+                      shopId: shopName.toLowerCase().replaceAll(' ', '_'),
+                    ),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -2270,12 +2037,98 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _togglePriority(String productName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Priority status toggled for $productName"),
-        backgroundColor: Colors.yellow[700],
+  // Offer Management Methods
+  void _createOffer() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Create New Offer"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(
+                labelText: "Product",
+                border: OutlineInputBorder(),
+              ),
+              items: products.map((product) {
+                return DropdownMenuItem(value: product, child: Text(product));
+              }).toList(),
+              onChanged: (value) {},
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              decoration: const InputDecoration(
+                labelText: "Discount Percentage",
+                suffixText: "%",
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              decoration: const InputDecoration(
+                labelText: "Valid Days",
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Create"),
+          ),
+        ],
       ),
     );
   }
+
+  void _showBulkActions() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Bulk Actions"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text("Bulk Price Update"),
+              onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: const Icon(Icons.local_offer),
+              title: const Text("Bulk Discount"),
+              onTap: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Filter and Offer Methods
+  void _applyFilters() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          "Filtering: $selectedProduct in $selectedLocation with < $quantityThreshold units",
+        ),
+        backgroundColor: Colors.green[800],
+      ),
+    );
+  }
+
 }
