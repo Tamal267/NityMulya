@@ -127,76 +127,101 @@ class _SignupScreenState extends State<SignupScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            children: [
-              // Role Selection
-              Container(
-                decoration: BoxDecoration(
-                  color: const Color(0xFF079b11),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                child: DropdownButtonFormField<String>(
-                  value: selectedRole,
-                  dropdownColor: Colors.green[50],
-                  decoration: const InputDecoration.collapsed(hintText: ''),
-                  items: ['Customer', 'Wholesaler', 'Shop Owner']
-                      .map((role) => DropdownMenuItem(
-                            value: role,
-                            child: Text(role),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedRole = value!;
-                    });
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Dynamic Fields
-              getFieldsForRole(),
-
-              const SizedBox(height: 20),
-
-              // OTP Section
-              if (!otpSent)
-                ElevatedButton(
-                  onPressed: sendOTP,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF079b11),
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: const Text("Send OTP"),
-                )
-              else
-                Column(
+        child: Center(
+          child: Card(
+            color: const Color(0xFFE8F5E9), // Light green tint
+            elevation: 4,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
                   children: [
-                    TextFormField(
-                      controller: _otpController,
-                      decoration: const InputDecoration(
-                        labelText: "Enter OTP",
-                        border: OutlineInputBorder(),
+                    // Logo with rounded border
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(60),
+                      child: Image.asset(
+                        'assets/image/logo.jpeg',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Role Selection
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF079b11),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 8),
+                      child: DropdownButtonFormField<String>(
+                        value: selectedRole,
+                        dropdownColor: Colors.green[50],
+                        decoration:
+                            const InputDecoration.collapsed(hintText: ''),
+                        items: ['Customer', 'Wholesaler', 'Shop Owner']
+                            .map((role) => DropdownMenuItem(
+                                  value: role,
+                                  child: Text(role),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedRole = value!;
+                          });
+                        },
                       ),
                     ),
                     const SizedBox(height: 12),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context); // After sign up → login screen
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF079b11),
-                        minimumSize: const Size(double.infinity, 50),
+
+                    // Dynamic Fields
+                    getFieldsForRole(),
+
+                    const SizedBox(height: 20),
+
+                    // OTP Section
+                    if (!otpSent)
+                      ElevatedButton(
+                        onPressed: sendOTP,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF079b11),
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                        child: const Text("Send OTP"),
+                      )
+                    else
+                      Column(
+                        children: [
+                          TextFormField(
+                            controller: _otpController,
+                            decoration: const InputDecoration(
+                              labelText: "Enter OTP",
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(
+                                  context); // After sign up → login screen
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF079b11),
+                              minimumSize: const Size(double.infinity, 50),
+                            ),
+                            child: const Text("Verify & Sign Up"),
+                          ),
+                        ],
                       ),
-                      child: const Text("Verify & Sign Up"),
-                    ),
                   ],
                 ),
-            ],
+              ),
+            ),
           ),
         ),
       ),

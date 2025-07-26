@@ -97,6 +97,17 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Logo with rounded border
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(60), // Makes the image round
+                    child: Image.asset(
+                      'assets/image/logo.jpeg',
+                      width: 120,
+                      height: 120,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
                   // Role Dropdown
                   DropdownButtonFormField<String>(
                     value: selectedRole,
