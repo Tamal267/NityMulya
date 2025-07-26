@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:nitymulya/Screens/customers/product_detail_screen.dart';
 import 'package:nitymulya/screens/auth/login_screen.dart';
+import 'package:nitymulya/screens/customers/product_detail_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String? userName;
