@@ -527,6 +527,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     }
   ];
 
+
+
   List<Map<String, dynamic>> get filteredProducts {
     if (selectedCategory == "All") return products;
     return products
