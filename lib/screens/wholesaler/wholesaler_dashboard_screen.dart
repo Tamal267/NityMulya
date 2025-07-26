@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_edit_product_screen.dart';
+import 'package:nitymulya/widgets/custom_drawer.dart';
 
 class WholesalerDashboardScreen extends StatefulWidget {
   const WholesalerDashboardScreen({super.key});
@@ -268,6 +269,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      drawer: CustomDrawer(
+        // ✅ This is newly added
+        userName: "Wholesaler Name",
+        userEmail: "Wholesaler@example.com",
+        userRole: "Shop",
+      ),
       appBar: AppBar(
         title: const Text(
           "Wholesaler Panel",
@@ -1020,7 +1027,6 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       ),
     );
   }
-
 
 //-------------------------
 
