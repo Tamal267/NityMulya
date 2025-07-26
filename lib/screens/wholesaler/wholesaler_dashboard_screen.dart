@@ -7,7 +7,8 @@ class WholesalerDashboardScreen extends StatefulWidget {
   const WholesalerDashboardScreen({super.key});
 
   @override
-  State<WholesalerDashboardScreen> createState() => _WholesalerDashboardScreenState();
+  State<WholesalerDashboardScreen> createState() =>
+      _WholesalerDashboardScreenState();
 }
 
 class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
@@ -17,11 +18,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   int newRequests = 12;
   int lowStockProducts = 8;
   int unreadMessages = 15;
-  
+
   String selectedProduct = "All Products";
   String selectedLocation = "All Areas";
   int quantityThreshold = 10;
-  
+
   final List<String> products = [
     "All Products",
     "Rice (চাল)",
@@ -31,7 +32,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     "Onion (পেঁয়াজ)",
     "Flour (আটা)",
   ];
-  
+
   final List<String> locations = [
     "All Areas",
     "Dhaka (ঢাকা)",
@@ -53,10 +54,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     super.dispose();
   }
 
+/*
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+       
       appBar: AppBar(
         title: const Text(
           "Wholesaler Panel",
@@ -259,7 +262,190 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color, Color bgColor) {
+*/
+//----------------
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        title: const Text(
+          "Wholesaler Panel",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: Colors.green[800],
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications),
+                onPressed: () => _showNotifications(),
+              ),
+              if (newRequests > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: _buildBadge('$newRequests'),
+                ),
+            ],
+          ),
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.message),
+                onPressed: () => _openMessageCenter(),
+              ),
+              if (unreadMessages > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: _buildBadge('$unreadMessages'),
+                ),
+            ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () => _showSettings(),
+          ),
+        ],
+      ),
+
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Summary Cards
+            Column(
+              children: [
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildSummaryCard(
+                        "Total Shops",
+                        "$totalShops",
+                        Icons.store,
+                        Colors.green[700]!,
+                        Colors.green[50]!,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildSummaryCard(
+                        "Stock Requests",
+                        "$newRequests",
+                        Icons.shopping_cart,
+                        Colors.yellow[700]!,
+                        Colors.yellow[50]!,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildSummaryCard(
+                        "Low Stock",
+                        "$lowStockProducts",
+                        Icons.warning,
+                        Colors.red[700]!,
+                        Colors.red[50]!,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _buildSummaryCard(
+                        "New Messages",
+                        "$unreadMessages",
+                        Icons.chat,
+                        Colors.blue[700]!,
+                        Colors.blue[50]!,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            // Tab Content Area
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.65,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildLowStockMonitorTab(),
+                  _buildInventoryTab(),
+                  _buildChatTab(),
+                  _buildHistoryTab(),
+                  _buildOffersTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      // Bottom Navigation TabBar
+      bottomNavigationBar: Material(
+        color: Colors.white,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: Colors.grey[300]!)),
+          ),
+          child: TabBar(
+            controller: _tabController,
+            isScrollable: false,
+            labelColor: Colors.green[800],
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Colors.green[800],
+            tabs: const [
+              Tab(icon: Icon(Icons.monitor), text: "Monitor"),
+              Tab(icon: Icon(Icons.inventory), text: "Inventory"),
+              Tab(icon: Icon(Icons.chat), text: "Chat"),
+              Tab(icon: Icon(Icons.history), text: "History"),
+              Tab(icon: Icon(Icons.campaign), text: "Offers"),
+            ],
+          ),
+        ),
+      ),
+
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => _showQuickActions(),
+        backgroundColor: Colors.green[800],
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          "Quick Action",
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadge(String count) {
+    return Container(
+      padding: const EdgeInsets.all(2),
+      decoration: BoxDecoration(
+        color: Colors.yellow[600],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+      child: Text(
+        count,
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+//--------------------
+
+  Widget _buildSummaryCard(
+      String title, String value, IconData icon, Color color, Color bgColor) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -283,14 +469,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               const Spacer(),
               if (title.contains("Low") || title.contains("Requests"))
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Text(
                     "!",
-                    style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
             ],
@@ -318,6 +508,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
+//--------------------------------Tush---------------
+/*
   Widget _buildLowStockMonitorTab() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -355,7 +547,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   ],
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Product Filter
                 Row(
                   children: [
@@ -363,18 +555,23 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Product:", style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text("Product:",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
                           DropdownButtonFormField<String>(
                             value: selectedProduct,
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                               isDense: true,
                             ),
-                            items: products.map((product) => DropdownMenuItem(
-                              value: product,
-                              child: Text(product, style: const TextStyle(fontSize: 14)),
-                            )).toList(),
+                            items: products
+                                .map((product) => DropdownMenuItem(
+                                      value: product,
+                                      child: Text(product,
+                                          style: const TextStyle(fontSize: 14)),
+                                    ))
+                                .toList(),
                             onChanged: (value) {
                               setState(() {
                                 selectedProduct = value!;
@@ -389,18 +586,23 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Location:", style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text("Location:",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
                           DropdownButtonFormField<String>(
                             value: selectedLocation,
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                               isDense: true,
                             ),
-                            items: locations.map((location) => DropdownMenuItem(
-                              value: location,
-                              child: Text(location, style: const TextStyle(fontSize: 14)),
-                            )).toList(),
+                            items: locations
+                                .map((location) => DropdownMenuItem(
+                                      value: location,
+                                      child: Text(location,
+                                          style: const TextStyle(fontSize: 14)),
+                                    ))
+                                .toList(),
                             onChanged: (value) {
                               setState(() {
                                 selectedLocation = value!;
@@ -413,7 +615,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   ],
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Quantity Threshold
                 Row(
                   children: [
@@ -421,12 +623,14 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Quantity Threshold:", style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text("Quantity Threshold:",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
                           TextFormField(
                             initialValue: quantityThreshold.toString(),
                             decoration: InputDecoration(
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                               isDense: true,
                               suffixText: "units",
                               prefixText: "< ",
@@ -444,12 +648,14 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("", style: TextStyle(fontWeight: FontWeight.bold)),
+                          const Text("",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
                           ElevatedButton.icon(
                             onPressed: () => _applyFilters(),
                             icon: const Icon(Icons.search, color: Colors.white),
-                            label: const Text("Apply Filter", style: TextStyle(color: Colors.white)),
+                            label: const Text("Apply Filter",
+                                style: TextStyle(color: Colors.white)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green[800],
                               minimumSize: const Size(double.infinity, 48),
@@ -464,7 +670,166 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
+          // Results List
+          Expanded(
+            child: ListView.builder(
+              itemCount: 8,
+              itemBuilder: (context, index) {
+                return _buildLowStockItem(index);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+*/
+
+  Widget _buildLowStockMonitorTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Filter Section
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  // ignore: deprecated_member_use
+                  color: Colors.grey.withOpacity(0.1),
+                  spreadRadius: 1,
+                  blurRadius: 3,
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.monitor, color: Colors.green[800]),
+                    const SizedBox(width: 8),
+                    const Text(
+                      "🛒 Low Stock Monitor",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Product & Location Filter Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        value: selectedProduct,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                        ),
+                        items: products
+                            .map((product) => DropdownMenuItem(
+                                  value: product,
+                                  child: Text(product,
+                                      style: const TextStyle(fontSize: 14)),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedProduct = value!;
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        value: selectedLocation,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                        ),
+                        items: locations
+                            .map((location) => DropdownMenuItem(
+                                  value: location,
+                                  child: Text(location,
+                                      style: const TextStyle(fontSize: 14)),
+                                ))
+                            .toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedLocation = value!;
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Quantity Threshold & Apply Filter Row
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Quantity Threshold:",
+                              style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          TextFormField(
+                            initialValue: quantityThreshold.toString(),
+                            decoration: InputDecoration(
+                              border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8)),
+                              isDense: true,
+                              suffixText: "units",
+                              prefixText: "< ",
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              quantityThreshold = int.tryParse(value) ?? 10;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () => _applyFilters(),
+                        icon: const Icon(Icons.search, color: Colors.white),
+                        label: const Text("Apply Filter",
+                            style: TextStyle(color: Colors.white)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green[800],
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
           // Results List
           Expanded(
             child: ListView.builder(
@@ -481,14 +846,76 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
   Widget _buildLowStockItem(int index) {
     final shops = [
-      {"name": "আহমেদ স্টোর", "location": "ধানমন্ডি, ঢাকা", "product": "চাল সরু", "quantity": 3, "urgent": true},
-      {"name": "করিম ট্রেডার্স", "location": "চট্টগ্রাম", "product": "সয়াবিন তেল", "quantity": 5, "urgent": true},
-      {"name": "রহিম মার্ট", "location": "সিলেট", "product": "মসুর ডাল", "quantity": 8, "urgent": false},
-      {"name": "ফাতিমা স্টোর", "location": "রাজশাহী", "product": "পেঁয়াজ", "quantity": 2, "urgent": true},
-      {"name": "নাসির এন্টারপ্রাইজ", "location": "খুলনা", "product": "চিনি", "quantity": 6, "urgent": false},
-      {"name": "সালমা ট্রেডিং", "location": "বরিশাল", "product": "গমের আটা", "quantity": 4, "urgent": true},
-      {"name": "আব্দুল মার্ট", "location": "ঢাকা", "product": "ছোলা ডাল", "quantity": 7, "urgent": false},
-      {"name": "রশিদ স্টোর", "location": "চট্টগ্রাম", "product": "সরিষার তেল", "quantity": 1, "urgent": true},
+      {
+        "name": "আহমেদ স্টোর",
+        "location": "ধানমন্ডি, ঢাকা",
+        "product": "চাল সরু",
+        "quantity": 3,
+        "urgent": true
+      },
+      {
+        "name": "করিম ট্রেডার্স",
+        "location": "চট্টগ্রাম",
+        "product": "সয়াবিন তেল",
+        "quantity": 5,
+        "urgent": true
+      },
+      {
+        "name": "রহিম মার্ট",
+        "location": "সিলেট",
+        "product": "মসুর ডাল",
+        "quantity": 8,
+        "urgent": false
+      },
+      {
+        "name": "ফাতিমা স্টোর",
+        "location": "রাজশাহী",
+        "product": "পেঁয়াজ",
+        "quantity": 2,
+        "urgent": true
+      },
+      {
+        "name": "নাসির এন্টারপ্রাইজ",
+        "location": "খুলনা",
+        "product": "চিনি",
+        "quantity": 6,
+        "urgent": false
+      },
+      {
+        "name": "সালমা ট্রেডিং",
+        "location": "বরিশাল",
+        "product": "গমের আটা",
+        "quantity": 4,
+        "urgent": true
+      },
+      {
+        "name": "আব্দুল মার্ট",
+        "location": "ঢাকা",
+        "product": "ছোলা ডাল",
+        "quantity": 7,
+        "urgent": false
+      },
+      {
+        "name": "রশিদ স্টোর",
+        "location": "চট্টগ্রাম",
+        "product": "সরিষার তেল",
+        "quantity": 1,
+        "urgent": true
+      },
+      {
+        "name": "Tushar স্টোর",
+        "location": "Mohammadpur, Dhaka",
+        "product": "সরিষার তেল",
+        "quantity": 1,
+        "urgent": true
+      },
+      {
+        "name": "Nahid স্টোর",
+        "location": "Dhaka",
+        "product": "সরিষার তেল",
+        "quantity": 1,
+        "urgent": true
+      },
     ];
 
     final shop = shops[index];
@@ -582,7 +1009,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 borderRadius: BorderRadius.circular(8),
               ),
               child: IconButton(
-                icon: const Icon(Icons.local_offer, color: Colors.white, size: 20),
+                icon: const Icon(Icons.local_offer,
+                    color: Colors.white, size: 20),
                 onPressed: () => _bulkOffer(shop["name"] as String),
                 tooltip: "Bulk Offer",
               ),
@@ -592,6 +1020,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       ),
     );
   }
+
+
+//-------------------------
 
   Widget _buildInventoryTab() {
     return Padding(
@@ -604,7 +1035,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _addProduct(),
                   icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text("Add Product", style: TextStyle(color: Colors.white)),
+                  label: const Text("Add Product",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[800],
                   ),
@@ -615,7 +1047,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _uploadCatalog(),
                   icon: const Icon(Icons.upload, color: Colors.white),
-                  label: const Text("Upload Catalog", style: TextStyle(color: Colors.white)),
+                  label: const Text("Upload Catalog",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[600],
                   ),
@@ -639,14 +1072,62 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
   Widget _buildInventoryItem(int index) {
     final products = [
-      {"name": "চাল সরু (প্রিমিয়াম)", "unit": "কেজি", "price": 85, "stock": 500, "priority": true},
-      {"name": "সয়াবিন তেল (পিউর)", "unit": "লিটার", "price": 170, "stock": 200, "priority": false},
-      {"name": "মসুর ডাল", "unit": "কেজি", "price": 125, "stock": 150, "priority": false},
-      {"name": "পেঁয়াজ (দেশি)", "unit": "কেজি", "price": 55, "stock": 80, "priority": true},
-      {"name": "চিনি (সাদা)", "unit": "কেজি", "price": 65, "stock": 300, "priority": false},
-      {"name": "গমের আটা", "unit": "কেজি", "price": 50, "stock": 250, "priority": false},
-      {"name": "ছোলা ডাল", "unit": "কেজি", "price": 95, "stock": 120, "priority": true},
-      {"name": "সরিষার তেল", "unit": "লিটার", "price": 180, "stock": 90, "priority": false},
+      {
+        "name": "চাল সরু (প্রিমিয়াম)",
+        "unit": "কেজি",
+        "price": 85,
+        "stock": 500,
+        "priority": true
+      },
+      {
+        "name": "সয়াবিন তেল (পিউর)",
+        "unit": "লিটার",
+        "price": 170,
+        "stock": 200,
+        "priority": false
+      },
+      {
+        "name": "মসুর ডাল",
+        "unit": "কেজি",
+        "price": 125,
+        "stock": 150,
+        "priority": false
+      },
+      {
+        "name": "পেঁয়াজ (দেশি)",
+        "unit": "কেজি",
+        "price": 55,
+        "stock": 80,
+        "priority": true
+      },
+      {
+        "name": "চিনি (সাদা)",
+        "unit": "কেজি",
+        "price": 65,
+        "stock": 300,
+        "priority": false
+      },
+      {
+        "name": "গমের আটা",
+        "unit": "কেজি",
+        "price": 50,
+        "stock": 250,
+        "priority": false
+      },
+      {
+        "name": "ছোলা ডাল",
+        "unit": "কেজি",
+        "price": 95,
+        "stock": 120,
+        "priority": true
+      },
+      {
+        "name": "সরিষার তেল",
+        "unit": "লিটার",
+        "price": 180,
+        "stock": 90,
+        "priority": false
+      },
     ];
 
     final product = products[index];
@@ -691,7 +1172,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             Text(
               "Stock: ${product["stock"]} ${product["unit"]}",
               style: TextStyle(
-                color: (product["stock"] as int) < 100 ? Colors.red : Colors.green,
+                color:
+                    (product["stock"] as int) < 100 ? Colors.red : Colors.green,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -700,8 +1182,10 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         trailing: PopupMenuButton(
           itemBuilder: (context) => [
             const PopupMenuItem(value: "edit", child: Text("Edit")),
-            const PopupMenuItem(value: "history", child: Text("Supply History")),
-            const PopupMenuItem(value: "priority", child: Text("Toggle Priority")),
+            const PopupMenuItem(
+                value: "history", child: Text("Supply History")),
+            const PopupMenuItem(
+                value: "priority", child: Text("Toggle Priority")),
             const PopupMenuItem(value: "delete", child: Text("Delete")),
           ],
           onSelected: (value) {
@@ -742,7 +1226,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                     child: const Text(
                       "Recent",
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -770,7 +1255,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           Expanded(
             child: ListView.builder(
               itemCount: 6,
@@ -786,12 +1271,48 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
   Widget _buildChatItem(int index) {
     final chats = [
-      {"shop": "আহমেদ স্টোর", "message": "চাল সরুর দাম কত?", "time": "২ মিনিট আগে", "unread": 2, "product": "চাল"},
-      {"shop": "করিম ট্রেডার্স", "message": "তেলের স্টক আছে?", "time": "১৫ মিনিট আগে", "unread": 0, "product": "তেল"},
-      {"shop": "রহিম মার্ট", "message": "অর্ডার কনফার্ম", "time": "৩০ মিনিট আগে", "unread": 1, "product": "ডাল"},
-      {"shop": "ফাতিমা স্টোর", "message": "ডেলিভারি কবে?", "time": "১ ঘণ্টা আগে", "unread": 3, "product": "পেঁয়াজ"},
-      {"shop": "নাসির এন্টারপ্রাইজ", "message": "নতুন দামের তালিকা চাই", "time": "২ ঘণ্টা আগে", "unread": 0, "product": "চিনি"},
-      {"shop": "সালমা ট্রেডিং", "message": "বাল্ক অর্ডার দিতে চাই", "time": "৩ ঘণ্টা আগে", "unread": 1, "product": "আটা"},
+      {
+        "shop": "আহমেদ স্টোর",
+        "message": "চাল সরুর দাম কত?",
+        "time": "২ মিনিট আগে",
+        "unread": 2,
+        "product": "চাল"
+      },
+      {
+        "shop": "করিম ট্রেডার্স",
+        "message": "তেলের স্টক আছে?",
+        "time": "১৫ মিনিট আগে",
+        "unread": 0,
+        "product": "তেল"
+      },
+      {
+        "shop": "রহিম মার্ট",
+        "message": "অর্ডার কনফার্ম",
+        "time": "৩০ মিনিট আগে",
+        "unread": 1,
+        "product": "ডাল"
+      },
+      {
+        "shop": "ফাতিমা স্টোর",
+        "message": "ডেলিভারি কবে?",
+        "time": "১ ঘণ্টা আগে",
+        "unread": 3,
+        "product": "পেঁয়াজ"
+      },
+      {
+        "shop": "নাসির এন্টারপ্রাইজ",
+        "message": "নতুন দামের তালিকা চাই",
+        "time": "২ ঘণ্টা আগে",
+        "unread": 0,
+        "product": "চিনি"
+      },
+      {
+        "shop": "সালমা ট্রেডিং",
+        "message": "বাল্ক অর্ডার দিতে চাই",
+        "time": "৩ ঘণ্টা আগে",
+        "unread": 1,
+        "product": "আটা"
+      },
     ];
 
     final chat = chats[index];
@@ -855,7 +1376,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.green[100],
                     borderRadius: BorderRadius.circular(8),
@@ -903,7 +1425,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _exportPDF(),
                   icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
-                  label: const Text("Export PDF", style: TextStyle(color: Colors.white)),
+                  label: const Text("Export PDF",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.red[600],
                   ),
@@ -914,7 +1437,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _exportCSV(),
                   icon: const Icon(Icons.table_chart, color: Colors.white),
-                  label: const Text("Export CSV", style: TextStyle(color: Colors.white)),
+                  label: const Text("Export CSV",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[600],
                   ),
@@ -923,7 +1447,6 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ],
           ),
           const SizedBox(height: 16),
-          
           Expanded(
             child: ListView.builder(
               itemCount: 10,
@@ -939,24 +1462,84 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
   Widget _buildHistoryItem(int index) {
     final transactions = [
-      {"shop": "আহমেদ স্টোর", "product": "চাল সরু", "quantity": "50 কেজি", "date": "২৫/০৭/২৫", "status": "Delivered"},
-      {"shop": "করিম ট্রেডার্স", "product": "সয়াবিন তেল", "quantity": "20 লিটার", "date": "২৪/০৭/২৫", "status": "Pending"},
-      {"shop": "রহিম মার্ট", "product": "মসুর ডাল", "quantity": "30 কেজি", "date": "২৩/০৭/২৫", "status": "Delivered"},
-      {"shop": "ফাতিমা স্টোর", "product": "পেঁয়াজ", "quantity": "100 কেজি", "date": "২২/০৭/২৫", "status": "Processing"},
-      {"shop": "নাসির এন্টারপ্রাইজ", "product": "চিনি", "quantity": "40 কেজি", "date": "২১/০৭/২৫", "status": "Delivered"},
-      {"shop": "সালমা ট্রেডিং", "product": "গমের আটা", "quantity": "60 কেজি", "date": "২০/০৭/২৫", "status": "Delivered"},
-      {"shop": "আব্দুল মার্ট", "product": "ছোলা ডাল", "quantity": "25 কেজি", "date": "১৯/০৭/২৫", "status": "Delivered"},
-      {"shop": "রশিদ স্টোর", "product": "সরিষার তেল", "quantity": "15 লিটার", "date": "১৮/০৭/২৫", "status": "Cancelled"},
-      {"shop": "হাসান ট্রেডার্স", "product": "চাল মোটা", "quantity": "80 কেজি", "date": "১৭/০৭/২৫", "status": "Delivered"},
-      {"shop": "কবির স্টোর", "product": "তুলসী ডাল", "quantity": "35 কেজি", "date": "১৬/০৭/২৫", "status": "Delivered"},
+      {
+        "shop": "আহমেদ স্টোর",
+        "product": "চাল সরু",
+        "quantity": "50 কেজি",
+        "date": "২৫/০৭/২৫",
+        "status": "Delivered"
+      },
+      {
+        "shop": "করিম ট্রেডার্স",
+        "product": "সয়াবিন তেল",
+        "quantity": "20 লিটার",
+        "date": "২৪/০৭/২৫",
+        "status": "Pending"
+      },
+      {
+        "shop": "রহিম মার্ট",
+        "product": "মসুর ডাল",
+        "quantity": "30 কেজি",
+        "date": "২৩/০৭/২৫",
+        "status": "Delivered"
+      },
+      {
+        "shop": "ফাতিমা স্টোর",
+        "product": "পেঁয়াজ",
+        "quantity": "100 কেজি",
+        "date": "২২/০৭/২৫",
+        "status": "Processing"
+      },
+      {
+        "shop": "নাসির এন্টারপ্রাইজ",
+        "product": "চিনি",
+        "quantity": "40 কেজি",
+        "date": "২১/০৭/২৫",
+        "status": "Delivered"
+      },
+      {
+        "shop": "সালমা ট্রেডিং",
+        "product": "গমের আটা",
+        "quantity": "60 কেজি",
+        "date": "২০/০৭/২৫",
+        "status": "Delivered"
+      },
+      {
+        "shop": "আব্দুল মার্ট",
+        "product": "ছোলা ডাল",
+        "quantity": "25 কেজি",
+        "date": "১৯/০৭/২৫",
+        "status": "Delivered"
+      },
+      {
+        "shop": "রশিদ স্টোর",
+        "product": "সরিষার তেল",
+        "quantity": "15 লিটার",
+        "date": "১৮/০৭/২৫",
+        "status": "Cancelled"
+      },
+      {
+        "shop": "হাসান ট্রেডার্স",
+        "product": "চাল মোটা",
+        "quantity": "80 কেজি",
+        "date": "১৭/০৭/২৫",
+        "status": "Delivered"
+      },
+      {
+        "shop": "কবির স্টোর",
+        "product": "তুলসী ডাল",
+        "quantity": "35 কেজি",
+        "date": "১৬/০৭/২৫",
+        "status": "Delivered"
+      },
     ];
 
     final transaction = transactions[index];
     final status = transaction["status"] as String;
-    
+
     Color statusColor;
     IconData statusIcon;
-    
+
     switch (status) {
       case "Delivered":
         statusColor = Colors.green;
@@ -1008,7 +1591,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: statusColor,
                     borderRadius: BorderRadius.circular(12),
@@ -1046,7 +1630,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _createOffer(),
                   icon: const Icon(Icons.campaign, color: Colors.white),
-                  label: const Text("Create Offer", style: TextStyle(color: Colors.white)),
+                  label: const Text("Create Offer",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.yellow[700],
                   ),
@@ -1057,7 +1642,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _broadcastToAll(),
                   icon: const Icon(Icons.send, color: Colors.white),
-                  label: const Text("Broadcast All", style: TextStyle(color: Colors.white)),
+                  label: const Text("Broadcast All",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[800],
                   ),
@@ -1066,7 +1652,6 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ],
           ),
           const SizedBox(height: 16),
-          
           Expanded(
             child: ListView.builder(
               itemCount: 5,
@@ -1145,7 +1730,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           children: [
             Text(
               offer["description"] as String,
-              style: TextStyle(color: isActive ? Colors.black87 : Colors.grey[600]),
+              style: TextStyle(
+                  color: isActive ? Colors.black87 : Colors.grey[600]),
             ),
             const SizedBox(height: 4),
             Row(
@@ -1311,7 +1897,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Logout"),
-        content: const Text("Are you sure you want to logout from your wholesaler account?"),
+        content: const Text(
+            "Are you sure you want to logout from your wholesaler account?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1339,7 +1926,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       '/login',
       (Route<dynamic> route) => false,
     );
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Logged out successfully"),
@@ -1427,14 +2014,14 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         builder: (context) => const WholesalerAddProductScreen(),
       ),
     );
-    
+
     if (result == true) {
       // Refresh the dashboard data
       setState(() {
         // In a real app, you would reload data from your database
         // For now, we'll just show a success message
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
@@ -1460,19 +2047,73 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   void _handleInventoryAction(String action, String productName) async {
     // Get the product data based on product name
     final products = [
-      {"name": "চাল সরু (প্রিমিয়াম)", "unit": "কেজি", "price": 85, "stock": 500, "priority": true},
-      {"name": "সয়াবিন তেল (পিউর)", "unit": "লিটার", "price": 170, "stock": 200, "priority": false},
-      {"name": "মসুর ডাল", "unit": "কেজি", "price": 125, "stock": 150, "priority": false},
-      {"name": "পেঁয়াজ (দেশি)", "unit": "কেজি", "price": 55, "stock": 80, "priority": true},
-      {"name": "চিনি (সাদা)", "unit": "কেজি", "price": 65, "stock": 300, "priority": false},
-      {"name": "গমের আটা", "unit": "কেজি", "price": 50, "stock": 250, "priority": false},
-      {"name": "ছোলা ডাল", "unit": "কেজি", "price": 95, "stock": 120, "priority": true},
-      {"name": "সরিষার তেল", "unit": "লিটার", "price": 180, "stock": 90, "priority": false},
+      {
+        "name": "চাল সরু (প্রিমিয়াম)",
+        "unit": "কেজি",
+        "price": 85,
+        "stock": 500,
+        "priority": true
+      },
+      {
+        "name": "সয়াবিন তেল (পিউর)",
+        "unit": "লিটার",
+        "price": 170,
+        "stock": 200,
+        "priority": false
+      },
+      {
+        "name": "মসুর ডাল",
+        "unit": "কেজি",
+        "price": 125,
+        "stock": 150,
+        "priority": false
+      },
+      {
+        "name": "পেঁয়াজ (দেশি)",
+        "unit": "কেজি",
+        "price": 55,
+        "stock": 80,
+        "priority": true
+      },
+      {
+        "name": "চিনি (সাদা)",
+        "unit": "কেজি",
+        "price": 65,
+        "stock": 300,
+        "priority": false
+      },
+      {
+        "name": "গমের আটা",
+        "unit": "কেজি",
+        "price": 50,
+        "stock": 250,
+        "priority": false
+      },
+      {
+        "name": "ছোলা ডাল",
+        "unit": "কেজি",
+        "price": 95,
+        "stock": 120,
+        "priority": true
+      },
+      {
+        "name": "সরিষার তেল",
+        "unit": "লিটার",
+        "price": 180,
+        "stock": 90,
+        "priority": false
+      },
     ];
 
     final product = products.firstWhere(
       (p) => p['name'] == productName,
-      orElse: () => {"name": productName, "unit": "কেজি", "price": 0, "stock": 0, "priority": false},
+      orElse: () => {
+        "name": productName,
+        "unit": "কেজি",
+        "price": 0,
+        "stock": 0,
+        "priority": false
+      },
     );
 
     if (action == "edit") {
@@ -1482,13 +2123,13 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           builder: (context) => WholesalerEditProductScreen(product: product),
         ),
       );
-      
+
       if (result != null) {
         if (result == 'deleted') {
           setState(() {
             // In a real app, you would remove the product from your database
           });
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Row(
@@ -1507,7 +2148,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           setState(() {
             // In a real app, you would update the product in your database
           });
-          
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Row(

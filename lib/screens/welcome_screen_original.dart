@@ -77,6 +77,7 @@ class WelcomeScreen extends StatelessWidget {
             ),
           ),
           Container(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.6),
             child: Column(
               children: [
