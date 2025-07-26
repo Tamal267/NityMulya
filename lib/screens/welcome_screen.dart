@@ -529,7 +529,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "mainCategory": "All" // Or create new category
     }
   ];
-
 //----------Sakif-------------------------------------------------///
 
   List<Map<String, dynamic>> get filteredProducts {
@@ -686,87 +685,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     );
   }
 
-  Widget buildDrawer() {
-  return Drawer(
-    child: ListView(
-      children: [
-        DrawerHeader(
-          decoration: const BoxDecoration(color: Color(0xFF079b11)),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
-                ),
-                child: ClipOval(
-                  child: Image.asset(
-                    'assets/image/logo.jpeg', 
-                    height: 80,
-                    width: 80,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-              widget.userName == null
-                  ? ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.green,
-                      ),
-                      onPressed: () {
-                        Navigator.pushNamed(context, '/login');
-                      },
-                      child: const Text("Login / Sign Up"),
-                    )
-                  : Column(
-                      children: [
-                        Text(
-                          widget.userName!,
-                          style: const TextStyle(
-                            color: Colors.white, 
-                            fontSize: 18
-                          ),
-                        ),
-                        Text(
-                          widget.userEmail ?? '',
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-            ],
-          ),
-        ),
-        ListTile(
-          leading: const Icon(Icons.store),
-          title: const Text("Shop"),
-          onTap: _handleRestrictedAction,
-        ),
-        ListTile(
-          leading: const Icon(Icons.favorite),
-          title: const Text("Favorites"),
-          onTap: _handleRestrictedAction,
-        ),
-        ListTile(
-          leading: const Icon(Icons.info),
-          title: const Text("About Our App"),
-          onTap: () {}, // optional: implement About screen
-        ),
-        ListTile(
-          leading: const Icon(Icons.help),
-          title: const Text("Help & Support"),
-          onTap: () {}, // optional: implement Help screen
-        ),
-      ],
-    ),
-  );
-}
   @override
   Widget build(BuildContext context) {
     if (showSplash) {
