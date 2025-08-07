@@ -95,7 +95,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 50,
       "high": 60,
-      "image": "assets/image/moydakhola.jpeg",
+      "image": "assets/image/Moydakhola.jpeg",
       "category": "ময়দা (খোলা)",
       "mainCategory": "আটা ও ময়দา"
     },
@@ -104,7 +104,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি প্যাঃ",
       "low": 50,
       "high": 60,
-      "image": "assets/image/moydapacket.jpeg",
+      "image": "assets/image/MOYDAPACKET.jpeg",
       "category": "ময়দা (প্যাকেট)",
       "mainCategory": "আটা ও ময়দা"
     },
@@ -216,7 +216,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 55,
       "high": 80,
-      "image": "assets/image/ankorDal.jpeg",
+      "image": "assets/image/ankordal.jpeg",
       "category": "এ্যাংকর ডাল",
       "mainCategory": "ডাল"
     },
@@ -272,7 +272,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       "unit": "প্রতি কেজি",
       "low": 160,
       "high": 200,
-      "image": "assets/image/rushunbideshi.jpeg",
+      "image": "assets/image/Rushunbideshi.jpeg",
       "category": "রসুন (আমদানি)",
       "mainCategory": "সবজি ও মসলা"
     },
