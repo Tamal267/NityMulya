@@ -1,0 +1,122 @@
+import 'dart:convert';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+// You will need to add a package like flutter_secure_storage for secure token management.
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+// Your base server URL
+final String serverUrl = dotenv.env['SERVER_URL'] ?? 'http://localhost:5000';
+
+// A simple utility class to handle all API requests.
+class NetworkHelper {
+  // A placeholder for token storage. In a real app, you would use
+  // a secure package like `flutter_secure_storage` to handle this.
+  // const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+
+  // Function to get the stored token.
+  // This is a placeholder and should be replaced with actual logic
+  // to retrieve the token from secure storage.
+  Future<String?> getToken() async {
+    // Replace with: return await _secureStorage.read(key: 'token');
+    // For this example, we'll return a static token.
+    return 'your_static_token_here';
+  }
+
+  // A generic POST request function
+  Future<dynamic> post(String url, Map<String, dynamic> data) async {
+    final fullUrl = Uri.parse('$serverUrl$url');
+
+    try {
+      final response = await http.post(
+        fullUrl,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // A generic GET request function
+  Future<dynamic> get(String url) async {
+    final fullUrl = Uri.parse('$serverUrl$url');
+
+    try {
+      final response = await http.get(
+        fullUrl,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // A GET request with a token in the header
+  Future<dynamic> getWithToken(String url) async {
+    final token = await getToken();
+    if (token == null) {
+      return {'error': 'Unauthorized'};
+    }
+
+    final fullUrl = Uri.parse('$serverUrl$url');
+    try {
+      final response = await http.get(
+        fullUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // A POST request with a token in the header
+  Future<dynamic> postWithToken(String url, Map<String, dynamic> data) async {
+    final token = await getToken();
+    if (token == null) {
+      return {'error': 'Unauthorized'};
+    }
+
+    final fullUrl = Uri.parse('$serverUrl$url');
+    try {
+      final response = await http.post(
+        fullUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(data),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // A private helper to handle common response logic
+  dynamic _handleResponse(http.Response response) {
+    try {
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return json.decode(response.body);
+      } else {
+        return {'error': 'Server error: ${response.statusCode}'};
+      }
+    } on FormatException catch (e) {
+      return {'error': 'JSON parsing error: $e'};
+    }
+  }
+}

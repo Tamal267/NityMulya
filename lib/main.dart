@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nitymulya/screens/auth/login_screen.dart';
 import 'package:nitymulya/screens/customers/complaint_form_screen.dart';
 import 'package:nitymulya/screens/customers/favorite_products_screen.dart';
@@ -10,7 +11,9 @@ import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
 import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env.local");
   runApp(const NitiMulyaApp());
 }
 

@@ -501,4 +501,17 @@ export const getPricesfromDB = async (c: any) => {
     }
 }
 
+export const getCategories = async (c: any) => {
+  try {
+    const categories = await sql`SELECT * FROM categories`
+    if (categories.length === 0) {
+      return c.json({ message: 'No categories found' }, 404)
+    }
+    return c.json(categories)
+  } catch (error) {
+    console.error('Error fetching categories:', error)
+    return c.json({ error: 'Failed to fetch categories' }, 500)
+  }
+}
+
 export default app
