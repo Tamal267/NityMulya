@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Hono } from 'hono';
 import fetch from 'node-fetch';
 import * as XLSX from 'xlsx'; // Import the xlsx library
+import sql from '../db';
 
 const GoogleApiKey = process.env.GOOGLE_API_KEY
 
@@ -436,6 +437,24 @@ export const getPrice = async (c: any) => {
 
       const jsonData = JSON.parse(geminiResponse)
 
+      for (const topic in jsonData) {
+        try {
+            for (const subtopic in jsonData[topic]) {
+                const { unit, max_price, min_price } = jsonData[topic][subtopic]
+                const subtopicData = await sql`
+                 UPDATE subcategories
+                 SET unit = ${unit}, max_price = ${max_price}, min_price = ${min_price}, created_at = NOW()
+                 WHERE subcat_name = ${subtopic}
+                 RETURNING id
+               `
+            }
+
+        } catch (error) {
+            console.error('Error inserting price data:', error)
+            return c.json({ error: 'Failed to insert price data' }, 500)
+        }
+      }
+
       return c.json(jsonData)
     } else {
       // Return error if getSheetUrl failed
@@ -449,6 +468,37 @@ export const getPrice = async (c: any) => {
       500,
     )
   }
+}
+
+export const getPricesfromDB = async (c: any) => {
+    try {
+        let pricelist = await sql`select c.cat_name, sc.* from subcategories sc
+        join categories c on sc.cat_id = c.id
+        order by c.cat_name`
+
+        // if day of created_at is today, then call getPrice function to update prices and then return pricelist
+        const today = new Date()
+        const todayString = today.toISOString().split('T')[0] // Get today's date in YYYY-MM-DD format
+
+        const lastUpdated = pricelist[0]?.created_at ? new Date(pricelist[0].created_at) : null
+        if (lastUpdated && lastUpdated.toISOString().split('T')[0] === todayString) {
+            console.log('Prices already updated today, returning cached pricelist')
+            return c.json(pricelist)
+        }
+
+        await getPrice(c)
+        pricelist = await sql`select c.cat_name, sc.* from subcategories sc
+        join categories c on sc.cat_id = c.id
+        order by c.cat_name`
+
+        if (pricelist.length === 0) {
+            return c.json({ message: 'No prices found' }, 404)
+        }
+        return c.json(pricelist)
+    } catch (error) {
+        console.error('Error fetching prices:', error)
+        return c.json({ error: 'Failed to fetch prices' }, 500)
+    }
 }
 
 export default app
