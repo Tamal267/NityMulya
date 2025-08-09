@@ -371,11 +371,15 @@ Future<Map<String, dynamic>> loginWholesaler({
     final response = await _apiClient.post('/login_wholesaler', loginData);
 
     if (response is Map<String, dynamic>) {
-      // Check for successful login
-      if (response['success'] == true || response.containsKey('wholesaler')) {
+      // Check for successful login with token
+      if (response['success'] == true && response.containsKey('token')) {
+        // Store token for authenticated requests
+        await _apiClient.setToken(response['token']);
+        
         return {
           'success': true,
           'message': response['message'] ?? 'Login successful',
+          'token': response['token'],
           'user': response['wholesaler'],
           'role': 'wholesaler',
         };

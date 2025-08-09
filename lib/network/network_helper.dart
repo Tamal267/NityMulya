@@ -107,6 +107,90 @@ class NetworkHelper {
     }
   }
 
+  // A generic PUT request function
+  Future<dynamic> put(String url, Map<String, dynamic> data) async {
+    final fullUrl = Uri.parse('$serverUrl$url');
+
+    try {
+      final response = await http.put(
+        fullUrl,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: json.encode(data),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // A generic DELETE request function
+  Future<dynamic> delete(String url) async {
+    final fullUrl = Uri.parse('$serverUrl$url');
+
+    try {
+      final response = await http.delete(
+        fullUrl,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // A PUT request with a token in the header
+  Future<dynamic> putWithToken(String url, Map<String, dynamic> data) async {
+    final token = await getToken();
+    if (token == null) {
+      return {'error': 'Unauthorized'};
+    }
+
+    final fullUrl = Uri.parse('$serverUrl$url');
+    try {
+      final response = await http.put(
+        fullUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode(data),
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // A DELETE request with a token in the header
+  Future<dynamic> deleteWithToken(String url) async {
+    final token = await getToken();
+    if (token == null) {
+      return {'error': 'Unauthorized'};
+    }
+
+    final fullUrl = Uri.parse('$serverUrl$url');
+    try {
+      final response = await http.delete(
+        fullUrl,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
   // A private helper to handle common response logic
   dynamic _handleResponse(http.Response response) {
     try {

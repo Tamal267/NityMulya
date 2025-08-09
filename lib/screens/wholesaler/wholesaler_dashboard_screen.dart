@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/network/auth.dart';
+import 'package:nitymulya/network/pricelist_api.dart';
+import 'package:nitymulya/network/wholesaler_api.dart';
+import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
@@ -17,21 +21,26 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   int totalShops = 45;
   int newRequests = 12;
   int lowStockProducts = 8;
+  int outOfStockProducts = 3;
   String supplyStatus = "Active";
+  
+  // Inventory state
+  List<Map<String, dynamic>> inventoryItems = [];
+  bool isLoadingInventory = false;
+  String? inventoryError;
+  
+  // Categories and subcategories data
+  List<Map<String, dynamic>> categories = [];
+  List<Map<String, dynamic>> priceList = [];
+  List<String> products = ["All Products"];
+  bool isLoadingProducts = false;
+  
+  // TODO: Remove this hardcoded ID - now using token-based authentication
+  // final String currentWholesalerId = 'cdb69b0f-27bc-41b5-9ce3-525f54e1f316';
   
   String selectedProduct = "All Products";
   String selectedLocation = "All Areas";
   int quantityThreshold = 10;
-  
-  final List<String> products = [
-    "All Products",
-    "Rice (চাল)",
-    "Oil (তেল)",
-    "Lentils (ডাল)",
-    "Sugar (চিনি)",
-    "Onion (পেঁয়াজ)",
-    "Flour (আটা)",
-  ];
   
   final List<String> locations = [
     "All Areas",
@@ -46,6 +55,72 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _loadInventory(); // Load inventory on startup
+    _loadProductsFromDatabase(); // Load products for the filter
+  }
+
+  Future<void> _loadProductsFromDatabase() async {
+    setState(() {
+      isLoadingProducts = true;
+    });
+
+    try {
+      final fetchedCategories = await fetchCategories();
+      final fetchedPriceList = await fetchPriceList();
+      
+      setState(() {
+        categories = fetchedCategories;
+        priceList = fetchedPriceList;
+        
+        // Extract unique product names (subcategory names) from price list
+        final productNames = priceList
+            .map((item) => item['subcat_name']?.toString() ?? '')
+            .where((name) => name.isNotEmpty)
+            .toSet()
+            .toList();
+        
+        products = ["All Products", ...productNames];
+        isLoadingProducts = false;
+      });
+    } catch (e) {
+      debugPrint('Error loading products: $e');
+      setState(() {
+        isLoadingProducts = false;
+      });
+    }
+  }
+
+  Future<void> _loadInventory() async {
+    setState(() {
+      isLoadingInventory = true;
+      inventoryError = null;
+    });
+
+    try {
+      final result = await WholesalerApiService.getInventory();
+      
+      if (result['success']) {
+        setState(() {
+          inventoryItems = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          isLoadingInventory = false;
+        });
+      } else {
+        setState(() {
+          inventoryError = result['message'] ?? 'Failed to load inventory';
+          isLoadingInventory = false;
+        });
+        
+        // Handle token expiration or authentication errors
+        if (result['requiresLogin'] == true) {
+          _handleAuthError();
+        }
+      }
+    } catch (e) {
+      setState(() {
+        inventoryError = 'Error loading inventory: $e';
+        isLoadingInventory = false;
+      });
+    }
   }
 
   @override
@@ -452,15 +527,27 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   Widget _buildLowStockItem(int index) {
+    // Use actual product names from the database instead of hardcoded ones
+    final productNames = [
+      "চাল সরু (নাজির/মিনিকেট)",
+      "সয়াবিন তেল (বোতল)",
+      "মশুর ডাল (বড় দানা)",
+      "পিঁয়াজ (দেশী)",
+      "চিনি",
+      "আটা সাদা (খোলা)",
+      "ছোলা (মানভেদে)",
+      "সয়াবিন তেল (লুজ)",
+    ];
+
     final shops = [
-      {"name": "আহমেদ স্টোর", "location": "ধানমন্ডি, ঢাকা", "product": "চাল সরু", "quantity": 3, "urgent": true},
-      {"name": "করিম ট্রেডার্স", "location": "চট্টগ্রাম", "product": "সয়াবিন তেল", "quantity": 5, "urgent": true},
-      {"name": "রহিম মার্ট", "location": "সিলেট", "product": "মসুর ডাল", "quantity": 8, "urgent": false},
-      {"name": "ফাতিমা স্টোর", "location": "রাজশাহী", "product": "পেঁয়াজ", "quantity": 2, "urgent": true},
-      {"name": "নাসির এন্টারপ্রাইজ", "location": "খুলনা", "product": "চিনি", "quantity": 6, "urgent": false},
-      {"name": "সালমা ট্রেডিং", "location": "বরিশাল", "product": "গমের আটা", "quantity": 4, "urgent": true},
-      {"name": "আব্দুল মার্ট", "location": "ঢাকা", "product": "ছোলা ডাল", "quantity": 7, "urgent": false},
-      {"name": "রশিদ স্টোর", "location": "চট্টগ্রাম", "product": "সরিষার তেল", "quantity": 1, "urgent": true},
+      {"name": "আহমেদ স্টোর", "location": "ধানমন্ডি, ঢাকা", "product": productNames[0], "quantity": 3, "urgent": true},
+      {"name": "করিম ট্রেডার্স", "location": "চট্টগ্রাম", "product": productNames[1], "quantity": 5, "urgent": true},
+      {"name": "রহিম মার্ট", "location": "সিলেট", "product": productNames[2], "quantity": 8, "urgent": false},
+      {"name": "ফাতিমা স্টোর", "location": "রাজশাহী", "product": productNames[3], "quantity": 2, "urgent": true},
+      {"name": "নাসির এন্টারপ্রাইজ", "location": "খুলনা", "product": productNames[4], "quantity": 6, "urgent": false},
+      {"name": "সালমা ট্রেডিং", "location": "বরিশাল", "product": productNames[5], "quantity": 4, "urgent": true},
+      {"name": "আব্দুল মার্ট", "location": "ঢাকা", "product": productNames[6], "quantity": 7, "urgent": false},
+      {"name": "রশিদ স্টোর", "location": "চট্টগ্রাম", "product": productNames[7], "quantity": 1, "urgent": true},
     ];
 
     final shop = shops[index];
@@ -594,7 +681,10 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       MaterialPageRoute(
                         builder: (context) => const WholesalerAddProductScreen(),
                       ),
-                    );
+                    ).then((_) {
+                      // Refresh inventory when returning from add product screen
+                      _loadInventory();
+                    });
                   },
                   icon: const Icon(Icons.add, color: Colors.white),
                   label: const Text("Add Product", style: TextStyle(color: Colors.white)),
@@ -603,12 +693,32 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: isLoadingInventory ? null : _loadInventory,
+                  icon: isLoadingInventory 
+                    ? const SizedBox(
+                        width: 16, 
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.refresh, color: Colors.white),
+                  label: Text(
+                    isLoadingInventory ? "Loading..." : "Refresh",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange[600],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _uploadCatalog(),
                   icon: const Icon(Icons.upload, color: Colors.white),
-                  label: const Text("Upload Catalog", style: TextStyle(color: Colors.white)),
+                  label: const Text("Upload", style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[600],
                   ),
@@ -618,97 +728,164 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.builder(
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return _buildInventoryItem(index);
-              },
-            ),
+            child: _buildInventoryContent(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInventoryItem(int index) {
-    final products = [
-      {
-        "name": "চাল সরু (প্রিমিয়াম)",
-        "unit": "কেজি",
-        "price": 85,
-        "stock": 500,
-      },
-      {
-        "name": "সয়াবিন তেল (পিউর)",
-        "unit": "লিটার",
-        "price": 170,
-        "stock": 200,
-      },
-      {
-        "name": "মসুর ডাল",
-        "unit": "কেজি",
-        "price": 125,
-        "stock": 150,
-      },
-      {
-        "name": "পেঁয়াজ (দেশি)",
-        "unit": "কেজি",
-        "price": 55,
-        "stock": 80,
-      },
-      {
-        "name": "চিনি (সাদা)",
-        "unit": "কেজি",
-        "price": 65,
-        "stock": 300,
-      },
-      {
-        "name": "গমের আটা",
-        "unit": "কেজি",
-        "price": 50,
-        "stock": 250,
-      },
-      {
-        "name": "ছোলা ডাল",
-        "unit": "কেজি",
-        "price": 95,
-        "stock": 120,
-      },
-      {
-        "name": "সরিষার তেল",
-        "unit": "লিটার",
-        "price": 180,
-        "stock": 90,
-      },
-    ];
+  Widget _buildInventoryContent() {
+    if (isLoadingInventory) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text("Loading inventory..."),
+          ],
+        ),
+      );
+    }
 
-    final product = products[index];
+    if (inventoryError != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            const SizedBox(height: 16),
+            Text(
+              inventoryError!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadInventory,
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (inventoryItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              "No products in inventory",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Add your first product to get started",
+              style: TextStyle(
+                color: Colors.grey[500],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const WholesalerAddProductScreen(),
+                  ),
+                ).then((_) {
+                  _loadInventory();
+                });
+              },
+              icon: const Icon(Icons.add),
+              label: const Text("Add Product"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[600],
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: inventoryItems.length,
+      itemBuilder: (context, index) {
+        return _buildInventoryItemFromApi(inventoryItems[index]);
+      },
+    );
+  }
+
+  Widget _buildInventoryItemFromApi(Map<String, dynamic> item) {
+    final productName = item['subcat_name']?.toString() ?? 'Unknown Product';
+    final categoryName = item['cat_name']?.toString() ?? '';
+    final stockQuantity = item['stock_quantity'] ?? 0;
+    final unitPrice = item['unit_price'] ?? 0.0;
+    final lowStockThreshold = item['low_stock_threshold'] ?? 10;
+    final updatedAt = item['updated_at']?.toString() ?? '';
+    
+    final isLowStock = stockQuantity < lowStockThreshold;
+    final displayPrice = unitPrice is String ? double.tryParse(unitPrice) ?? 0.0 : unitPrice.toDouble();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: Colors.green[100],
+          backgroundColor: isLowStock ? Colors.red[100] : Colors.green[100],
           child: Icon(
-            Icons.inventory_2,
-            color: Colors.green[700],
+            isLowStock ? Icons.warning : Icons.inventory_2,
+            color: isLowStock ? Colors.red[700] : Colors.green[700],
           ),
         ),
         title: Text(
-          product["name"] as String,
+          productName,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Price: ৳${product["price"]}/${product["unit"]}"),
+            if (categoryName.isNotEmpty)
+              Text(
+                "Category: $categoryName",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            Text("Price: ৳${displayPrice.toStringAsFixed(2)}/unit"),
             Text(
-              "Stock: ${product["stock"]} ${product["unit"]}",
+              "Stock: $stockQuantity units",
               style: TextStyle(
-                color: (product["stock"] as int) < 100 ? Colors.red : Colors.green,
+                color: isLowStock ? Colors.red : Colors.green,
                 fontWeight: FontWeight.bold,
               ),
             ),
+            if (isLowStock)
+              Text(
+                "⚠️ Low stock! (Threshold: $lowStockThreshold)",
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            if (updatedAt.isNotEmpty)
+              Text(
+                "Updated: ${_formatDate(updatedAt)}",
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[500],
+                ),
+              ),
           ],
         ),
         trailing: PopupMenuButton(
@@ -718,11 +895,20 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             const PopupMenuItem(value: "delete", child: Text("Delete")),
           ],
           onSelected: (value) {
-            _handleInventoryAction(value, product["name"] as String);
+            _handleInventoryAction(value, productName, item);
           },
         ),
       ),
     );
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return "${date.day}/${date.month}/${date.year}";
+    } catch (e) {
+      return dateString;
+    }
   }
 
   Widget _buildChatTab() {
@@ -758,13 +944,13 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     final chats = [
       {
         "shop": "আহমেদ স্টোর",
-        "message": "চাল সরুর দাম কত?",
+        "message": "চাল সরু (নাজির/মিনিকেট) এর দাম কত?",
         "time": "২ মিনিট আগে",
         "unread": 2,
       },
       {
         "shop": "করিম ট্রেডার্স",
-        "message": "তেলের স্টক আছে?",
+        "message": "সয়াবিন তেল (বোতল) এর স্টক আছে?",
         "time": "১৫ মিনিট আগে",
         "unread": 0,
       },
@@ -911,28 +1097,28 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     final transactions = [
       {
         "shop": "আহমেদ স্টোর",
-        "product": "চাল সরু",
+        "product": "চাল সরু (নাজির/মিনিকেট)",
         "quantity": "50 কেজি",
         "date": "২৫/০৭/২৫",
         "status": "Delivered"
       },
       {
         "shop": "করিম ট্রেডার্স",
-        "product": "সয়াবিন তেল",
+        "product": "সয়াবিন তেল (বোতল)",
         "quantity": "20 লিটার",
         "date": "২৪/০৭/২৫",
         "status": "Pending"
       },
       {
         "shop": "রহিম মার্ট",
-        "product": "মসুর ডাল",
+        "product": "মশুর ডাল (বড় দানা)",
         "quantity": "30 কেজি",
         "date": "২৩/০৭/২৫",
         "status": "Delivered"
       },
       {
         "shop": "ফাতিমা স্টোর",
-        "product": "পেঁয়াজ",
+        "product": "পিঁয়াজ (দেশী)",
         "quantity": "100 কেজি",
         "date": "২২/০৭/২৫",
         "status": "Processing"
@@ -946,35 +1132,35 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       },
       {
         "shop": "সালমা ট্রেডিং",
-        "product": "গমের আটা",
+        "product": "আটা সাদা (খোলা)",
         "quantity": "60 কেজি",
         "date": "২০/০৭/২৫",
         "status": "Delivered"
       },
       {
         "shop": "আব্দুল মার্ট",
-        "product": "ছোলা ডাল",
+        "product": "ছোলা (মানভেদে)",
         "quantity": "25 কেজি",
         "date": "১৯/০৭/২৫",
         "status": "Delivered"
       },
       {
         "shop": "রশিদ স্টোর",
-        "product": "সরিষার তেল",
+        "product": "সয়াবিন তেল (লুজ)",
         "quantity": "15 লিটার",
         "date": "১৮/০৭/২৫",
         "status": "Cancelled"
       },
       {
         "shop": "হাসান ট্রেডার্স",
-        "product": "চাল মোটা",
+        "product": "চাল (মোটা)/স্বর্ণা/চায়না ইরি",
         "quantity": "80 কেজি",
         "date": "১৭/০৭/২৫",
         "status": "Delivered"
       },
       {
         "shop": "কবির স্টোর",
-        "product": "তুলসী ডাল",
+        "product": "মশুর ডাল (মাঝারী দানা)",
         "quantity": "35 কেজি",
         "date": "১৬/০৭/২৫",
         "status": "Delivered"
@@ -1134,13 +1320,13 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   Widget _buildOfferItem(int index) {
     final offers = [
       {
-        "title": "চাল সরু বাল্ক ডিসকাউন্ট",
+        "title": "চাল সরু (নাজির/মিনিকেট) বাল্ক ডিসকাউন্ট",
         "description": "১০০ কেজির উপর ১০% ছাড়",
         "validUntil": "৩১ জুলাই পর্যন্ত",
         "active": true
       },
       {
-        "title": "তেল ও ডাল কম্বো অফার",
+        "title": "সয়াবিন তেল ও মশুর ডাল কম্বো অফার",
         "description": "একসাথে কিনলে ১৫% ছাড়",
         "validUntil": "২৮ জুলাই পর্যন্ত",
         "active": true
@@ -1351,6 +1537,35 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
+  // Handle authentication errors (token expired, invalid, etc.)
+  void _handleAuthError() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Session Expired"),
+        content: const Text("Your session has expired. Please login again."),
+        actions: [
+          TextButton(
+            onPressed: () async {
+              // Clear any stored token
+              await logout();
+              
+              // Navigate to welcome screen
+              if (mounted) {
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            child: const Text("Login Again"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _showQuickActions(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -1375,7 +1590,10 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                         MaterialPageRoute(
                           builder: (context) => const WholesalerAddProductScreen(),
                         ),
-                      );
+                      ).then((_) {
+                        // Refresh inventory after adding product
+                        _loadInventory();
+                      });
                     },
                     icon: const Icon(Icons.add),
                     label: const Text("Add Product"),
@@ -1494,10 +1712,10 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _handleInventoryAction(String action, String productName) {
+  void _handleInventoryAction(String action, String productName, [Map<String, dynamic>? item]) {
     switch (action) {
       case "edit":
-        _editProduct(productName);
+        _editProduct(productName, item);
         break;
       case "history":
         _viewSupplyHistory(productName);
@@ -1508,7 +1726,20 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     }
   }
 
-  void _editProduct(String productName) {
+  void _editProduct(String productName, [Map<String, dynamic>? item]) {
+    // Create controllers and initialize with current values if item is provided
+    final priceController = TextEditingController();
+    final stockController = TextEditingController();
+    final thresholdController = TextEditingController();
+    
+    if (item != null) {
+      final currentPrice = item['unit_price'] ?? 0.0;
+      final displayPrice = currentPrice is String ? double.tryParse(currentPrice) ?? 0.0 : currentPrice.toDouble();
+      priceController.text = displayPrice.toStringAsFixed(2);
+      stockController.text = (item['stock_quantity'] ?? 0).toString();
+      thresholdController.text = (item['low_stock_threshold'] ?? 10).toString();
+    }
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -1518,6 +1749,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               TextFormField(
+                controller: priceController,
                 decoration: const InputDecoration(
                   labelText: "Price per Unit",
                   prefixText: "৳",
@@ -1527,9 +1759,20 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               ),
               const SizedBox(height: 12),
               TextFormField(
+                controller: stockController,
                 decoration: const InputDecoration(
                   labelText: "Current Stock",
                   border: OutlineInputBorder(),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: thresholdController,
+                decoration: const InputDecoration(
+                  labelText: "Low Stock Threshold",
+                  border: OutlineInputBorder(),
+                  helperText: "Alert when stock falls below this number",
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -1538,15 +1781,130 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              priceController.dispose();
+              stockController.dispose();
+              thresholdController.dispose();
+              Navigator.pop(context);
+            },
             child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("$productName updated successfully!")),
+            onPressed: () async {
+              // Validate inputs
+              if (priceController.text.trim().isEmpty || 
+                  stockController.text.trim().isEmpty ||
+                  thresholdController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please fill in all fields")),
+                );
+                return;
+              }
+
+              final newPrice = double.tryParse(priceController.text.trim());
+              final newStock = int.tryParse(stockController.text.trim());
+              final newThreshold = int.tryParse(thresholdController.text.trim());
+
+              if (newPrice == null || newPrice <= 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please enter a valid price")),
+                );
+                return;
+              }
+
+              if (newStock == null || newStock < 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please enter a valid stock quantity")),
+                );
+                return;
+              }
+
+              if (newThreshold == null || newThreshold < 0) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Please enter a valid threshold")),
+                );
+                return;
+              }
+
+              if (item == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Error: Product data not available")),
+                );
+                return;
+              }
+
+              // Show loading
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const AlertDialog(
+                  content: Row(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 16),
+                      Text("Updating product..."),
+                    ],
+                  ),
+                ),
               );
+
+              try {
+                final result = await WholesalerApiService.updateInventoryItem(
+                  inventoryId: item['id'].toString(),
+                  stockQuantity: newStock,
+                  unitPrice: newPrice,
+                  lowStockThreshold: newThreshold,
+                );
+
+                // Close loading dialog
+                if (mounted) {
+                  Navigator.pop(context);
+                }
+
+                if (result['success'] == true) {
+                  // Close edit dialog
+                  priceController.dispose();
+                  stockController.dispose();
+                  thresholdController.dispose();
+                  if (mounted) {
+                    Navigator.pop(context);
+                  }
+                  
+                  // Refresh inventory to show updated data
+                  await _loadInventory();
+                  
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("$productName updated successfully!")),
+                    );
+                  }
+                } else {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(result['message'] ?? 'Failed to update product'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+
+                    // Handle authentication errors
+                    if (result['requiresLogin'] == true) {
+                      _handleAuthError();
+                    }
+                  }
+                }
+              } catch (e) {
+                // Close loading dialog
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error updating product: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
             },
             child: const Text("Update"),
           ),
@@ -1906,18 +2264,30 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   double _getUnitPrice(String product) {
-    // Sample pricing based on product
+    // Get price from the actual database data if available
+    if (priceList.isNotEmpty) {
+      for (final item in priceList) {
+        if (item['subcat_name'] == product) {
+          final minPrice = double.tryParse(item['min_price']?.toString() ?? '0') ?? 0.0;
+          final maxPrice = double.tryParse(item['max_price']?.toString() ?? '0') ?? 0.0;
+          // Return average price between min and max
+          return (minPrice + maxPrice) / 2;
+        }
+      }
+    }
+    
+    // Fallback prices based on actual database product names
     final prices = {
-      "চাল সরু": 85.0,
-      "সয়াবিন তেল": 170.0,
-      "মসুর ডাল": 125.0,
-      "পেঁয়াজ": 55.0,
-      "চিনি": 65.0,
-      "গমের আটা": 50.0,
-      "ছোলা ডাল": 95.0,
-      "সরিষার তেল": 180.0,
-      "চাল মোটা": 75.0,
-      "তুলসী ডাল": 115.0,
+      "চাল সরু (নাজির/মিনিকেট)": 80.0,
+      "সয়াবিন তেল (বোতল)": 187.5,
+      "সয়াবিন তেল (লুজ)": 167.0,
+      "মশুর ডাল (বড় দানা)": 102.5,
+      "মশুর ডাল (মাঝারী দানা)": 122.5,
+      "পিঁয়াজ (দেশী)": 80.0,
+      "চিনি": 110.0,
+      "আটা সাদা (খোলা)": 42.5,
+      "ছোলা (মানভেদে)": 100.0,
+      "চাল (মোটা)/স্বর্ণা/চায়না ইরি": 57.5,
     };
     return prices[product] ?? 100.0;
   }

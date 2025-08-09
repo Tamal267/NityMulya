@@ -1,0 +1,401 @@
+import 'package:nitymulya/network/network_helper.dart';
+
+class WholesalerApiService {
+  static final NetworkHelper _networkHelper = NetworkHelper();
+
+  // Get wholesaler dashboard summary
+  static Future<Map<String, dynamic>> getDashboardSummary() async {
+    try {
+      final response = await _networkHelper.getWithToken('/wholesaler/dashboard');
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch dashboard data',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching dashboard data: $e',
+      };
+    }
+  }
+
+  // Get wholesaler inventory
+  static Future<Map<String, dynamic>> getInventory() async {
+    try {
+      final response = await _networkHelper.getWithToken('/wholesaler/inventory');
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch inventory',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching inventory: $e',
+      };
+    }
+  }
+
+  // Add product to inventory
+  static Future<Map<String, dynamic>> addProductToInventory({
+    required String subcatId,
+    required int stockQuantity,
+    required double unitPrice,
+    int? lowStockThreshold,
+  }) async {
+    try {
+      final requestData = {
+        'subcat_id': subcatId,
+        'stock_quantity': stockQuantity,
+        'unit_price': unitPrice,
+        'low_stock_threshold': lowStockThreshold ?? 10,
+      };
+
+      final response = await _networkHelper.postWithToken('/wholesaler/inventory', requestData);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Product added successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to add product',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error adding product: $e',
+      };
+    }
+  }
+
+  // Update existing inventory item
+  static Future<Map<String, dynamic>> updateInventoryItem({
+    required String inventoryId,
+    int? stockQuantity,
+    double? unitPrice,
+    int? lowStockThreshold,
+  }) async {
+    try {
+      final requestData = <String, dynamic>{
+        'inventory_id': inventoryId,
+      };
+      
+      if (stockQuantity != null) {
+        requestData['stock_quantity'] = stockQuantity;
+      }
+      if (unitPrice != null) {
+        requestData['unit_price'] = unitPrice;
+      }
+      if (lowStockThreshold != null) {
+        requestData['low_stock_threshold'] = lowStockThreshold;
+      }
+
+      final response = await _networkHelper.putWithToken('/wholesaler/inventory', requestData);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Inventory updated successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to update inventory',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error updating inventory: $e',
+      };
+    }
+  }
+
+  // Get low stock products
+  static Future<Map<String, dynamic>> getLowStockProducts({
+    String? productFilter,
+    String? locationFilter,
+  }) async {
+    try {
+      String url = '/wholesaler/low-stock';
+      List<String> params = [];
+      if (productFilter != null) params.add('product=$productFilter');
+      if (locationFilter != null) params.add('location=$locationFilter');
+      if (params.isNotEmpty) url += '?' + params.join('&');
+      
+      final response = await _networkHelper.getWithToken(url);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch low stock products',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching low stock products: $e',
+      };
+    }
+  }
+
+  // Get shop orders
+  static Future<Map<String, dynamic>> getShopOrders({
+    String? statusFilter,
+  }) async {
+    try {
+      String url = '/wholesaler/orders';
+      if (statusFilter != null) url += '?status=$statusFilter';
+      
+      final response = await _networkHelper.getWithToken(url);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch orders',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching orders: $e',
+      };
+    }
+  }
+
+  // Update order status
+  static Future<Map<String, dynamic>> updateOrderStatus({
+    required String orderId,
+    required String status,
+  }) async {
+    try {
+      final requestData = {
+        'order_id': orderId,
+        'status': status,
+      };
+
+      final response = await _networkHelper.putWithToken('/wholesaler/orders/status', requestData);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Order status updated successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to update order status',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error updating order status: $e',
+      };
+    }
+  }
+
+  // Get wholesaler offers
+  static Future<Map<String, dynamic>> getOffers() async {
+    try {
+      final response = await _networkHelper.getWithToken('/wholesaler/offers');
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch offers',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching offers: $e',
+      };
+    }
+  }
+
+  // Create new offer
+  static Future<Map<String, dynamic>> createOffer({
+    required String title,
+    String? description,
+    double? discountPercentage,
+    int? minimumQuantity,
+    String? validUntil,
+  }) async {
+    try {
+      final requestData = {
+        'title': title,
+        'description': description,
+        'discount_percentage': discountPercentage,
+        'minimum_quantity': minimumQuantity,
+        'valid_until': validUntil,
+      };
+
+      final response = await _networkHelper.postWithToken('/wholesaler/offers', requestData);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Offer created successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to create offer',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error creating offer: $e',
+      };
+    }
+  }
+
+  // Get chat messages
+  static Future<Map<String, dynamic>> getChatMessages({
+    String? shopOwnerId,
+  }) async {
+    try {
+      String url = '/wholesaler/chat';
+      if (shopOwnerId != null) url += '?shop_owner_id=$shopOwnerId';
+      
+      final response = await _networkHelper.getWithToken(url);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch messages',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching messages: $e',
+      };
+    }
+  }
+}

@@ -141,6 +141,38 @@ class _HomeScreenState extends State<HomeScreen> {
     loadProducts(); // Load products from API
   }
 
+  Widget _buildProductImage(Map<String, dynamic> product) {
+    final imageUrl = product["subcat_img"]?.toString();
+    
+    // If image URL is null or empty, show the inventory icon
+    if (imageUrl == null || imageUrl.trim().isEmpty) {
+      return const Icon(Icons.inventory_2, size: 60, color: Colors.grey);
+    }
+    
+    // Try to load the image, with fallback to inventory icon on error
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Image.network(
+        imageUrl,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return const Icon(Icons.inventory_2, size: 60, color: Colors.grey);
+        },
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Colors.grey,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -392,9 +424,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 color: Colors.grey[200],
                                                 borderRadius: BorderRadius.circular(8),
                                               ),
-                                              child: const Center(
-                                                child: Icon(Icons.inventory_2,
-                                                    size: 40, color: Colors.grey),
+                                              child: Center(
+                                                child: _buildProductImage(product),
                                               ),
                                             ),
                                           ),

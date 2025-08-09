@@ -1,4 +1,5 @@
 import sql from '../db';
+import { generateToken } from '../utils/jwt';
 
 // Simple password hashing function (in production, use bcrypt)
 const hashPassword = async (password: string): Promise<string> => {
@@ -185,10 +186,18 @@ export const loginCustomer = async (c: any) => {
         // Remove password from response
         const { password: _, ...customerData } = customer[0];
 
+        // Generate JWT token
+        const token = generateToken({
+            userId: customer[0].id,
+            email: customer[0].email,
+            role: 'customer'
+        });
+
         return c.json({ 
             success: true, 
             message: 'Login successful',
             customer: customerData,
+            token,
             role: 'customer'
         });
     } catch (error: any) {
@@ -240,10 +249,18 @@ export const loginWholesaler = async (c: any) => {
         // Remove password from response
         const { password: _, ...wholesalerData } = wholesaler[0];
 
+        // Generate JWT token
+        const token = generateToken({
+            userId: wholesaler[0].id,
+            email: wholesaler[0].email,
+            role: 'wholesaler'
+        });
+
         return c.json({ 
             success: true, 
             message: 'Login successful',
             wholesaler: wholesalerData,
+            token,
             role: 'wholesaler'
         });
     } catch (error: any) {
@@ -295,10 +312,18 @@ export const loginShopOwner = async (c: any) => {
         // Remove password from response
         const { password: _, ...shopOwnerData } = shopOwner[0];
 
+        // Generate JWT token
+        const token = generateToken({
+            userId: shopOwner[0].id,
+            email: shopOwner[0].email,
+            role: 'shop_owner'
+        });
+
         return c.json({ 
             success: true, 
             message: 'Login successful',
             shop_owner: shopOwnerData,
+            token,
             role: 'shop_owner'
         });
     } catch (error: any) {

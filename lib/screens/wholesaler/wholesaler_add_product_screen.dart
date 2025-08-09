@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
+import 'package:nitymulya/network/wholesaler_api.dart';
 
 class WholesalerAddProductScreen extends StatefulWidget {
-  final String? userId;
-  
-  const WholesalerAddProductScreen({super.key, this.userId});
+  // Removed userId parameter - now using token-based authentication
+  const WholesalerAddProductScreen({super.key});
 
   @override
   State<WholesalerAddProductScreen> createState() => _WholesalerAddProductScreenState();
@@ -48,7 +48,7 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
         categories = fetchedCategories;
         isLoadingCategories = false;
         if (categories.isNotEmpty && selectedCategory == null) {
-          selectedCategory = categories.first['name'] ?? categories.first['category_name'];
+          selectedCategory = categories.first['cat_name'];
         }
       });
     } catch (e) {
@@ -87,7 +87,7 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
     categorizedProducts.clear();
     
     for (var item in priceList) {
-      String categoryName = item['category_name'] ?? item['category'] ?? 'Unknown';
+      String categoryName = item['cat_name'] ?? 'Unknown';
       
       if (!categorizedProducts.containsKey(categoryName)) {
         categorizedProducts[categoryName] = [];
@@ -98,8 +98,7 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
     // Set initial selected product if category is already selected
     if (selectedCategory != null && categorizedProducts.containsKey(selectedCategory)) {
       if (categorizedProducts[selectedCategory]!.isNotEmpty && selectedProduct == null) {
-        selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'] ?? 
-                         categorizedProducts[selectedCategory]!.first['name'];
+        selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'];
       }
     }
   }
@@ -180,7 +179,7 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
                 ),
                 isExpanded: true,
                 items: categories.map((category) {
-                  String categoryName = category['name'] ?? category['category_name'] ?? 'Unknown';
+                  String categoryName = category['cat_name'] ?? 'Unknown';
                   return DropdownMenuItem(
                     value: categoryName,
                     child: Text(
@@ -195,8 +194,7 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
                     // Reset selected product when category changes
                     if (categorizedProducts.containsKey(selectedCategory) &&
                         categorizedProducts[selectedCategory]!.isNotEmpty) {
-                      selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'] ??
-                                     categorizedProducts[selectedCategory]!.first['name'];
+                      selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'];
                     } else {
                       selectedProduct = null;
                     }
@@ -225,12 +223,24 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
                 menuMaxHeight: 300,
                 items: selectedCategory != null && categorizedProducts.containsKey(selectedCategory)
                     ? categorizedProducts[selectedCategory]!.map((product) {
-                        String productName = product['subcat_name'] ?? product['name'] ?? 'Unknown';
+                        String productName = product['subcat_name'] ?? 'Unknown';
                         String unit = product['unit'] ?? '';
-                        String price = product['price']?.toString() ?? '';
-                        String displayName = unit.isNotEmpty ? '$productName ($unit)' : productName;
-                        if (price.isNotEmpty) {
-                          displayName += ' - ৳$price';
+                        String minPrice = product['min_price']?.toString() ?? '';
+                        String maxPrice = product['max_price']?.toString() ?? '';
+                        
+                        // Build display name with unit and price range
+                        String displayName = productName;
+                        if (unit.isNotEmpty) {
+                          displayName += ' ($unit)';
+                        }
+                        
+                        // Add price range if available
+                        if (minPrice.isNotEmpty && maxPrice.isNotEmpty) {
+                          displayName += ' - ৳$minPrice-$maxPrice';
+                        } else if (minPrice.isNotEmpty) {
+                          displayName += ' - ৳$minPrice+';
+                        } else if (maxPrice.isNotEmpty) {
+                          displayName += ' - up to ৳$maxPrice';
                         }
                         
                         return DropdownMenuItem(
@@ -376,72 +386,121 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
     );
   }
 
-  void _saveProduct() {
+  void _saveProduct() async {
     if (_formKey.currentState!.validate()) {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
       // Get selected product data
       Map<String, dynamic>? selectedProductData;
       if (selectedProduct != null && selectedCategory != null && 
           categorizedProducts.containsKey(selectedCategory)) {
         selectedProductData = categorizedProducts[selectedCategory]!.firstWhere(
-          (product) => (product['subcat_name'] ?? product['name']) == selectedProduct,
+          (product) => product['subcat_name'] == selectedProduct,
           orElse: () => <String, dynamic>{},
         );
       }
 
-      // Prepare product data with unit information
-      final productData = {
-        'name': selectedProduct,
-        'category': selectedCategory,
-        'unit': selectedProductData?['unit'] ?? '',
-        'price': double.parse(_priceController.text.trim()),
-        'stock': int.parse(_stockController.text.trim()),
-        'minimumOrder': int.parse(_minimumOrderController.text.trim()),
-        'userId': widget.userId,
-        'dateAdded': DateTime.now(),
-      };
+      if (selectedProductData == null || selectedProductData.isEmpty) {
+        Navigator.pop(context); // Close loading dialog
+        _showErrorDialog("Please select a valid product");
+        return;
+      }
 
-      // Show success dialog
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Row(
-            children: [
-              Icon(Icons.check_circle, color: Colors.green),
-              SizedBox(width: 8),
-              Text("Product Added!"),
-            ],
-          ),
-          content: Text(
-            "Product '${productData['name']}' has been added successfully.\n\n"
-            "Unit: ${productData['unit']}\n"
-            "Price: ৳${productData['price']}\n"
-            "Stock: ${productData['stock']} units",
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context, true); // Return to dashboard
-              },
-              child: const Text("Done"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-                _resetForm(); // Reset for another product
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[800],
-              ),
-              child: const Text(
-                "Add Another",
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
+      try {
+        // Call API to add product to inventory (now uses token-based auth)
+        final result = await WholesalerApiService.addProductToInventory(
+          subcatId: selectedProductData['id'].toString(), // Use subcat ID from backend
+          stockQuantity: int.parse(_stockController.text.trim()),
+          unitPrice: double.parse(_priceController.text.trim()),
+          lowStockThreshold: 10, // Default low stock threshold
+        );
+
+        Navigator.pop(context); // Close loading dialog
+
+        if (result['success'] == true) {
+          _showSuccessDialog(selectedProductData);
+        } else {
+          _showErrorDialog(result['message'] ?? 'Failed to add product');
+        }
+      } catch (e) {
+        Navigator.pop(context); // Close loading dialog
+        _showErrorDialog("Error adding product: $e");
+      }
+    }
+  }
+
+  void _showSuccessDialog(Map<String, dynamic> productData) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green),
+            SizedBox(width: 8),
+            Text("Product Added!"),
           ],
         ),
-      );
-    }
+        content: Text(
+          "Product '${productData['subcat_name']}' has been added to your inventory successfully.\n\n"
+          "Unit: ${productData['unit'] ?? 'N/A'}\n"
+          "Price: ৳${_priceController.text}\n"
+          "Stock: ${_stockController.text} units",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context, true); // Return to dashboard
+            },
+            child: const Text("Done"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              _resetForm(); // Reset for another product
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[800],
+            ),
+            child: const Text(
+              "Add Another",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.error, color: Colors.red),
+            SizedBox(width: 8),
+            Text("Error"),
+          ],
+        ),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   void _autofillProductData() {
@@ -449,15 +508,15 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
         categorizedProducts.containsKey(selectedCategory)) {
       
       var productData = categorizedProducts[selectedCategory]!.firstWhere(
-        (product) => (product['subcat_name'] ?? product['name']) == selectedProduct,
+        (product) => product['subcat_name'] == selectedProduct,
         orElse: () => <String, dynamic>{},
       );
       
       if (productData.isNotEmpty) {
-        // Auto-fill price if available (you can show suggested price)
-        String? suggestedPrice = productData['price']?.toString();
-        if (suggestedPrice != null && _priceController.text.isEmpty) {
-          _priceController.text = suggestedPrice;
+        // Auto-fill with minimum price as suggestion if available
+        String? minPrice = productData['min_price']?.toString();
+        if (minPrice != null && minPrice.isNotEmpty && _priceController.text.isEmpty) {
+          _priceController.text = minPrice;
         }
       }
     }
@@ -471,11 +530,10 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
     
     setState(() {
       if (categories.isNotEmpty) {
-        selectedCategory = categories.first['name'] ?? categories.first['category_name'];
+        selectedCategory = categories.first['cat_name'];
         if (categorizedProducts.containsKey(selectedCategory) &&
             categorizedProducts[selectedCategory]!.isNotEmpty) {
-          selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'] ??
-                           categorizedProducts[selectedCategory]!.first['name'];
+          selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'];
         }
       }
     });
