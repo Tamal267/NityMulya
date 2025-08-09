@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/network/pricelist_api.dart';
 
 class WholesalerAddProductScreen extends StatefulWidget {
-  const WholesalerAddProductScreen({super.key});
+  final String? userId;
+  
+  const WholesalerAddProductScreen({super.key, this.userId});
 
   @override
   State<WholesalerAddProductScreen> createState() => _WholesalerAddProductScreenState();
@@ -13,123 +16,93 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
   final TextEditingController _stockController = TextEditingController();
   final TextEditingController _minimumOrderController = TextEditingController();
   
-  String selectedProduct = "চাল সরু (প্রিমিয়াম)";
-  String selectedCategory = "Rice (চাল)";
+  String? selectedProduct;
+  String? selectedCategory;
   
-  // Government Fixed Product List
-  final Map<String, List<String>> governmentProducts = {
-    "Rice (চাল)": [
-      "চাল সরু (প্রিমিয়াম)",
-      "চাল মোটা (স্ট্যান্ডার্ড)",
-      "চাল বাসমতি",
-      "চাল মিনিকেট",
-      "চাল পায়জাম",
-      "চাল কাটারিভোগ",
-      "চাল বোরো",
-      "চাল আমন",
-    ],
-    "Oil (তেল)": [
-      "সয়াবিন তেল (রিফাইন্ড)",
-      "সরিষার তেল (খাঁটি)",
-      "পাম তেল",
-      "সূর্যমুখী তেল",
-      "ভুট্টার তেল",
-      "নারিকেল তেল",
-      "তিলের তেল",
-    ],
-    "Lentils (ডাল)": [
-      "মসুর ডাল (দেশি)",
-      "মসুর ডাল (আমদানি)",
-      "ছোলা ডাল",
-      "মুগ ডাল",
-      "অড়হর ডাল",
-      "ফেলন ডাল",
-      "খেসারি ডাল",
-      "মাসকলাই ডাল",
-    ],
-    "Sugar (চিনি)": [
-      "চিনি সাদা (রিফাইন্ড)",
-      "চিনি দেশি",
-      "চিনি পাউডার",
-      "চিনি কিউব",
-      "গুড় (খেজুর)",
-      "গুড় (আখ)",
-      "মিছরি",
-    ],
-    "Onion (পেঁয়াজ)": [
-      "পেঁয়াজ দেশি",
-      "পেঁয়াজ আমদানি",
-      "পেঁয়াজ লাল",
-      "পেঁয়াজ সাদা",
-      "পেঁয়াজ ছোট",
-      "শালগম",
-    ],
-    "Flour (আটা)": [
-      "গমের আটা (প্রিমিয়াম)",
-      "গমের আটা (স্ট্যান্ডার্ড)",
-      "ময়দা",
-      "সুজি",
-      "চালের গুঁড়া",
-      "বার্লি আটা",
-      "ভুট্টার আটা",
-    ],
-    "Spices (মসলা)": [
-      "হলুদ গুঁড়া",
-      "মরিচ গুঁড়া",
-      "ধনিয়া গুঁড়া",
-      "জিরা গুঁড়া",
-      "গরম মসলা",
-      "বিরিয়ানি মসলা",
-      "মাছের মসলা",
-      "মাংসের মসলা",
-    ],
-    "Vegetables (সবজি)": [
-      "আলু দেশি",
-      "আলু আমদানি",
-      "টমেটো",
-      "বেগুন",
-      "কাঁচা মরিচ",
-      "আদা",
-      "রসুন",
-      "গাজর",
-    ],
-    "Fish (মাছ)": [
-      "ইলিশ মাছ",
-      "রুই মাছ",
-      "কাতলা মাছ",
-      "পাঙ্গাস মাছ",
-      "তেলাপিয়া মাছ",
-      "চিংড়ি মাছ",
-      "হিলসা শুটকি",
-      "বোয়াল মাছ",
-    ],
-    "Meat (মাংস)": [
-      "গরুর মাংস",
-      "খাসির মাংস",
-      "মুরগির মাংস",
-      "হাঁসের মাংস",
-      "কবুতরের মাংস",
-      "ছাগলের মাংস",
-    ],
-    "Dairy (দুগ্ধজাত)": [
-      "দুধ তরল (পাস্তুরাইজড)",
-      "দুধ পাউডার",
-      "দই",
-      "মাখন",
-      "পনির",
-      "ছানা",
-      "ক্রিম",
-    ],
-    "Snacks (খাবার)": [
-      "চানাচুর",
-      "বিস্কুট",
-      "কেক",
-      "চকলেট",
-      "আইসক্রিম",
-      "নুডলস",
-      "চিপস",
-    ],
-  };
+  // Dynamic data from backend
+  List<Map<String, dynamic>> categories = [];
+  List<Map<String, dynamic>> priceList = [];
+  Map<String, List<Map<String, dynamic>>> categorizedProducts = {};
+  
+  // Loading states
+  bool isLoadingCategories = true;
+  bool isLoadingPriceList = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadCategories(),
+      _loadPriceList(),
+    ]);
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      final fetchedCategories = await fetchCategories();
+      setState(() {
+        categories = fetchedCategories;
+        isLoadingCategories = false;
+        if (categories.isNotEmpty && selectedCategory == null) {
+          selectedCategory = categories.first['name'] ?? categories.first['category_name'];
+        }
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingCategories = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load categories: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadPriceList() async {
+    try {
+      final fetchedPriceList = await fetchPriceList();
+      setState(() {
+        priceList = fetchedPriceList;
+        isLoadingPriceList = false;
+        _organizePriceListByCategory();
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingPriceList = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load price list: $e')),
+        );
+      }
+    }
+  }
+
+  void _organizePriceListByCategory() {
+    categorizedProducts.clear();
+    
+    for (var item in priceList) {
+      String categoryName = item['category_name'] ?? item['category'] ?? 'Unknown';
+      
+      if (!categorizedProducts.containsKey(categoryName)) {
+        categorizedProducts[categoryName] = [];
+      }
+      categorizedProducts[categoryName]!.add(item);
+    }
+    
+    // Set initial selected product if category is already selected
+    if (selectedCategory != null && categorizedProducts.containsKey(selectedCategory)) {
+      if (categorizedProducts[selectedCategory]!.isNotEmpty && selectedProduct == null) {
+        selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'] ?? 
+                         categorizedProducts[selectedCategory]!.first['name'];
+      }
+    }
+  }
 
   @override
   void dispose() {
@@ -151,8 +124,33 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
         backgroundColor: Colors.green[800],
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          if (!isLoadingCategories && !isLoadingPriceList)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh Data',
+              onPressed: () {
+                setState(() {
+                  isLoadingCategories = true;
+                  isLoadingPriceList = true;
+                });
+                _loadData();
+              },
+            ),
+        ],
       ),
-      body: SingleChildScrollView(
+      body: isLoadingCategories || isLoadingPriceList
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading product data...'),
+                ],
+              ),
+            )
+          : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
@@ -181,48 +179,81 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
                   ),
                 ),
                 isExpanded: true,
-                items: governmentProducts.keys.map((category) => DropdownMenuItem(
-                  value: category,
-                  child: Text(
-                    category,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                )).toList(),
+                items: categories.map((category) {
+                  String categoryName = category['name'] ?? category['category_name'] ?? 'Unknown';
+                  return DropdownMenuItem(
+                    value: categoryName,
+                    child: Text(
+                      categoryName,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                }).toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedCategory = value!;
-                    selectedProduct = governmentProducts[selectedCategory]!.first;
+                    // Reset selected product when category changes
+                    if (categorizedProducts.containsKey(selectedCategory) &&
+                        categorizedProducts[selectedCategory]!.isNotEmpty) {
+                      selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'] ??
+                                     categorizedProducts[selectedCategory]!.first['name'];
+                    } else {
+                      selectedProduct = null;
+                    }
                   });
                 },
                 validator: (value) => value == null ? 'Please select a category' : null,
               ),
               const SizedBox(height: 16),
 
-              // Government Product Selection
+              // Available Products Selection
               DropdownButtonFormField<String>(
                 value: selectedProduct,
                 decoration: InputDecoration(
-                  labelText: "Government Approved Product",
+                  labelText: "Available Products",
                   prefixIcon: const Icon(Icons.verified),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
+                  helperText: selectedCategory != null && 
+                             (!categorizedProducts.containsKey(selectedCategory) || 
+                              categorizedProducts[selectedCategory]!.isEmpty)
+                      ? 'No products available for this category'
+                      : null,
                 ),
                 isExpanded: true,
                 menuMaxHeight: 300,
-                items: governmentProducts[selectedCategory]!.map((product) => DropdownMenuItem(
-                  value: product,
-                  child: Text(
-                    product,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                )).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedProduct = value!;
-                  });
-                },
+                items: selectedCategory != null && categorizedProducts.containsKey(selectedCategory)
+                    ? categorizedProducts[selectedCategory]!.map((product) {
+                        String productName = product['subcat_name'] ?? product['name'] ?? 'Unknown';
+                        String unit = product['unit'] ?? '';
+                        String price = product['price']?.toString() ?? '';
+                        String displayName = unit.isNotEmpty ? '$productName ($unit)' : productName;
+                        if (price.isNotEmpty) {
+                          displayName += ' - ৳$price';
+                        }
+                        
+                        return DropdownMenuItem(
+                          value: productName,
+                          child: Text(
+                            displayName,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        );
+                      }).toList()
+                    : [],
+                onChanged: selectedCategory != null && 
+                          categorizedProducts.containsKey(selectedCategory) &&
+                          categorizedProducts[selectedCategory]!.isNotEmpty
+                    ? (value) {
+                        setState(() {
+                          selectedProduct = value!;
+                          // Auto-fill price if available
+                          _autofillProductData();
+                        });
+                      }
+                    : null,
                 validator: (value) => value == null ? 'Please select a product' : null,
               ),
               const SizedBox(height: 16),
@@ -347,17 +378,29 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
 
   void _saveProduct() {
     if (_formKey.currentState!.validate()) {
-      // Prepare simplified product data
+      // Get selected product data
+      Map<String, dynamic>? selectedProductData;
+      if (selectedProduct != null && selectedCategory != null && 
+          categorizedProducts.containsKey(selectedCategory)) {
+        selectedProductData = categorizedProducts[selectedCategory]!.firstWhere(
+          (product) => (product['subcat_name'] ?? product['name']) == selectedProduct,
+          orElse: () => <String, dynamic>{},
+        );
+      }
+
+      // Prepare product data with unit information
       final productData = {
         'name': selectedProduct,
         'category': selectedCategory,
+        'unit': selectedProductData?['unit'] ?? '',
         'price': double.parse(_priceController.text.trim()),
         'stock': int.parse(_stockController.text.trim()),
         'minimumOrder': int.parse(_minimumOrderController.text.trim()),
+        'userId': widget.userId,
         'dateAdded': DateTime.now(),
       };
 
-      // Show simple success dialog
+      // Show success dialog
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
@@ -369,7 +412,10 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
             ],
           ),
           content: Text(
-            "Product '${productData['name']}' has been added successfully.\n\nPrice: ৳${productData['price']}\nStock: ${productData['stock']} units",
+            "Product '${productData['name']}' has been added successfully.\n\n"
+            "Unit: ${productData['unit']}\n"
+            "Price: ৳${productData['price']}\n"
+            "Stock: ${productData['stock']} units",
           ),
           actions: [
             TextButton(
@@ -398,6 +444,25 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
     }
   }
 
+  void _autofillProductData() {
+    if (selectedProduct != null && selectedCategory != null && 
+        categorizedProducts.containsKey(selectedCategory)) {
+      
+      var productData = categorizedProducts[selectedCategory]!.firstWhere(
+        (product) => (product['subcat_name'] ?? product['name']) == selectedProduct,
+        orElse: () => <String, dynamic>{},
+      );
+      
+      if (productData.isNotEmpty) {
+        // Auto-fill price if available (you can show suggested price)
+        String? suggestedPrice = productData['price']?.toString();
+        if (suggestedPrice != null && _priceController.text.isEmpty) {
+          _priceController.text = suggestedPrice;
+        }
+      }
+    }
+  }
+
   void _resetForm() {
     _formKey.currentState!.reset();
     _priceController.clear();
@@ -405,8 +470,14 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
     _minimumOrderController.clear();
     
     setState(() {
-      selectedCategory = "Rice (চাল)";
-      selectedProduct = governmentProducts[selectedCategory]!.first;
+      if (categories.isNotEmpty) {
+        selectedCategory = categories.first['name'] ?? categories.first['category_name'];
+        if (categorizedProducts.containsKey(selectedCategory) &&
+            categorizedProducts[selectedCategory]!.isNotEmpty) {
+          selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'] ??
+                           categorizedProducts[selectedCategory]!.first['name'];
+        }
+      }
     });
   }
 }

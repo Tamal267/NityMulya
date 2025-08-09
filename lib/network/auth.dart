@@ -220,3 +220,261 @@ Future<void> logout() async {
     // Handle logout error silently or log it
   }
 }
+
+// Wholesaler signup function
+Future<Map<String, dynamic>> signupWholesaler({
+  required String fullName,
+  required String email,
+  required String contact,
+  required String password,
+  required double latitude,
+  required double longitude,
+  String? address,
+}) async {
+  try {
+    // Prepare signup data
+    final signupData = {
+      'full_name': fullName,
+      'email': email,
+      'contact': contact,
+      'password': password,
+      'latitude': latitude,
+      'longitude': longitude,
+      'address': address ?? '', // Send empty string instead of null
+      'role': 'wholesaler',
+    };
+
+    // Send POST request to signup endpoint
+    final response = await _apiClient.post('/signup_wholesaler', signupData);
+
+    // Handle successful response
+    if (response is Map<String, dynamic>) {
+      // Check if signup was successful
+      if (response['success'] == true || response.containsKey('wholesaler') || response.containsKey('user')) {
+        return {
+          'success': true,
+          'message': response['message'] ?? 'Wholesaler signup successful',
+          'data': response,
+        };
+      }
+      
+      // Handle error response
+      if (response.containsKey('error')) {
+        return {
+          'success': false,
+          'message': response['error'],
+        };
+      }
+      
+      // Handle other response formats
+      return {
+        'success': true,
+        'message': 'Wholesaler signup completed',
+        'data': response,
+      };
+    }
+    
+    // Unexpected response format
+    return {
+      'success': false,
+      'message': 'Unexpected response from server',
+    };
+    
+  } catch (e) {
+    return {
+      'success': false,
+      'message': 'Wholesaler signup failed: $e',
+    };
+  }
+}
+
+// Shop owner signup function
+Future<Map<String, dynamic>> signupShopOwner({
+  required String fullName,
+  required String email,
+  required String contact,
+  required String password,
+  required double latitude,
+  required double longitude,
+  String? address,
+  String? shopDescription,
+}) async {
+  try {
+    // Prepare signup data
+    final signupData = {
+      'full_name': fullName,
+      'email': email,
+      'contact': contact,
+      'password': password,
+      'latitude': latitude,
+      'longitude': longitude,
+      'address': address ?? '', // Send empty string instead of null
+      'shop_description': shopDescription ?? '',
+      'role': 'shop_owner',
+    };
+
+    // Send POST request to signup endpoint
+    final response = await _apiClient.post('/signup_shop_owner', signupData);
+
+    // Handle successful response
+    if (response is Map<String, dynamic>) {
+      // Check if signup was successful
+      if (response['success'] == true || response.containsKey('shop_owner') || response.containsKey('user')) {
+        return {
+          'success': true,
+          'message': response['message'] ?? 'Shop owner signup successful',
+          'data': response,
+        };
+      }
+      
+      // Handle error response
+      if (response.containsKey('error')) {
+        return {
+          'success': false,
+          'message': response['error'],
+        };
+      }
+      
+      // Handle other response formats
+      return {
+        'success': true,
+        'message': 'Shop owner signup completed',
+        'data': response,
+      };
+    }
+    
+    // Unexpected response format
+    return {
+      'success': false,
+      'message': 'Unexpected response from server',
+    };
+    
+  } catch (e) {
+    return {
+      'success': false,
+      'message': 'Shop owner signup failed: $e',
+    };
+  }
+}
+
+// Wholesaler login function
+Future<Map<String, dynamic>> loginWholesaler({
+  required String email,
+  required String password,
+}) async {
+  try {
+    final loginData = {
+      'email': email,
+      'password': password,
+    };
+
+    final response = await _apiClient.post('/login_wholesaler', loginData);
+
+    if (response is Map<String, dynamic>) {
+      // Check for successful login
+      if (response['success'] == true || response.containsKey('wholesaler')) {
+        return {
+          'success': true,
+          'message': response['message'] ?? 'Login successful',
+          'user': response['wholesaler'],
+          'role': 'wholesaler',
+        };
+      }
+      
+      // Handle error response
+      if (response.containsKey('error')) {
+        return {
+          'success': false,
+          'message': response['error'],
+        };
+      }
+    }
+    
+    return {
+      'success': false,
+      'message': 'Invalid email or password',
+    };
+    
+  } catch (e) {
+    return {
+      'success': false,
+      'message': 'Login failed: $e',
+    };
+  }
+}
+
+// Shop owner login function
+Future<Map<String, dynamic>> loginShopOwner({
+  required String email,
+  required String password,
+}) async {
+  try {
+    final loginData = {
+      'email': email,
+      'password': password,
+    };
+
+    final response = await _apiClient.post('/login_shop_owner', loginData);
+
+    if (response is Map<String, dynamic>) {
+      // Check for successful login
+      if (response['success'] == true || response.containsKey('shop_owner')) {
+        return {
+          'success': true,
+          'message': response['message'] ?? 'Login successful',
+          'user': response['shop_owner'],
+          'role': 'shop_owner',
+        };
+      }
+      
+      // Handle error response
+      if (response.containsKey('error')) {
+        return {
+          'success': false,
+          'message': response['error'],
+        };
+      }
+    }
+    
+    return {
+      'success': false,
+      'message': 'Invalid email or password',
+    };
+    
+  } catch (e) {
+    return {
+      'success': false,
+      'message': 'Login failed: $e',
+    };
+  }
+}
+
+// Generic login function that can handle any role
+Future<Map<String, dynamic>> loginUser({
+  required String email,
+  required String password,
+  required String role,
+}) async {
+  try {
+    // Route to specific login function based on role
+    switch (role.toLowerCase()) {
+      case 'customer':
+        return await loginCustomer(email: email, password: password);
+      case 'wholesaler':
+        return await loginWholesaler(email: email, password: password);
+      case 'shop owner':
+      case 'shop_owner':
+        return await loginShopOwner(email: email, password: password);
+      default:
+        return {
+          'success': false,
+          'message': 'Invalid role specified',
+        };
+    }
+  } catch (e) {
+    return {
+      'success': false,
+      'message': 'Login failed: $e',
+    };
+  }
+}

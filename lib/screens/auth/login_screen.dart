@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/network/auth.dart';
 import 'package:nitymulya/screens/auth/forgot_password_screen.dart';
 import 'package:nitymulya/screens/auth/signup_screen.dart';
 import 'package:nitymulya/screens/customers/home_screen.dart';
@@ -18,8 +19,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  bool _isLoading = false;
 
-  void login() {
+  void login() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
@@ -30,42 +32,78 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    // TODO: Add real authentication logic here
-    // For now, we'll simulate a successful login
-    
-    // Extract user name from email (simple simulation)
-    final userName = email.split('@')[0];
-    
-    // Redirect based on role
-    if (selectedRole == 'Customer') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomeScreen(
-            userName: userName,
-            userEmail: email,
-            userRole: selectedRole,
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Call backend login function
+      final result = await loginUser(
+        email: email,
+        password: password,
+        role: selectedRole,
+      );
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (result['success'] == true) {
+        final userData = result['user'];
+        final userName = userData?['full_name'] ?? userData?['name'] ?? email.split('@')[0];
+        final userRole = result['role'] ?? selectedRole.toLowerCase();
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'] ?? 'Login successful')),
+        );
+
+        // Redirect based on role
+        if (userRole.contains('customer') || selectedRole == 'Customer') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HomeScreen(
+                userName: userName,
+                userEmail: email,
+                userRole: 'Customer',
+              ),
+            ),
+          );
+        } else if (userRole.contains('shop') || selectedRole == 'Shop Owner') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ShopOwnerDashboard(),
+            ),
+          );
+        } else if (userRole.contains('wholesaler') || selectedRole == 'Wholesaler') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const WholesalerDashboardScreen(),
+            ),
+          );
+        }
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Login failed'),
+            backgroundColor: Colors.red,
           ),
-        ),
-      );
-    } else if (selectedRole == 'Shop Owner') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const ShopOwnerDashboard(),
-        ),
-      );
-    } else if (selectedRole == 'Wholesaler') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const WholesalerDashboardScreen(),
-        ),
-      );
-    } else {
-      // For any other roles, show coming soon message
+        );
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$selectedRole dashboard coming soon')),
+        SnackBar(
+          content: Text('Login failed: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -155,16 +193,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: login,
+                      onPressed: _isLoading ? null : login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF079b11),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         foregroundColor: Colors.white, // Text color
                       ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      child: _isLoading 
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            'Login',
+                            style: TextStyle(fontSize: 16),
+                          ),
                     ),
                   ),
 

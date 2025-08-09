@@ -21,6 +21,9 @@ class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  
+  // Additional controllers for wholesaler and shop owner
+  final TextEditingController _shopDescriptionController = TextEditingController();
 
   bool isLoading = false;
   Position? currentLocation;
@@ -33,6 +36,7 @@ class _SignupScreenState extends State<SignupScreen> {
     _addressController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _shopDescriptionController.dispose();
     super.dispose();
   }
 
@@ -125,6 +129,102 @@ class _SignupScreenState extends State<SignupScreen> {
     return true;
   }
 
+  // Validate wholesaler signup form
+  bool validateWholesalerForm() {
+    if (_fullNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your full name')),
+      );
+      return false;
+    }
+    
+    if (_emailController.text.trim().isEmpty || 
+        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(_emailController.text.trim())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return false;
+    }
+    
+    if (_contactController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your contact number')),
+      );
+      return false;
+    }
+    
+    if (_passwordController.text.isEmpty || _passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters')),
+      );
+      return false;
+    }
+    
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return false;
+    }
+
+    if (currentLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please capture your location by tapping the location icon')),
+      );
+      return false;
+    }
+    
+    return true;
+  }
+
+  // Validate shop owner signup form
+  bool validateShopOwnerForm() {
+    if (_fullNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your full name')),
+      );
+      return false;
+    }
+    
+    if (_emailController.text.trim().isEmpty || 
+        !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(_emailController.text.trim())) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid email address')),
+      );
+      return false;
+    }
+    
+    if (_contactController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your contact number')),
+      );
+      return false;
+    }
+    
+    if (_passwordController.text.isEmpty || _passwordController.text.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password must be at least 6 characters')),
+      );
+      return false;
+    }
+    
+    if (_passwordController.text != _confirmPasswordController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Passwords do not match')),
+      );
+      return false;
+    }
+
+    if (currentLocation == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please capture your location by tapping the location icon')),
+      );
+      return false;
+    }
+    
+    return true;
+  }
+
   // Perform customer signup
   Future<void> performSignup() async {
     if (!validateCustomerForm()) return;
@@ -163,6 +263,97 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
+  // Perform wholesaler signup
+  Future<void> performWholesalerSignup() async {
+    if (!validateWholesalerForm()) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final result = await signupWholesaler(
+        fullName: _fullNameController.text.trim(),
+        email: _emailController.text.trim(),
+        contact: _contactController.text.trim(),
+        password: _passwordController.text,
+        latitude: currentLocation!.latitude,
+        longitude: currentLocation!.longitude,
+        address: _addressController.text.trim().isEmpty ? '' : _addressController.text.trim(),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'])),
+      );
+
+      if (result['success']) {
+        // Navigate back to login screen on successful signup
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Wholesaler signup failed: $e')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Perform shop owner signup
+  Future<void> performShopOwnerSignup() async {
+    if (!validateShopOwnerForm()) return;
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final result = await signupShopOwner(
+        fullName: _fullNameController.text.trim(),
+        email: _emailController.text.trim(),
+        contact: _contactController.text.trim(),
+        password: _passwordController.text,
+        latitude: currentLocation!.latitude,
+        longitude: currentLocation!.longitude,
+        address: _addressController.text.trim().isEmpty ? '' : _addressController.text.trim(),
+        shopDescription: _shopDescriptionController.text.trim().isEmpty ? '' : _shopDescriptionController.text.trim(),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result['message'])),
+      );
+
+      if (result['success']) {
+        // Navigate back to login screen on successful signup
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Shop owner signup failed: $e')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  // Clear form when role changes
+  void clearForm() {
+    _fullNameController.clear();
+    _emailController.clear();
+    _contactController.clear();
+    _addressController.clear();
+    _passwordController.clear();
+    _confirmPasswordController.clear();
+    _shopDescriptionController.clear();
+    setState(() {
+      currentLocation = null;
+    });
+  }
+
   Widget getFieldsForRole() {
     switch (selectedRole) {
       case 'Customer':
@@ -178,25 +369,21 @@ class _SignupScreenState extends State<SignupScreen> {
       case 'Wholesaler':
         return Column(
           children: [
-            _textField("Name"),
-            _textField("Email"),
-            _textField("Contact"),
-            _textField("Organization Name"),
-            _textFieldWithLocation("Organization Address", getCurrentLocation),
-            _textField("Organization Logo URL"),
+            _textField("Full Name", _fullNameController),
+            _textField("Email", _emailController),
+            _textField("Contact", _contactController),
+            _textFieldWithLocation("Address", getCurrentLocation, _addressController),
             _passwordFields(),
           ],
         );
       case 'Shop Owner':
         return Column(
           children: [
-            _textField("Name"),
-            _textField("Email"),
-            _textField("Contact"),
-            _textField("Shop Name"),
-            _textFieldWithLocation("Shop Address", getCurrentLocation),
-            _textField("Shop Description"),
-            _textField("Shop Image URL"),
+            _textField("Full Name", _fullNameController),
+            _textField("Email", _emailController),
+            _textField("Contact", _contactController),
+            _textFieldWithLocation("Address", getCurrentLocation, _addressController),
+            _textField("Shop Description", _shopDescriptionController),
             _passwordFields(),
           ],
         );
@@ -307,6 +494,9 @@ class _SignupScreenState extends State<SignupScreen> {
                                 ))
                             .toList(),
                         onChanged: (value) {
+                          if (selectedRole != value) {
+                            clearForm(); // Clear form when role changes
+                          }
                           setState(() {
                             selectedRole = value!;
                           });
@@ -325,11 +515,10 @@ class _SignupScreenState extends State<SignupScreen> {
                       onPressed: isLoading ? null : () {
                         if (selectedRole == 'Customer') {
                           performSignup();
-                        } else {
-                          // For other roles, show message that they're not implemented yet
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('$selectedRole signup not implemented yet')),
-                          );
+                        } else if (selectedRole == 'Wholesaler') {
+                          performWholesalerSignup();
+                        } else if (selectedRole == 'Shop Owner') {
+                          performShopOwnerSignup();
                         }
                       },
                       style: ElevatedButton.styleFrom(
@@ -338,7 +527,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       ),
                       child: isLoading 
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text("Sign Up"),
+                        : const Text("Sign Up", style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
