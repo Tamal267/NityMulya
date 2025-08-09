@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import type { JwtVariables } from 'hono/jwt'
 import { prettyJSON } from 'hono/pretty-json'
 import { getCategories, getPrice, getPricesfromDB, getSheetUrl } from './controller/apiController'
+import { signupCustomer } from './controller/authController'
 
 
 const app = new Hono<{ Variables: JwtVariables }>()
@@ -17,6 +18,7 @@ app.use('/get_price', getPrice)
 app.use('/get_url', getSheetUrl)
 app.use('/get_pricelist', getPricesfromDB)
 app.get('/get_categories', getCategories)
+app.post('/signup_customer', signupCustomer)
 
 export default {
   port: process.env.PORT || 5000,

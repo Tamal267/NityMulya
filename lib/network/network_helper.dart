@@ -1,26 +1,26 @@
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-// You will need to add a package like flutter_secure_storage for secure token management.
-// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 
 // Your base server URL
 final String serverUrl = dotenv.env['SERVER_URL'] ?? 'http://localhost:5000';
 
 // A simple utility class to handle all API requests.
 class NetworkHelper {
-  // A placeholder for token storage. In a real app, you would use
-  // a secure package like `flutter_secure_storage` to handle this.
-  // const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+  // Use a final instance of FlutterSecureStorage
+  final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
 
-  // Function to get the stored token.
-  // This is a placeholder and should be replaced with actual logic
-  // to retrieve the token from secure storage.
+  // Function to save the token after a successful login/auth
+  Future<void> setToken(String token) async {
+    await _secureStorage.write(key: 'token', value: token);
+  }
+
+  // Function to get the stored token from secure storage
   Future<String?> getToken() async {
-    // Replace with: return await _secureStorage.read(key: 'token');
-    // For this example, we'll return a static token.
-    return 'your_static_token_here';
+    return await _secureStorage.read(key: 'token');
   }
 
   // A generic POST request function

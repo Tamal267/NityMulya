@@ -1,5 +1,4 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { Hono } from 'hono';
 import fetch from 'node-fetch';
 import * as XLSX from 'xlsx'; // Import the xlsx library
 import sql from '../db';
@@ -7,8 +6,6 @@ import sql from '../db';
 const GoogleApiKey = process.env.GOOGLE_API_KEY
 
 const genAI = new GoogleGenerativeAI(GoogleApiKey ? GoogleApiKey : '')
-
-const app = new Hono()
 
 export const getSheetUrl = async (c: any) => {
   try {
@@ -514,4 +511,3 @@ export const getCategories = async (c: any) => {
   }
 }
 
-export default app

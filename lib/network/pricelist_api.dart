@@ -29,7 +29,6 @@ Future<List<Map<String, dynamic>>> fetchPriceList() async {
     
     throw Exception('Unexpected response format: ${response.runtimeType}');
   } catch (e) {
-    print('Error fetching price list: $e');
     throw Exception('Failed to fetch price list: $e');
   }
 }
@@ -38,7 +37,6 @@ Future<List<Map<String, dynamic>>> fetchCategories() async {
   try {
     // Call the API to get the categories
     final response = await _apiClient.get('/get_categories');
-    print('API Response: $response');
 
     // Handle List response (which is what the API actually returns)
     if (response is List) {
@@ -70,7 +68,6 @@ Future<List<Map<String, dynamic>>> fetchCategories() async {
     
     throw Exception('Unexpected response format: ${response.runtimeType}');
   } catch (e) {
-    print('Error fetching categories: $e');
     throw Exception('Failed to fetch categories: $e');
   }
 }

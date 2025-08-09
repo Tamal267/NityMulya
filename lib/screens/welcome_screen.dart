@@ -129,7 +129,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         isCategoriesLoading = false;
       });
     } catch (e) {
-      print('Error loading categories: $e');
       setState(() {
         // Keep fallback categories if API fails
         categories = ["All", "চাল", "আটা ও ময়দা", "তেল", "ডাল", "সবজি ও মসলা", "মাছ ও গোশত", "দুধ"];
