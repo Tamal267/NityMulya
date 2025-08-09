@@ -423,11 +423,17 @@ Future<Map<String, dynamic>> loginShopOwner({
     if (response is Map<String, dynamic>) {
       // Check for successful login
       if (response['success'] == true || response.containsKey('shop_owner')) {
+        // Store the token if present
+        if (response.containsKey('token')) {
+          await _apiClient.setToken(response['token']);
+        }
+        
         return {
           'success': true,
           'message': response['message'] ?? 'Login successful',
           'user': response['shop_owner'],
           'role': 'shop_owner',
+          'token': response['token'], // Include token in response
         };
       }
       

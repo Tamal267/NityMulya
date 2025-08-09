@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/network/shop_owner_api.dart';
 import 'package:nitymulya/screens/shop_owner/add_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/update_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_chat_screen.dart';
@@ -20,11 +21,63 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
   int totalProducts = 25;
   int stockAlerts = 3;
   String vatRewardStatus = "Eligible";
+  
+  // Inventory state
+  List<Map<String, dynamic>> inventoryItems = [];
+  bool isLoadingInventory = false;
+  String? inventoryError;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _loadInventory(); // Load inventory on startup
+  }
+
+  Future<void> _loadInventory() async {
+    setState(() {
+      isLoadingInventory = true;
+      inventoryError = null;
+    });
+
+    try {
+      final result = await ShopOwnerApiService.getInventory();
+      
+      if (result['success'] == true) {
+        setState(() {
+          inventoryItems = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          totalProducts = inventoryItems.length;
+          stockAlerts = inventoryItems.where((item) {
+            final stockQuantity = item['stock_quantity'] ?? 0;
+            final lowStockThreshold = item['low_stock_threshold'] ?? 10;
+            return stockQuantity < lowStockThreshold;
+          }).length;
+          isLoadingInventory = false;
+        });
+      } else {
+        setState(() {
+          inventoryError = result['message'] ?? 'Failed to load inventory';
+          isLoadingInventory = false;
+        });
+        
+        // If authentication error, show message
+        if (result['requiresLogin'] == true) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message'] ?? 'Please login again'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      setState(() {
+        inventoryError = 'Error loading inventory: $e';
+        isLoadingInventory = false;
+      });
+    }
   }
 
   @override
@@ -563,56 +616,130 @@ Widget _buildSummaryCard(
                   ),
                 ),
               ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: isLoadingInventory ? null : _loadInventory,
+                  icon: isLoadingInventory 
+                    ? const SizedBox(
+                        width: 16, 
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.refresh),
+                  label: Text(
+                    isLoadingInventory ? "Loading..." : "Refresh",
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange[600],
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.builder(
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return _buildProductCard(index);
-              },
-            ),
+            child: _buildInventoryContent(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildProductCard(int index) {
-    final products = [
-      {
-        "name": "চাল সরু (নাজির/মিনিকেট)",
-        "quantity": 50,
-        "price": 80,
-        "lowStock": false
-      },
-      {
-        "name": "সয়াবিন তেল (পিউর)",
-        "quantity": 5,
-        "price": 170,
-        "lowStock": true
-      },
-      {"name": "মসুর ডাল", "quantity": 25, "price": 120, "lowStock": false},
-      {"name": "পেঁয়াজ (দেশি)", "quantity": 3, "price": 55, "lowStock": true},
-      {
-        "name": "গমের আটা (প্রিমিয়াম)",
-        "quantity": 30,
-        "price": 48,
-        "lowStock": false
-      },
-      {"name": "রুই মাছ", "quantity": 15, "price": 375, "lowStock": false},
-      {"name": "গরুর দুধ", "quantity": 2, "price": 65, "lowStock": true},
-      {
-        "name": "চাল মোটা (পাইলস)",
-        "quantity": 40,
-        "price": 60,
-        "lowStock": false
-      },
-    ];
+  Widget _buildInventoryContent() {
+    if (isLoadingInventory) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text("Loading inventory..."),
+          ],
+        ),
+      );
+    }
 
-    final product = products[index];
-    final isLowStock = product["lowStock"] as bool;
+    if (inventoryError != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            const SizedBox(height: 16),
+            Text(
+              inventoryError!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadInventory,
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (inventoryItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              "No products in inventory",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Add your first product to get started",
+              style: TextStyle(
+                color: Colors.grey[500],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                _addNewProduct();
+              },
+              icon: const Icon(Icons.add),
+              label: const Text("Add Product"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[600],
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: inventoryItems.length,
+      itemBuilder: (context, index) {
+        return _buildProductCard(inventoryItems[index]);
+      },
+    );
+  }
+
+  Widget _buildProductCard(Map<String, dynamic> item) {
+    final productName = item['subcat_name']?.toString() ?? 'Unknown Product';
+    final categoryName = item['cat_name']?.toString() ?? '';
+    final stockQuantity = item['stock_quantity'] ?? 0;
+    final unitPrice = item['unit_price'] ?? 0.0;
+    final lowStockThreshold = item['low_stock_threshold'] ?? 10;
+    final inventoryId = item['id']?.toString() ?? '';
+    
+    final isLowStock = stockQuantity < lowStockThreshold;
+    final displayPrice = unitPrice is String ? double.tryParse(unitPrice) ?? 0.0 : unitPrice.toDouble();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -620,24 +747,32 @@ Widget _buildSummaryCard(
         leading: CircleAvatar(
           backgroundColor: isLowStock ? Colors.red[100] : Colors.green[100],
           child: Icon(
-            Icons.inventory,
+            isLowStock ? Icons.warning : Icons.inventory,
             color: isLowStock ? Colors.red : Colors.green,
           ),
         ),
         title: Text(
-          product["name"] as String,
+          productName,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Quantity: ${product["quantity"]} units"),
-            Text("Price: ৳${product["price"]} per unit"),
+            if (categoryName.isNotEmpty)
+              Text(
+                "Category: $categoryName",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            Text("Quantity: $stockQuantity units"),
+            Text("Price: ৳${displayPrice.toStringAsFixed(2)} per unit"),
             if (isLowStock)
-              const Text(
-                "⚠️ Low Stock",
+              Text(
+                "⚠️ Low Stock (Threshold: $lowStockThreshold)",
                 style:
-                    TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                    const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
               ),
           ],
         ),
@@ -649,7 +784,7 @@ Widget _buildSummaryCard(
             const PopupMenuItem(value: "delete", child: Text("Delete")),
           ],
           onSelected: (value) {
-            _handleProductAction(value, product["name"] as String);
+            _handleProductActionWithData(value, productName, inventoryId, item);
           },
         ),
       ),
@@ -1457,74 +1592,60 @@ Widget _buildSummaryCard(
     );
 
     if (result == true) {
-      // Refresh the dashboard data
-      setState(() {
-        // In a real app, you would reload data from your database
-        // For now, we'll just update the total products count
-        totalProducts++;
-      });
+      // Refresh the inventory data
+      _loadInventory();
     }
   }
 
-  void _handleProductAction(String action, String productName) async {
-    final products = [
-      {
-        "name": "চাল সরু (নাজির/মিনিকেট)",
-        "quantity": 50,
-        "price": 80,
-        "lowStock": false
-      },
-      {
-        "name": "সয়াবিন তেল (পিউর)",
-        "quantity": 5,
-        "price": 170,
-        "lowStock": true
-      },
-      {"name": "মসুর ডাল", "quantity": 25, "price": 120, "lowStock": false},
-      {"name": "পেঁয়াজ (দেশি)", "quantity": 3, "price": 55, "lowStock": true},
-      {
-        "name": "গমের আটা (প্রিমিয়াম)",
-        "quantity": 30,
-        "price": 48,
-        "lowStock": false
-      },
-      {"name": "রুই মাছ", "quantity": 15, "price": 375, "lowStock": false},
-      {"name": "গরুর দুধ", "quantity": 2, "price": 65, "lowStock": true},
-      {
-        "name": "চাল মোটা (পাইলস)",
-        "quantity": 40,
-        "price": 60,
-        "lowStock": false
-      },
-    ];
-
-    final product = products.firstWhere(
-      (p) => p['name'] == productName,
-      orElse: () =>
-          {"name": productName, "quantity": 0, "price": 0, "lowStock": false},
-    );
-
+  void _handleProductActionWithData(String action, String productName, String inventoryId, Map<String, dynamic> item) async {
     if (action == "edit") {
+      // Convert the item data to the format expected by UpdateProductScreen
+      final productForUpdate = {
+        "name": productName,
+        "quantity": item['stock_quantity'] ?? 0,
+        "price": item['unit_price'] ?? 0.0,
+        "lowStock": (item['stock_quantity'] ?? 0) < (item['low_stock_threshold'] ?? 10),
+        "id": inventoryId,
+        "subcat_id": item['subcat_id'],
+        "low_stock_threshold": item['low_stock_threshold'],
+      };
+
       final result = await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => UpdateProductScreen(product: product),
+          builder: (context) => UpdateProductScreen(product: productForUpdate),
         ),
       );
 
       if (result != null) {
-        if (result == 'deleted') {
-          setState(() {
-            totalProducts =
-                (totalProducts - 1).clamp(0, double.infinity).toInt();
-          });
-        } else {
-          // Product was updated
-          setState(() {
-            // In a real app, you would update the product in your database
-            // and refresh the list
-          });
-        }
+        // Refresh the inventory data regardless of the result
+        _loadInventory();
+      }
+    } else if (action == "delete") {
+      // Show confirmation dialog for delete
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Delete $productName"),
+          content: Text("Are you sure you want to delete $productName from your inventory?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text("Delete"),
+            ),
+          ],
+        ),
+      );
+
+      if (confirmed == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Delete $productName - API integration needed")),
+        );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

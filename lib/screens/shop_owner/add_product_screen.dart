@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/network/pricelist_api.dart';
+import 'package:nitymulya/network/shop_owner_api.dart';
 
 class AddProductScreen extends StatefulWidget {
   const AddProductScreen({super.key});
@@ -11,66 +13,118 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
-  String? _selectedProduct;
-  String? _selectedCategory;
+  
+  String? selectedProduct;
+  String? selectedCategory;
+  
+  // Dynamic data from backend
+  List<Map<String, dynamic>> categories = [];
+  List<Map<String, dynamic>> priceList = [];
+  Map<String, List<Map<String, dynamic>>> categorizedProducts = {};
+  
+  // Loading states
+  bool isLoadingCategories = true;
+  bool isLoadingPriceList = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
 
-  // Government fixed products by category
-  final Map<String, List<Map<String, dynamic>>> _governmentProducts = {
-    'চাল': [
-      {'name': 'চাল সরু (নাজির/মিনিকেট)', 'fixedPrice': '৳78-82/কেজি'},
-      {'name': 'চাল মোটা (পাইলস)', 'fixedPrice': '৳58-62/কেজি'},
-      {'name': 'চাল বাসমতি', 'fixedPrice': '৳95-105/কেজি'},
-    ],
-    'তেল': [
-      {'name': 'সয়াবিন তেল (পিউর)', 'fixedPrice': '৳165-175/লিটার'},
-      {'name': 'সরিষার তেল', 'fixedPrice': '৳180-190/লিটার'},
-      {'name': 'পাম তেল', 'fixedPrice': '৳155-165/লিটার'},
-    ],
-    'ডাল': [
-      {'name': 'মসুর ডাল', 'fixedPrice': '৳115-125/কেজি'},
-      {'name': 'মুগ ডাল', 'fixedPrice': '৳135-145/কেজি'},
-      {'name': 'ছোলার ডাল', 'fixedPrice': '৳125-135/কেজি'},
-      {'name': 'অড়হর ডাল', 'fixedPrice': '৳145-155/কেজি'},
-    ],
-    'সবজি': [
-      {'name': 'পেঁয়াজ (দেশি)', 'fixedPrice': '৳50-60/কেজি'},
-      {'name': 'আলু', 'fixedPrice': '৳25-30/কেজি'},
-      {'name': 'রসুন', 'fixedPrice': '৳180-200/কেজি'},
-      {'name': 'আদা', 'fixedPrice': '৳120-140/কেজি'},
-    ],
-    'আটা': [
-      {'name': 'গমের আটা (প্রিমিয়াম)', 'fixedPrice': '৳45-50/কেজি'},
-      {'name': 'গমের আটা (স্ট্যান্ডার্ড)', 'fixedPrice': '৳38-42/কেজি'},
-      {'name': 'ময়দা', 'fixedPrice': '৳48-52/কেজি'},
-    ],
-    'দুগ্ধজাত': [
-      {'name': 'গরুর দুধ', 'fixedPrice': '৳60-70/লিটার'},
-      {'name': 'ছাগলের দুধ', 'fixedPrice': '৳90-100/লিটার'},
-    ],
-    'মাছ': [
-      {'name': 'রুই মাছ', 'fixedPrice': '৳350-400/কেজি'},
-      {'name': 'কাতলা মাছ', 'fixedPrice': '৳320-370/কেজি'},
-      {'name': 'ইলিশ মাছ', 'fixedPrice': '৳1200-1500/কেজি'},
-    ],
-    'মসলা': [
-      {'name': 'হলুদ গুঁড়া', 'fixedPrice': '৳250-280/কেজি'},
-      {'name': 'লাল মরিচ গুঁড়া', 'fixedPrice': '৳300-350/কেজি'},
-      {'name': 'ধনিয়া গুঁড়া', 'fixedPrice': '৳200-230/কেজি'},
-    ],
-  };
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadCategories(),
+      _loadPriceList(),
+    ]);
+  }
 
-  List<Map<String, dynamic>> get _currentProducts {
-    if (_selectedCategory == null) return [];
-    return _governmentProducts[_selectedCategory!] ?? [];
+  Future<void> _loadCategories() async {
+    try {
+      final fetchedCategories = await fetchCategories();
+      setState(() {
+        categories = fetchedCategories;
+        isLoadingCategories = false;
+        if (categories.isNotEmpty && selectedCategory == null) {
+          selectedCategory = categories.first['cat_name'];
+        }
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingCategories = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load categories: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _loadPriceList() async {
+    try {
+      final fetchedPriceList = await fetchPriceList();
+      setState(() {
+        priceList = fetchedPriceList;
+        isLoadingPriceList = false;
+        _organizePriceListByCategory();
+      });
+    } catch (e) {
+      setState(() {
+        isLoadingPriceList = false;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load price list: $e')),
+        );
+      }
+    }
+  }
+
+  void _organizePriceListByCategory() {
+    categorizedProducts.clear();
+    
+    for (var item in priceList) {
+      String categoryName = item['cat_name'] ?? 'Unknown';
+      
+      if (!categorizedProducts.containsKey(categoryName)) {
+        categorizedProducts[categoryName] = [];
+      }
+      categorizedProducts[categoryName]!.add(item);
+    }
+    
+    // Set initial selected product if category is already selected
+    if (selectedCategory != null && categorizedProducts.containsKey(selectedCategory)) {
+      if (categorizedProducts[selectedCategory]!.isNotEmpty && selectedProduct == null) {
+        selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'];
+      }
+    }
   }
 
   String? get _selectedProductFixedPrice {
-    if (_selectedProduct == null) return null;
-    final product = _currentProducts.firstWhere(
-      (p) => p['name'] == _selectedProduct,
-      orElse: () => {},
-    );
-    return product['fixedPrice'];
+    if (selectedProduct == null || selectedCategory == null) return null;
+    
+    if (categorizedProducts.containsKey(selectedCategory)) {
+      final product = categorizedProducts[selectedCategory]!.firstWhere(
+        (p) => p['subcat_name'] == selectedProduct,
+        orElse: () => <String, dynamic>{},
+      );
+      
+      if (product.isNotEmpty) {
+        String minPrice = product['min_price']?.toString() ?? '';
+        String maxPrice = product['max_price']?.toString() ?? '';
+        String unit = product['unit']?.toString() ?? '';
+        
+        if (minPrice.isNotEmpty && maxPrice.isNotEmpty) {
+          return '৳$minPrice-$maxPrice${unit.isNotEmpty ? '/$unit' : ''}';
+        } else if (minPrice.isNotEmpty) {
+          return '৳$minPrice+${unit.isNotEmpty ? '/$unit' : ''}';
+        } else if (maxPrice.isNotEmpty) {
+          return 'up to ৳$maxPrice${unit.isNotEmpty ? '/$unit' : ''}';
+        }
+      }
+    }
+    return null;
   }
 
   @override
@@ -80,16 +134,112 @@ class _AddProductScreenState extends State<AddProductScreen> {
     super.dispose();
   }
 
-  void _addProduct() {
-    if (_formKey.currentState!.validate() && _selectedProduct != null) {
-      // TODO: Add product to database/storage
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Product "$_selectedProduct" added successfully!'),
-          backgroundColor: Colors.green,
-        ),
+  void _addProduct() async {
+    if (_formKey.currentState!.validate() && selectedProduct != null) {
+      // Get selected product data
+      Map<String, dynamic>? selectedProductData;
+      if (selectedProduct != null && selectedCategory != null && 
+          categorizedProducts.containsKey(selectedCategory)) {
+        selectedProductData = categorizedProducts[selectedCategory]!.firstWhere(
+          (product) => product['subcat_name'] == selectedProduct,
+          orElse: () => <String, dynamic>{},
+        );
+      }
+
+      if (selectedProductData == null || selectedProductData.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a valid product'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      // Show loading
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                SizedBox(width: 16),
+                Text('Adding product to inventory...'),
+              ],
+            ),
+            duration: Duration(seconds: 30), // Long duration for loading
+          ),
+        );
+      }
+
+      try {
+        final subcatId = selectedProductData['id'].toString();
+        final stockQuantity = int.parse(_quantityController.text);
+        final unitPrice = double.parse(_priceController.text);
+
+        final result = await ShopOwnerApiService.addProductToInventory(
+          subcatId: subcatId,
+          stockQuantity: stockQuantity,
+          unitPrice: unitPrice,
+          lowStockThreshold: 10, // Default low stock threshold
+        );
+
+        // Hide loading snackbar
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+          if (result['success'] == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message'] ?? 'Product "$selectedProduct" added successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context, true); // Return true to indicate success
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message'] ?? 'Failed to add product'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            
+            // Check if login is required
+            if (result['requiresLogin'] == true) {
+              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+            }
+          }
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentSnackBar();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error adding product: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  void _autofillProductData() {
+    if (selectedProduct != null && selectedCategory != null && 
+        categorizedProducts.containsKey(selectedCategory)) {
+      
+      var productData = categorizedProducts[selectedCategory]!.firstWhere(
+        (product) => product['subcat_name'] == selectedProduct,
+        orElse: () => <String, dynamic>{},
       );
-      Navigator.pop(context, true); // Return true to indicate success
+      
+      if (productData.isNotEmpty) {
+        // Auto-fill with minimum price as suggestion if available
+        String? minPrice = productData['min_price']?.toString();
+        if (minPrice != null && minPrice.isNotEmpty && _priceController.text.isEmpty) {
+          _priceController.text = minPrice;
+        }
+      }
     }
   }
 
@@ -105,8 +255,33 @@ class _AddProductScreenState extends State<AddProductScreen> {
         backgroundColor: Colors.green[600],
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          if (!isLoadingCategories && !isLoadingPriceList)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Refresh Data',
+              onPressed: () {
+                setState(() {
+                  isLoadingCategories = true;
+                  isLoadingPriceList = true;
+                });
+                _loadData();
+              },
+            ),
+        ],
       ),
-      body: Form(
+      body: isLoadingCategories || isLoadingPriceList
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Loading product data...'),
+                ],
+              ),
+            )
+          : Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
@@ -148,7 +323,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
-                      value: _selectedCategory,
+                      value: selectedCategory,
                       decoration: InputDecoration(
                         hintText: "Select a category",
                         border: OutlineInputBorder(
@@ -156,16 +331,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                         prefixIcon: const Icon(Icons.category),
                       ),
-                      items: _governmentProducts.keys.map((category) {
+                      isExpanded: true,
+                      items: categories.map((category) {
+                        String categoryName = category['cat_name'] ?? 'Unknown';
                         return DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
+                          value: categoryName,
+                          child: Text(
+                            categoryName,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {
                         setState(() {
-                          _selectedCategory = value;
-                          _selectedProduct = null; // Reset product selection
+                          selectedCategory = value!;
+                          // Reset selected product when category changes
+                          if (categorizedProducts.containsKey(selectedCategory) &&
+                              categorizedProducts[selectedCategory]!.isNotEmpty) {
+                            selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'];
+                          } else {
+                            selectedProduct = null;
+                          }
                         });
                       },
                       validator: (value) {
@@ -181,7 +367,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Product Selection
             // Product Selection
             Card(
               child: Padding(
@@ -200,9 +385,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                     // ✅ Fixed DropdownButtonFormField
                     DropdownButtonFormField<String>(
-                      value: _selectedProduct,
+                      value: selectedProduct,
                       decoration: InputDecoration(
-                        hintText: _selectedCategory == null
+                        hintText: selectedCategory == null
                             ? "Select category first"
                             : "Select a product",
                         border: OutlineInputBorder(
@@ -210,21 +395,35 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         ),
                         prefixIcon: const Icon(Icons.inventory),
                       ),
-                      items: _currentProducts.map((product) {
-                        return DropdownMenuItem<String>(
-                          value: product['name'] as String,
-                          child: Text(
-                            product['name'] as String,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis, // ✅ fixes overflow
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: _selectedCategory == null
+                      isExpanded: true,
+                      menuMaxHeight: 300,
+                      items: selectedCategory != null && categorizedProducts.containsKey(selectedCategory)
+                          ? categorizedProducts[selectedCategory]!.map((product) {
+                              String productName = product['subcat_name'] ?? 'Unknown';
+                              String unit = product['unit'] ?? '';
+                              
+                              // Build display name with unit
+                              String displayName = productName;
+                              if (unit.isNotEmpty) {
+                                displayName += ' ($unit)';
+                              }
+                              
+                              return DropdownMenuItem<String>(
+                                value: productName,
+                                child: Text(
+                                  displayName,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              );
+                            }).toList()
+                          : [],
+                      onChanged: selectedCategory == null
                           ? null
                           : (value) {
                               setState(() {
-                                _selectedProduct = value;
+                                selectedProduct = value;
+                                _autofillProductData(); // Auto-fill price if available
                               });
                             },
                       validator: (value) {
@@ -266,8 +465,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
               ),
             ),
-
-//--------------------tush -----------
 
             const SizedBox(height: 16),
 
@@ -352,10 +549,34 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter selling price';
                         }
-                        if (double.tryParse(value) == null ||
-                            double.parse(value) <= 0) {
+                        
+                        final enteredPrice = double.tryParse(value);
+                        if (enteredPrice == null || enteredPrice <= 0) {
                           return 'Please enter a valid price';
                         }
+
+                        // Validate against government price range
+                        if (selectedProduct != null && selectedCategory != null && 
+                            categorizedProducts.containsKey(selectedCategory)) {
+                          final productData = categorizedProducts[selectedCategory]!.firstWhere(
+                            (product) => product['subcat_name'] == selectedProduct,
+                            orElse: () => <String, dynamic>{},
+                          );
+                          
+                          if (productData.isNotEmpty) {
+                            final minPrice = double.tryParse(productData['min_price']?.toString() ?? '0') ?? 0;
+                            final maxPrice = double.tryParse(productData['max_price']?.toString() ?? '0') ?? double.infinity;
+                            
+                            if (minPrice > 0 && enteredPrice < minPrice) {
+                              return 'Price must be at least ৳${minPrice.toStringAsFixed(2)}';
+                            }
+                            
+                            if (maxPrice < double.infinity && enteredPrice > maxPrice) {
+                              return 'Price cannot exceed ৳${maxPrice.toStringAsFixed(2)}';
+                            }
+                          }
+                        }
+                        
                         return null;
                       },
                     ),

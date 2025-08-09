@@ -44,6 +44,46 @@ export const runMigrations = async () => {
             console.log('Note: name columns may not exist or already dropped');
         }
         
+        // Drop existing shop_inventory table if it has wrong schema
+        try {
+            await sql`DROP TABLE IF EXISTS shop_inventory CASCADE`;
+            console.log('Dropped existing shop_inventory table');
+        } catch (error) {
+            console.log('Note: shop_inventory table may not exist');
+        }
+        
+        // Create shop_inventory table if it doesn't exist
+        await sql`
+            CREATE TABLE IF NOT EXISTS shop_inventory (
+                id SERIAL PRIMARY KEY,
+                shop_owner_id UUID NOT NULL REFERENCES shop_owners(id) ON DELETE CASCADE,
+                subcat_id UUID NOT NULL,
+                stock_quantity INTEGER NOT NULL DEFAULT 0,
+                unit_price DECIMAL(10,2) NOT NULL,
+                low_stock_threshold INTEGER DEFAULT 10,
+                is_active BOOLEAN DEFAULT true,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(shop_owner_id, subcat_id)
+            )
+        `;
+        
+        // Create indexes for shop_inventory
+        await sql`
+            CREATE INDEX IF NOT EXISTS idx_shop_inventory_shop_owner 
+            ON shop_inventory(shop_owner_id)
+        `;
+        await sql`
+            CREATE INDEX IF NOT EXISTS idx_shop_inventory_subcat 
+            ON shop_inventory(subcat_id)
+        `;
+        await sql`
+            CREATE INDEX IF NOT EXISTS idx_shop_inventory_active 
+            ON shop_inventory(shop_owner_id, is_active)
+        `;
+        
+        console.log('Shop inventory table created/verified successfully!');
+        
         console.log('Database migrations completed successfully!');
     } catch (error) {
         console.error('Error running migrations:', error);

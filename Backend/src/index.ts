@@ -5,16 +5,25 @@ import { prettyJSON } from 'hono/pretty-json'
 import { getCategories, getPrice, getPricesfromDB, getSheetUrl } from './controller/apiController'
 import { login, loginCustomer, loginShopOwner, loginWholesaler, signupCustomer, signupShopOwner, signupWholesaler } from './controller/authController'
 import {
-  addProductToInventory,
+  addProductToInventory as addShopOwnerProduct,
+  getChatMessages as getShopOwnerChatMessages,
+  getShopOwnerDashboard,
+  getShopOwnerInventory,
+  getLowStockProducts as getShopOwnerLowStockProducts,
+  getShopOrders as getShopOwnerOrders,
+  updateInventoryItem as updateShopOwnerInventoryItem
+} from './controller/shopOwnerController'
+import {
+  addProductToInventory as addWholesalerProduct,
   createOffer,
-  getChatMessages,
-  getLowStockProducts,
-  getShopOrders,
+  getChatMessages as getWholesalerChatMessages,
   getWholesalerDashboard,
   getWholesalerInventory,
+  getLowStockProducts as getWholesalerLowStockProducts,
   getWholesalerOffers,
-  updateInventoryItem,
-  updateOrderStatus
+  getShopOrders as getWholesalerShopOrders,
+  updateOrderStatus,
+  updateInventoryItem as updateWholesalerInventoryItem
 } from './controller/wholesalerController'
 import { checkDatabaseConnection, initializeDatabase } from './db-init'
 import { runMigrations } from './migrations'
@@ -48,14 +57,24 @@ app.post('/login_shop_owner', loginShopOwner)
 app.use('/wholesaler/*', createAuthMiddleware(), requireRole('wholesaler'))
 app.get('/wholesaler/dashboard', getWholesalerDashboard)
 app.get('/wholesaler/inventory', getWholesalerInventory)
-app.post('/wholesaler/inventory', addProductToInventory)
-app.put('/wholesaler/inventory', updateInventoryItem)
-app.get('/wholesaler/low-stock', getLowStockProducts)
-app.get('/wholesaler/orders', getShopOrders)
+app.post('/wholesaler/inventory', addWholesalerProduct)
+app.put('/wholesaler/inventory', updateWholesalerInventoryItem)
+app.get('/wholesaler/low-stock', getWholesalerLowStockProducts)
+app.get('/wholesaler/orders', getWholesalerShopOrders)
 app.put('/wholesaler/orders/status', updateOrderStatus)
 app.get('/wholesaler/offers', getWholesalerOffers)
 app.post('/wholesaler/offers', createOffer)
-app.get('/wholesaler/chat', getChatMessages)
+app.get('/wholesaler/chat', getWholesalerChatMessages)
+
+// Shop Owner routes (protected)
+app.use('/shop-owner/*', createAuthMiddleware(), requireRole('shop_owner'))
+app.get('/shop-owner/dashboard', getShopOwnerDashboard)
+app.get('/shop-owner/inventory', getShopOwnerInventory)
+app.post('/shop-owner/inventory', addShopOwnerProduct)
+app.put('/shop-owner/inventory', updateShopOwnerInventoryItem)
+app.get('/shop-owner/low-stock', getShopOwnerLowStockProducts)
+app.get('/shop-owner/orders', getShopOwnerOrders)
+app.get('/shop-owner/chat', getShopOwnerChatMessages)
 
 // Initialize database on startup
 checkDatabaseConnection().then(async (connected) => {
