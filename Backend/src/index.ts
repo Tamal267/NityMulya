@@ -16,6 +16,10 @@ import {
 import {
   addProductToInventory as addWholesalerProduct,
   createOffer,
+  createOrder,
+  getShopOwners,
+  getSubcategories,
+  getCategories as getWholesalerCategories,
   getChatMessages as getWholesalerChatMessages,
   getWholesalerDashboard,
   getWholesalerInventory,
@@ -59,10 +63,14 @@ app.post('/wholesaler/inventory', addWholesalerProduct)
 app.put('/wholesaler/inventory', updateWholesalerInventoryItem)
 app.get('/wholesaler/low-stock', getWholesalerLowStockProducts)
 app.get('/wholesaler/orders', getWholesalerShopOrders)
+app.post('/wholesaler/orders', createOrder)
 app.put('/wholesaler/orders/status', updateOrderStatus)
 app.get('/wholesaler/offers', getWholesalerOffers)
 app.post('/wholesaler/offers', createOffer)
 app.get('/wholesaler/chat', getWholesalerChatMessages)
+app.get('/wholesaler/shop-owners', getShopOwners)
+app.get('/wholesaler/categories', getWholesalerCategories)
+app.get('/wholesaler/subcategories', getSubcategories)
 
 // Shop Owner routes (protected)
 app.use('/shop-owner/*', createAuthMiddleware(), requireRole('shop_owner'))

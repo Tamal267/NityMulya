@@ -242,6 +242,53 @@ class WholesalerApiService {
     }
   }
 
+  // Create a new order
+  static Future<Map<String, dynamic>> createOrder({
+    required String shopOwnerId,
+    required String subcategoryId,
+    required int quantity,
+    required double unitPrice,
+    String? notes,
+  }) async {
+    try {
+      final requestData = {
+        'shop_owner_id': shopOwnerId,
+        'subcat_id': subcategoryId,
+        'quantity': quantity,
+        'unit_price': unitPrice,
+        'notes': notes,
+      };
+
+      final response = await _networkHelper.postWithToken('/wholesaler/orders', requestData);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Order created successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to create order',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error creating order: $e',
+      };
+    }
+  }
+
   // Update order status
   static Future<Map<String, dynamic>> updateOrderStatus({
     required String orderId,
@@ -480,6 +527,102 @@ class WholesalerApiService {
       return {
         'success': false,
         'message': 'Error fetching messages: $e',
+      };
+    }
+  }
+
+  // Get all shop owners for selection
+  static Future<Map<String, dynamic>> getShopOwners() async {
+    try {
+      final response = await _networkHelper.getWithToken('/wholesaler/shop-owners');
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch shop owners',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching shop owners: $e',
+      };
+    }
+  }
+
+  // Get all categories
+  static Future<Map<String, dynamic>> getCategories() async {
+    try {
+      final response = await _networkHelper.getWithToken('/wholesaler/categories');
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch categories',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching categories: $e',
+      };
+    }
+  }
+
+  // Get subcategories by category ID
+  static Future<Map<String, dynamic>> getSubcategories(String categoryId) async {
+    try {
+      final response = await _networkHelper.getWithToken('/wholesaler/subcategories?category_id=$categoryId');
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch subcategories',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching subcategories: $e',
       };
     }
   }

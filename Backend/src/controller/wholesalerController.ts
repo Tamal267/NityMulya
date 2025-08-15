@@ -72,6 +72,7 @@ export const getWholesalerInventory = async (c: any) => {
         const inventory = await sql`
             SELECT 
                 wi.id,
+                wi.subcat_id,
                 wi.stock_quantity,
                 wi.unit_price,
                 wi.low_stock_threshold,
@@ -300,7 +301,9 @@ AND si.is_active = true
 // Get shop orders/requests
 export const getShopOrders = async (c: any) => {
     try {
-        const wholesaler_id = c.req.query('wholesaler_id');
+        // Get wholesaler ID from authenticated user
+        const user = c.get('user');
+        const wholesaler_id = user.userId;
         const status_filter = c.req.query('status');
         
         if (!wholesaler_id) {
@@ -313,8 +316,9 @@ export const getShopOrders = async (c: any) => {
                 sc.subcat_name,
                 sc.unit,
                 c.cat_name,
-                so.name as shop_name,
-                so.shop_address,
+                COALESCE(so.full_name, so.name) as shop_name,
+                so.full_name,
+                so.address as shop_address,
                 so.contact as shop_contact
             FROM shop_orders orders
             JOIN subcategories sc ON orders.subcat_id = sc.id
@@ -640,5 +644,118 @@ export const getChatMessages = async (c: any) => {
     } catch (error) {
         console.error('Error fetching chat messages:', error);
         return c.json({ success: false, message: 'Failed to fetch messages' }, 500);
+    }
+};
+
+// Create a new order
+export const createOrder = async (c: any) => {
+    try {
+        // Get wholesaler ID from authenticated user
+        const user = c.get('user');
+        const wholesaler_id = user.userId;
+        
+        if (!wholesaler_id) {
+            return c.json({ success: false, message: 'Unauthorized' }, 401);
+        }
+
+        const {
+            shop_owner_id,
+            subcat_id,
+            quantity,
+            unit_price,
+            notes
+        } = await c.req.json();
+
+        // Validate required fields
+        if (!shop_owner_id || !subcat_id || !quantity || !unit_price) {
+            return c.json({ 
+                success: false, 
+                message: 'shop_owner_id, subcat_id, quantity, and unit_price are required' 
+            }, 400);
+        }
+
+        // Calculate total amount
+        const total_amount = quantity * unit_price;
+
+        // Insert the order
+        const result = await sql`
+            INSERT INTO shop_orders 
+            (shop_owner_id, wholesaler_id, subcat_id, quantity_requested, unit_price, total_amount, notes, status)
+            VALUES (${shop_owner_id}, ${wholesaler_id}, ${subcat_id}, ${quantity}, ${unit_price}, ${total_amount}, ${notes || null}, 'pending')
+            RETURNING *
+        `;
+
+        return c.json({
+            success: true,
+            message: 'Order created successfully',
+            data: result[0]
+        });
+    } catch (error) {
+        console.error('Error creating order:', error);
+        return c.json({ success: false, message: 'Failed to create order' }, 500);
+    }
+};
+
+// Get all shop owners for dropdown selection
+export const getShopOwners = async (c: any) => {
+    try {
+        const shopOwners = await sql`
+            SELECT id, full_name as shop_name, full_name, email, contact as phone, address as location
+            FROM shop_owners 
+            ORDER BY full_name ASC
+        `;
+
+        return c.json({
+            success: true,
+            data: shopOwners
+        });
+    } catch (error) {
+        console.error('Error fetching shop owners:', error);
+        return c.json({ success: false, message: 'Failed to fetch shop owners' }, 500);
+    }
+};
+
+// Get all categories for dropdown selection
+export const getCategories = async (c: any) => {
+    try {
+        const categories = await sql`
+            SELECT id, cat_name as name
+            FROM categories 
+            ORDER BY cat_name ASC
+        `;
+
+        return c.json({
+            success: true,
+            data: categories
+        });
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        return c.json({ success: false, message: 'Failed to fetch categories' }, 500);
+    }
+};
+
+// Get subcategories by category ID
+export const getSubcategories = async (c: any) => {
+    try {
+        const categoryId = c.req.query('category_id');
+        
+        if (!categoryId) {
+            return c.json({ success: false, message: 'Category ID is required' }, 400);
+        }
+
+        const subcategories = await sql`
+            SELECT id, subcat_name as name, unit
+            FROM subcategories 
+            WHERE cat_id = ${categoryId} 
+            ORDER BY subcat_name ASC
+        `;
+
+        return c.json({
+            success: true,
+            data: subcategories
+        });
+    } catch (error) {
+        console.error('Error fetching subcategories:', error);
+        return c.json({ success: false, message: 'Failed to fetch subcategories' }, 500);
     }
 };
