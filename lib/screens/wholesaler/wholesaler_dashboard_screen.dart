@@ -4,6 +4,7 @@ import 'package:nitymulya/network/pricelist_api.dart';
 import 'package:nitymulya/network/wholesaler_api.dart';
 import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/add_order_screen.dart';
+import 'package:nitymulya/screens/wholesaler/order_status_update_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
@@ -2224,161 +2225,19 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _changeTransactionStatus(Map<String, dynamic> transaction, int index) {
-    final currentStatus = transaction["status"] as String? ?? "pending";
-    String selectedStatus = currentStatus;
-    
-    final statuses = ["pending", "processing", "delivered", "cancelled"];
-    
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text("Change Status - ${transaction["shop_name"] ?? transaction["full_name"] ?? "Unknown Shop"}"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Product: ${transaction["subcat_name"] ?? "Unknown Product"} - ${transaction["quantity_requested"] ?? transaction["quantity"] ?? 0} ${transaction["unit"] ?? ""}",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              const Text("Select new status:"),
-              const SizedBox(height: 8),
-              ...statuses.map((status) => RadioListTile<String>(
-                title: Text(status.toUpperCase()),
-                value: status,
-                groupValue: selectedStatus,
-                onChanged: (value) {
-                  setDialogState(() {
-                    selectedStatus = value!;
-                  });
-                },
-                dense: true,
-              )),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: selectedStatus == currentStatus ? null : () async {
-                Navigator.pop(context);
-                
-                // Show loading indicator
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Row(
-                      children: [
-                        SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Text("Updating status..."),
-                      ],
-                    ),
-                    backgroundColor: Colors.blue[800],
-                    duration: Duration(seconds: 10),
-                  ),
-                );
-
-                try {
-                  // Update status in database via API
-                  final result = await WholesalerApiService.updateOrderStatus(
-                    orderId: transaction["id"],
-                    status: selectedStatus,
-                  );
-
-                  // Hide loading indicator
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-                  if (result['success']) {
-                    // Show brief refreshing message
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text("Refreshing order list..."),
-                          ],
-                        ),
-                        backgroundColor: Colors.blue[700],
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-
-                    // Reload order history to get fresh data from database
-                    await _loadOrderHistory();
-
-                    // Hide refreshing message and show success message
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("✅ Status updated from '${currentStatus.toUpperCase()}' to '${selectedStatus.toUpperCase()}'"),
-                        backgroundColor: Colors.green[800],
-                        duration: Duration(seconds: 3),
-                      ),
-                    );
-
-                    print('✅ Order status updated successfully: ${transaction["id"]} -> $selectedStatus');
-                  } else {
-                    // Show error message
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("❌ Failed to update status: ${result['message'] ?? 'Unknown error'}"),
-                        backgroundColor: Colors.red[800],
-                        duration: Duration(seconds: 4),
-                      ),
-                    );
-
-                    // Handle token expiration
-                    if (result['requiresLogin'] == true) {
-                      _handleAuthError();
-                    }
-
-                    print('❌ Failed to update order status: ${result['message']}');
-                  }
-                } catch (e) {
-                  // Hide loading indicator
-                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-                  // Show error message
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("💥 Error updating status: $e"),
-                      backgroundColor: Colors.red[800],
-                      duration: Duration(seconds: 4),
-                    ),
-                  );
-
-                  print('💥 Exception updating order status: $e');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[800],
-              ),
-              child: const Text("Confirm", style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
+  void _changeTransactionStatus(Map<String, dynamic> transaction, int index) async {
+    // Navigate to the status update screen
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrderStatusUpdateScreen(transaction: transaction),
       ),
     );
+    
+    // If status was updated successfully, reload the order history
+    if (result == true) {
+      await _loadOrderHistory();
+    }
   }
 
   Widget _buildReceiptWidget(Map<String, dynamic> transaction) {
@@ -2641,14 +2500,17 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   Color _getStatusColor(String status) {
-    switch (status) {
-      case "Delivered":
+    switch (status.toLowerCase()) {
+      case "delivered":
+      case "completed":
         return Colors.green;
-      case "Pending":
+      case "pending":
         return Colors.orange;
-      case "Processing":
+      case "processing":
+      case "in_progress":
         return Colors.blue;
-      case "Cancelled":
+      case "cancelled":
+      case "canceled":
         return Colors.red;
       default:
         return Colors.grey;
