@@ -25,8 +25,6 @@ import {
   updateOrderStatus,
   updateInventoryItem as updateWholesalerInventoryItem
 } from './controller/wholesalerController'
-import { checkDatabaseConnection, initializeDatabase } from './db-init'
-import { runMigrations } from './migrations'
 import { createAuthMiddleware, requireRole } from './utils/jwt'
 
 
@@ -75,18 +73,6 @@ app.put('/shop-owner/inventory', updateShopOwnerInventoryItem)
 app.get('/shop-owner/low-stock', getShopOwnerLowStockProducts)
 app.get('/shop-owner/orders', getShopOwnerOrders)
 app.get('/shop-owner/chat', getShopOwnerChatMessages)
-
-// Initialize database on startup
-checkDatabaseConnection().then(async (connected) => {
-  if (connected) {
-    try {
-      await initializeDatabase();
-      await runMigrations();
-    } catch (error) {
-      console.error('Failed to initialize database:', error);
-    }
-  }
-});
 
 export default {
   port: process.env.PORT || 5000,

@@ -35,6 +35,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   List<String> products = ["All Products"];
   bool isLoadingProducts = false;
   
+  // Offers state
+  List<Map<String, dynamic>> offers = [];
+  bool isLoadingOffers = false;
+  String? offersError;
+  
+  // Stock Monitor state (additional variables)
+  List<Map<String, dynamic>> lowStockProductsList = [];
+  bool isLoadingLowStock = false;
+  String? categoriesError;
+  String? lowStockError;
+  List<Map<String, dynamic>> categoryList = [];
+  
   // TODO: Remove this hardcoded ID - now using token-based authentication
   // final String currentWholesalerId = 'cdb69b0f-27bc-41b5-9ce3-525f54e1f316';
   
@@ -56,6 +68,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
     _loadInventory(); // Load inventory on startup
+    _loadOffers(); // Load offers on startup
+    _loadCategories(); // Load categories for filters
+    _loadLowStockProducts(); // Load low stock products on startup
     _loadProductsFromDatabase(); // Load products for the filter
   }
 
@@ -120,6 +135,90 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         inventoryError = 'Error loading inventory: $e';
         isLoadingInventory = false;
       });
+    }
+  }
+
+  Future<void> _loadOffers() async {
+    setState(() {
+      isLoadingOffers = true;
+      offersError = null;
+    });
+
+    try {
+      final result = await WholesalerApiService.getOffers();
+      
+      if (result['success']) {
+        setState(() {
+          offers = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          isLoadingOffers = false;
+        });
+      } else {
+        setState(() {
+          offersError = result['message'] ?? 'Failed to load offers';
+          isLoadingOffers = false;
+        });
+        
+        // Handle token expiration or authentication errors
+        if (result['requiresLogin'] == true) {
+          _handleAuthError();
+        }
+      }
+    } catch (e) {
+      setState(() {
+        offersError = 'Error loading offers: $e';
+        isLoadingOffers = false;
+      });
+    }
+  }
+
+  Future<void> _loadLowStockProducts() async {
+    setState(() {
+      isLoadingLowStock = true;
+      lowStockError = null;
+    });
+
+    try {
+      final result = await WholesalerApiService.getLowStockProducts(
+        productFilter: selectedProduct != "All Products" ? selectedProduct : null,
+        locationFilter: selectedLocation != "All Areas" ? selectedLocation : null,
+      );
+      
+      if (result['success']) {
+        setState(() {
+          lowStockProductsList = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          isLoadingLowStock = false;
+        });
+      } else {
+        setState(() {
+          lowStockError = result['message'] ?? 'Failed to load low stock products';
+          isLoadingLowStock = false;
+        });
+        
+        // Handle token expiration or authentication errors
+        if (result['requiresLogin'] == true) {
+          _handleAuthError();
+        }
+      }
+    } catch (e) {
+      setState(() {
+        lowStockError = 'Error loading low stock products: $e';
+        isLoadingLowStock = false;
+      });
+    }
+  }
+
+  Future<void> _loadCategories() async {
+    try {
+      // Fetch categories from the API
+      final categories = await fetchCategories();
+      setState(() {
+        categoryList = categories;
+      });
+    } catch (error) {
+      setState(() {
+        categoriesError = 'Failed to load categories: $error';
+      });
+      print('Error loading categories: $error');
     }
   }
 
@@ -236,7 +335,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                     debugPrint("Tapped Low Stock");
                   },
                   child: _buildSummaryCard(
-                    "Low Stock",
+                    "Shops Low Stock",
                     "$lowStockProducts",
                     Icons.warning,
                     Colors.red,
@@ -405,7 +504,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               initiallyExpanded: false,
               leading: Icon(Icons.filter_list, color: Colors.green[800], size: 20),
               title: const Text(
-                "🛒 Low Stock Monitor Filters",
+                "🏪 Shop Stock Monitor - Track Low Stock Shops",
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -437,6 +536,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                           setState(() {
                             selectedProduct = value!;
                           });
+                          // Reload low stock products with new filter
+                          _loadLowStockProducts();
                         },
                       ),
                       const SizedBox(height: 12),
@@ -462,6 +563,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                           setState(() {
                             selectedLocation = value!;
                           });
+                          // Reload low stock products with new filter
+                          _loadLowStockProducts();
                         },
                       ),
                       const SizedBox(height: 12),
@@ -514,12 +617,42 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           
           // Results List
           Expanded(
-            child: ListView.builder(
-              itemCount: 8,
-              itemBuilder: (context, index) {
-                return _buildLowStockItem(index);
-              },
-            ),
+            child: isLoadingLowStock
+                ? const Center(child: CircularProgressIndicator())
+                : lowStockError != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                            const SizedBox(height: 16),
+                            Text(lowStockError!, style: const TextStyle(color: Colors.red)),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadLowStockProducts,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : lowStockProductsList.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
+                                const SizedBox(height: 16),
+                                Text('No shops with low stock found', 
+                                     style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: lowStockProductsList.length,
+                            itemBuilder: (context, index) {
+                              return _buildLowStockItem(index);
+                            },
+                          ),
           ),
         ],
       ),
@@ -527,32 +660,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   Widget _buildLowStockItem(int index) {
-    // Use actual product names from the database instead of hardcoded ones
-    final productNames = [
-      "চাল সরু (নাজির/মিনিকেট)",
-      "সয়াবিন তেল (বোতল)",
-      "মশুর ডাল (বড় দানা)",
-      "পিঁয়াজ (দেশী)",
-      "চিনি",
-      "আটা সাদা (খোলা)",
-      "ছোলা (মানভেদে)",
-      "সয়াবিন তেল (লুজ)",
-    ];
-
-    final shops = [
-      {"name": "আহমেদ স্টোর", "location": "ধানমন্ডি, ঢাকা", "product": productNames[0], "quantity": 3, "urgent": true},
-      {"name": "করিম ট্রেডার্স", "location": "চট্টগ্রাম", "product": productNames[1], "quantity": 5, "urgent": true},
-      {"name": "রহিম মার্ট", "location": "সিলেট", "product": productNames[2], "quantity": 8, "urgent": false},
-      {"name": "ফাতিমা স্টোর", "location": "রাজশাহী", "product": productNames[3], "quantity": 2, "urgent": true},
-      {"name": "নাসির এন্টারপ্রাইজ", "location": "খুলনা", "product": productNames[4], "quantity": 6, "urgent": false},
-      {"name": "সালমা ট্রেডিং", "location": "বরিশাল", "product": productNames[5], "quantity": 4, "urgent": true},
-      {"name": "আব্দুল মার্ট", "location": "ঢাকা", "product": productNames[6], "quantity": 7, "urgent": false},
-      {"name": "রশিদ স্টোর", "location": "চট্টগ্রাম", "product": productNames[7], "quantity": 1, "urgent": true},
-    ];
-
-    final shop = shops[index];
-    final isUrgent = shop["urgent"] as bool;
-    final quantity = shop["quantity"] as int;
+    // Use real product data from the API
+    final productData = lowStockProductsList[index];
+    
+    // Extract data from the API response
+    final shopName = productData['shop_name'] ?? 'Unknown Shop';
+    final shopLocation = productData['shop_location'] ?? 'Unknown Location';  
+    final productName = productData['product_name'] ?? 'Unknown Product';
+    final quantity = productData['stock_quantity'] ?? 0;
+    final minThreshold = productData['min_stock_threshold'] ?? 0;
+    
+    // Consider it urgent if stock is below half the minimum threshold
+    final isUrgent = quantity <= (minThreshold / 2);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -570,7 +689,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           children: [
             Expanded(
               child: Text(
-                shop["name"] as String,
+                shopName,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -601,7 +720,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
-                    shop["location"] as String,
+                    shopLocation,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -612,7 +731,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               children: [
                 Expanded(
                   child: Text(
-                    shop["product"] as String,
+                    productName,
                     style: const TextStyle(fontWeight: FontWeight.bold),
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -621,13 +740,13 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 Icon(
                   Icons.inventory,
                   size: 14,
-                  color: quantity < 5 ? Colors.red[700] : Colors.orange[700],
+                  color: isUrgent ? Colors.red[700] : Colors.orange[700],
                 ),
                 const SizedBox(width: 4),
                 Text(
                   "$quantity units",
                   style: TextStyle(
-                    color: quantity < 5 ? Colors.red[700] : Colors.orange[700],
+                    color: isUrgent ? Colors.red[700] : Colors.orange[700],
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -645,12 +764,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               context,
               MaterialPageRoute(
                 builder: (context) => WholesalerChatScreen(
-                  shopName: shop["name"] as String,
-                  shopId: (shop["name"] as String).toLowerCase().replaceAll(' ', '_'),
+                  shopName: shopName,
+                  shopId: shopName.toLowerCase().replaceAll(' ', '_'),
                 ),
               ),
             ),
-            onLongPress: () => _contactShop(shop["name"] as String),
+            onLongPress: () => _contactShop(shopName),
             child: Container(
               padding: const EdgeInsets.all(8),
               constraints: const BoxConstraints(
@@ -1305,58 +1424,124 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return _buildOfferItem(index);
-              },
-            ),
+            child: _buildOffersContent(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildOfferItem(int index) {
-    final offers = [
-      {
-        "title": "চাল সরু (নাজির/মিনিকেট) বাল্ক ডিসকাউন্ট",
-        "description": "১০০ কেজির উপর ১০% ছাড়",
-        "validUntil": "৩১ জুলাই পর্যন্ত",
-        "active": true
-      },
-      {
-        "title": "সয়াবিন তেল ও মশুর ডাল কম্বো অফার",
-        "description": "একসাথে কিনলে ১৫% ছাড়",
-        "validUntil": "২৮ জুলাই পর্যন্ত",
-        "active": true
-      },
-      {
-        "title": "নতুন গ্রাহক বোনাস",
-        "description": "প্রথম অর্ডারে ২০% ছাড়",
-        "validUntil": "৩০ জুলাই পর্যন্ত",
-        "active": true
-      },
-      {
-        "title": "দ্রুত ডেলিভারি অফার",
-        "description": "২৪ ঘণ্টায় ডেলিভারি",
-        "validUntil": "মেয়াদ শেষ",
-        "active": false
-      },
-      {
-        "title": "ঈদ স্পেশাল ডিল",
-        "description": "সব পণ্যে ২৫% ছাড়",
-        "validUntil": "মেয়াদ শেষ",
-        "active": false
-      },
-    ];
+  Widget _buildOffersContent() {
+    if (isLoadingOffers) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
 
-    final offer = offers[index];
-    final isActive = offer["active"] as bool;
+    if (offersError != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              size: 64,
+              color: Colors.red[300],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading offers',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.red[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              offersError!,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.red[600],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadOffers,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (offers.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.local_offer_outlined,
+              size: 64,
+              color: Colors.grey[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No offers yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Create your first offer to attract more customers',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey[500],
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => _createOffer(),
+              icon: const Icon(Icons.add),
+              label: const Text('Create Offer'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.yellow[700],
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadOffers,
+      child: ListView.builder(
+        itemCount: offers.length,
+        itemBuilder: (context, index) {
+          return _buildOfferItem(offers[index]);
+        },
+      ),
+    );
+  }
+
+  Widget _buildOfferItem(Map<String, dynamic> offer) {
+    final isActive = offer['is_active'] ?? false;
+    final title = offer['title'] ?? '';
+    final description = offer['description'] ?? '';
+    final validUntil = offer['valid_until'] != null 
+        ? DateTime.parse(offer['valid_until']).isAfter(DateTime.now())
+            ? 'Valid until ${DateTime.parse(offer['valid_until']).day}/${DateTime.parse(offer['valid_until']).month}'
+            : 'Expired'
+        : 'No expiry';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       color: isActive ? Colors.white : Colors.grey[100],
+      elevation: 2,
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: isActive ? Colors.yellow[100] : Colors.grey[200],
@@ -1366,7 +1551,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
         ),
         title: Text(
-          offer["title"] as String,
+          title,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: isActive ? Colors.black : Colors.grey[600],
@@ -1376,9 +1561,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              offer["description"] as String,
+              description,
               style: TextStyle(
-                  color: isActive ? Colors.black87 : Colors.grey[600]),
+                color: isActive ? Colors.black87 : Colors.grey[600],
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Row(
@@ -1390,7 +1578,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  offer["validUntil"] as String,
+                  validUntil,
                   style: TextStyle(
                     fontSize: 12,
                     color: isActive ? Colors.green : Colors.red,
@@ -1401,15 +1589,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
           ],
         ),
-        trailing: PopupMenuButton(
+        trailing: PopupMenuButton<String>(
           itemBuilder: (context) => [
             const PopupMenuItem(value: "edit", child: Text("Edit")),
             const PopupMenuItem(value: "duplicate", child: Text("Duplicate")),
-            const PopupMenuItem(value: "broadcast", child: Text("Broadcast")),
+            if (isActive)
+              const PopupMenuItem(value: "deactivate", child: Text("Deactivate"))
+            else
+              const PopupMenuItem(value: "activate", child: Text("Activate")),
             const PopupMenuItem(value: "delete", child: Text("Delete")),
           ],
           onSelected: (value) {
-            _handleOfferAction(value, offer["title"] as String);
+            _handleOfferAction(value, offer);
           },
         ),
       ),
@@ -2346,10 +2537,131 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _handleOfferAction(String action, String offerTitle) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("$action: $offerTitle - Coming Soon!")),
+  void _handleOfferAction(String action, Map<String, dynamic> offer) {
+    switch (action) {
+      case 'edit':
+        _editOffer(offer);
+        break;
+      case 'duplicate':
+        _duplicateOffer(offer);
+        break;
+      case 'activate':
+        _toggleOfferStatus(offer, true);
+        break;
+      case 'deactivate':
+        _toggleOfferStatus(offer, false);
+        break;
+      case 'delete':
+        _deleteOffer(offer);
+        break;
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("$action: ${offer['title']} - Coming Soon!")),
+        );
+    }
+  }
+
+  void _editOffer(Map<String, dynamic> offer) {
+    _showOfferDialog(offer: offer);
+  }
+
+  void _duplicateOffer(Map<String, dynamic> offer) {
+    final duplicatedOffer = Map<String, dynamic>.from(offer);
+    duplicatedOffer['title'] = '${offer['title']} (Copy)';
+    duplicatedOffer.remove('id'); // Remove ID so it creates a new offer
+    _showOfferDialog(offer: duplicatedOffer);
+  }
+
+  void _toggleOfferStatus(Map<String, dynamic> offer, bool isActive) async {
+    try {
+      final result = await WholesalerApiService.updateOffer(
+        offerId: offer['id'].toString(),
+        title: offer['title'],
+        description: offer['description'],
+        discountPercentage: offer['discount_percentage']?.toDouble(),
+        minimumQuantity: offer['minimum_quantity'],
+        validUntil: offer['valid_until'],
+        isActive: isActive,
+      );
+
+      if (result['success']) {
+        await _loadOffers(); // Reload offers
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Offer ${isActive ? 'activated' : 'deactivated'} successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update offer: ${result['message']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating offer: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _deleteOffer(Map<String, dynamic> offer) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Offer'),
+        content: Text('Are you sure you want to delete "${offer['title']}"? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _performDeleteOffer(offer['id'].toString());
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
+  }
+
+  Future<void> _performDeleteOffer(String offerId) async {
+    try {
+      final result = await WholesalerApiService.deleteOffer(offerId: offerId);
+
+      if (result['success']) {
+        await _loadOffers(); // Reload offers
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Offer deleted successfully'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete offer: ${result['message']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting offer: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _openChatWithShop(String shopName) {
@@ -2413,54 +2725,283 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
   // Offer Management Methods
   void _createOffer() {
+    _showOfferDialog();
+  }
+
+  void _showOfferDialog({Map<String, dynamic>? offer}) {
+    final isEditing = offer != null;
+    final titleController = TextEditingController(text: offer?['title'] ?? '');
+    final descriptionController = TextEditingController(text: offer?['description'] ?? '');
+    final discountController = TextEditingController(text: offer?['discount_percentage']?.toString() ?? '');
+    final minimumQuantityController = TextEditingController(text: offer?['minimum_quantity']?.toString() ?? '');
+    final termsController = TextEditingController(text: offer?['terms_conditions'] ?? '');
+    
+    DateTime? validUntil = offer?['valid_until'] != null 
+        ? DateTime.tryParse(offer!['valid_until']) 
+        : null;
+    
+    final formKey = GlobalKey<FormState>();
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Create New Offer"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: "Product",
-                border: OutlineInputBorder(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(isEditing ? 'Edit Offer' : 'Create New Offer'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Form(
+              key: formKey,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextFormField(
+                      controller: titleController,
+                      decoration: const InputDecoration(
+                        labelText: 'Offer Title',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.title),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter offer title';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: descriptionController,
+                      maxLines: 3,
+                      decoration: const InputDecoration(
+                        labelText: 'Description',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.description),
+                        alignLabelWithHint: true,
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Please enter offer description';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: discountController,
+                            decoration: const InputDecoration(
+                              labelText: 'Discount %',
+                              suffixText: '%',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.percent),
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Required';
+                              }
+                              final percent = double.tryParse(value);
+                              if (percent == null || percent < 0 || percent > 100) {
+                                return 'Enter 0-100';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: TextFormField(
+                            controller: minimumQuantityController,
+                            decoration: const InputDecoration(
+                              labelText: 'Min Quantity',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.shopping_cart),
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value != null && value.trim().isNotEmpty) {
+                                final qty = int.tryParse(value);
+                                if (qty == null || qty < 1) {
+                                  return 'Enter valid quantity';
+                                }
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    InkWell(
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: validUntil ?? DateTime.now().add(const Duration(days: 7)),
+                          firstDate: DateTime.now(),
+                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                        );
+                        if (date != null) {
+                          setState(() {
+                            validUntil = date;
+                          });
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today, color: Colors.grey),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                validUntil != null 
+                                    ? 'Valid until: ${validUntil!.day}/${validUntil!.month}/${validUntil!.year}'
+                                    : 'Select valid until date',
+                                style: TextStyle(
+                                  color: validUntil != null ? Colors.black : Colors.grey[600],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: termsController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Terms & Conditions (Optional)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.rule),
+                        alignLabelWithHint: true,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              items: products.map((product) {
-                return DropdownMenuItem(value: product, child: Text(product));
-              }).toList(),
-              onChanged: (value) {},
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: "Discount Percentage",
-                suffixText: "%",
-                border: OutlineInputBorder(),
-              ),
-              keyboardType: TextInputType.number,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
             ),
-            const SizedBox(height: 12),
-            TextFormField(
-              decoration: const InputDecoration(
-                labelText: "Valid Days",
-                border: OutlineInputBorder(),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(context).pop();
+                  
+                  final offerData = {
+                    'title': titleController.text.trim(),
+                    'description': descriptionController.text.trim(),
+                    'discount_percentage': double.tryParse(discountController.text) ?? 0,
+                    'minimum_quantity': minimumQuantityController.text.trim().isNotEmpty 
+                        ? int.tryParse(minimumQuantityController.text) 
+                        : null,
+                    'valid_until': validUntil?.toIso8601String(),
+                    'terms_conditions': termsController.text.trim().isNotEmpty 
+                        ? termsController.text.trim() 
+                        : null,
+                  };
+
+                  if (isEditing) {
+                    await _updateOffer(offer['id'].toString(), offerData);
+                  } else {
+                    await _createNewOffer(offerData);
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.yellow[700],
+                foregroundColor: Colors.white,
               ),
-              keyboardType: TextInputType.number,
+              child: Text(isEditing ? 'Update' : 'Create'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Create"),
-          ),
-        ],
       ),
     );
+  }
+
+  Future<void> _createNewOffer(Map<String, dynamic> offerData) async {
+    try {
+      final result = await WholesalerApiService.createOffer(
+        title: offerData['title'],
+        description: offerData['description'],
+        discountPercentage: offerData['discount_percentage'],
+        minimumQuantity: offerData['minimum_quantity'],
+        validUntil: offerData['valid_until'],
+      );
+
+      if (result['success']) {
+        await _loadOffers(); // Reload offers
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Offer created successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create offer: ${result['message']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error creating offer: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  Future<void> _updateOffer(String offerId, Map<String, dynamic> offerData) async {
+    try {
+      final result = await WholesalerApiService.updateOffer(
+        offerId: offerId,
+        title: offerData['title'],
+        description: offerData['description'],
+        discountPercentage: offerData['discount_percentage'],
+        minimumQuantity: offerData['minimum_quantity'],
+        validUntil: offerData['valid_until'],
+      );
+
+      if (result['success']) {
+        await _loadOffers(); // Reload offers
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Offer updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update offer: ${result['message']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating offer: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showBulkActions() {

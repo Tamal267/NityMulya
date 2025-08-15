@@ -362,6 +362,91 @@ class WholesalerApiService {
     }
   }
 
+  // Update existing offer
+  static Future<Map<String, dynamic>> updateOffer({
+    required String offerId,
+    required String title,
+    String? description,
+    double? discountPercentage,
+    int? minimumQuantity,
+    String? validUntil,
+    bool? isActive,
+  }) async {
+    try {
+      final requestData = {
+        'offer_id': offerId,
+        'title': title,
+        'description': description,
+        'discount_percentage': discountPercentage,
+        'minimum_quantity': minimumQuantity,
+        'valid_until': validUntil,
+        'is_active': isActive,
+      };
+
+      final response = await _networkHelper.putWithToken('/wholesaler/offers', requestData);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Offer updated successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to update offer',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error updating offer: $e',
+      };
+    }
+  }
+
+  // Delete offer
+  static Future<Map<String, dynamic>> deleteOffer({
+    required String offerId,
+  }) async {
+    try {
+      final response = await _networkHelper.deleteWithToken('/wholesaler/offers/$offerId');
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Offer deleted successfully',
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to delete offer',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error deleting offer: $e',
+      };
+    }
+  }
+
   // Get chat messages
   static Future<Map<String, dynamic>> getChatMessages({
     String? shopOwnerId,

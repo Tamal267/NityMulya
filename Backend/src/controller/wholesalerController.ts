@@ -25,13 +25,13 @@ export const getWholesalerDashboard = async (c: any) => {
             WHERE wholesaler_id = ${wholesaler_id} AND status = 'pending'
         `;
 
-        // Get low stock products
+        // Get low stock products from shop owners (not wholesaler inventory)
         const lowStockProducts = await sql`
             SELECT COUNT(*) as count 
-            FROM wholesaler_inventory wi
-            WHERE wi.wholesaler_id = ${wholesaler_id} 
-            AND wi.stock_quantity <= wi.low_stock_threshold
-            AND wi.is_active = true
+            FROM shop_inventory si
+            JOIN shop_owners so ON si.shop_owner_id = so.id
+            WHERE si.stock_quantity <= si.low_stock_threshold
+            AND si.is_active = true
         `;
 
         // Get unread messages count
@@ -252,37 +252,37 @@ export const getLowStockProducts = async (c: any) => {
 
         let query = sql`
             SELECT 
-                wi.stock_quantity,
-                wi.low_stock_threshold,
-                wi.unit_price,
-                wi.updated_at,
-                sc.subcat_name,
-                sc.unit,
-                c.cat_name,
-                sc.subcat_img,
-                so.name as shop_name,
-                so.shop_address,
-                COUNT(shop_orders.id) as pending_orders
-            FROM wholesaler_inventory wi
-            JOIN subcategories sc ON wi.subcat_id = sc.id
-            JOIN categories c ON sc.cat_id = c.id
-            LEFT JOIN shop_orders ON shop_orders.wholesaler_id = wi.wholesaler_id 
-                AND shop_orders.subcat_id = wi.subcat_id 
-                AND shop_orders.status = 'pending'
-            LEFT JOIN shop_owners so ON shop_orders.shop_owner_id = so.id
-            WHERE wi.wholesaler_id = ${wholesaler_id}
-            AND wi.stock_quantity <= wi.low_stock_threshold
-            AND wi.is_active = true
+    si.stock_quantity,
+    si.low_stock_threshold as min_stock_threshold,
+    si.unit_price,
+    si.updated_at,
+    sc.subcat_name as product_name,
+    sc.unit,
+    c.cat_name,
+    sc.subcat_img,
+    COALESCE(NULLIF(so.full_name, ''), 'Unknown Owner') as shop_name,
+    COALESCE(so.address, 'Address not provided') as shop_location,
+    so.contact as shop_contact,
+    so.id as shop_owner_id
+FROM shop_inventory si
+JOIN subcategories sc ON si.subcat_id = sc.id
+JOIN categories c ON sc.cat_id = c.id
+JOIN shop_owners so ON si.shop_owner_id = so.id
+WHERE si.stock_quantity <= si.low_stock_threshold
+AND si.is_active = true
         `;
 
         // Add filters if provided
         if (product_filter && product_filter !== 'All Products') {
-            query = sql`${query} AND c.cat_name = ${product_filter}`;
+            query = sql`${query} AND sc.subcat_name = ${product_filter}`;
+        }
+
+        if (location_filter && location_filter !== 'All Areas') {
+            query = sql`${query} AND so.address ILIKE ${`%${location_filter}%`}`;
         }
 
         query = sql`${query} 
-            GROUP BY wi.id, sc.subcat_name, sc.unit, c.cat_name, sc.subcat_img, so.name, so.shop_address
-            ORDER BY wi.stock_quantity ASC, sc.subcat_name
+            ORDER BY si.stock_quantity ASC, so.full_name, sc.subcat_name
         `;
 
         const lowStockProducts = await query;
@@ -386,15 +386,18 @@ export const updateOrderStatus = async (c: any) => {
 // Get wholesaler offers
 export const getWholesalerOffers = async (c: any) => {
     try {
-        const wholesaler_id = c.req.query('wholesaler_id');
+        // Get wholesaler ID from authenticated user
+        const user = c.get('user');
+        const wholesaler_id = user.userId;
         
         if (!wholesaler_id) {
-            return c.json({ success: false, message: 'Wholesaler ID is required' }, 400);
+            return c.json({ success: false, message: 'Unauthorized' }, 401);
         }
 
         const offers = await sql`
             SELECT * FROM wholesaler_offers
             WHERE wholesaler_id = ${wholesaler_id}
+            AND is_active = true
             ORDER BY created_at DESC
         `;
 
@@ -411,8 +414,15 @@ export const getWholesalerOffers = async (c: any) => {
 // Create new offer
 export const createOffer = async (c: any) => {
     try {
+        // Get wholesaler ID from authenticated user
+        const user = c.get('user');
+        const wholesaler_id = user.userId;
+        
+        if (!wholesaler_id) {
+            return c.json({ success: false, message: 'Unauthorized' }, 401);
+        }
+
         const {
-            wholesaler_id,
             title,
             description,
             discount_percentage,
@@ -420,17 +430,17 @@ export const createOffer = async (c: any) => {
             valid_until
         } = await c.req.json();
 
-        if (!wholesaler_id || !title) {
+        if (!title) {
             return c.json({ 
                 success: false, 
-                message: 'wholesaler_id and title are required' 
+                message: 'title is required' 
             }, 400);
         }
 
         const result = await sql`
             INSERT INTO wholesaler_offers 
-            (wholesaler_id, title, description, discount_percentage, minimum_quantity, valid_until)
-            VALUES (${wholesaler_id}, ${title}, ${description}, ${discount_percentage}, ${minimum_quantity}, ${valid_until})
+            (wholesaler_id, title, description, discount_percentage, minimum_quantity, valid_until, is_active)
+            VALUES (${wholesaler_id}, ${title}, ${description}, ${discount_percentage}, ${minimum_quantity}, ${valid_until}, true)
             RETURNING *
         `;
 
@@ -442,6 +452,124 @@ export const createOffer = async (c: any) => {
     } catch (error) {
         console.error('Error creating offer:', error);
         return c.json({ success: false, message: 'Failed to create offer' }, 500);
+    }
+};
+
+// Update existing offer
+export const updateOffer = async (c: any) => {
+    try {
+        // Get wholesaler ID from authenticated user
+        const user = c.get('user');
+        const wholesaler_id = user.userId;
+        
+        if (!wholesaler_id) {
+            return c.json({ success: false, message: 'Unauthorized' }, 401);
+        }
+
+        const {
+            offer_id,
+            title,
+            description,
+            discount_percentage,
+            minimum_quantity,
+            valid_until,
+            is_active
+        } = await c.req.json();
+
+        if (!offer_id || !title) {
+            return c.json({ 
+                success: false, 
+                message: 'offer_id and title are required' 
+            }, 400);
+        }
+
+        // First verify the offer belongs to this wholesaler
+        const existingOffer = await sql`
+            SELECT * FROM wholesaler_offers 
+            WHERE id = ${offer_id} AND wholesaler_id = ${wholesaler_id}
+        `;
+
+        if (existingOffer.length === 0) {
+            return c.json({ 
+                success: false, 
+                message: 'Offer not found or access denied' 
+            }, 404);
+        }
+
+        const result = await sql`
+            UPDATE wholesaler_offers 
+            SET 
+                title = ${title},
+                description = ${description},
+                discount_percentage = ${discount_percentage},
+                minimum_quantity = ${minimum_quantity},
+                valid_until = ${valid_until},
+                is_active = ${is_active !== undefined ? is_active : existingOffer[0].is_active},
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ${offer_id} AND wholesaler_id = ${wholesaler_id}
+            RETURNING *
+        `;
+
+        return c.json({
+            success: true,
+            message: 'Offer updated successfully',
+            data: result[0]
+        });
+    } catch (error) {
+        console.error('Error updating offer:', error);
+        return c.json({ success: false, message: 'Failed to update offer' }, 500);
+    }
+};
+
+// Delete offer (soft delete)
+export const deleteOffer = async (c: any) => {
+    try {
+        // Get wholesaler ID from authenticated user
+        const user = c.get('user');
+        const wholesaler_id = user.userId;
+        
+        if (!wholesaler_id) {
+            return c.json({ success: false, message: 'Unauthorized' }, 401);
+        }
+
+        const offer_id = c.req.param('id');
+
+        if (!offer_id) {
+            return c.json({ 
+                success: false, 
+                message: 'offer_id is required' 
+            }, 400);
+        }
+
+        // First verify the offer belongs to this wholesaler
+        const existingOffer = await sql`
+            SELECT * FROM wholesaler_offers 
+            WHERE id = ${offer_id} AND wholesaler_id = ${wholesaler_id}
+        `;
+
+        if (existingOffer.length === 0) {
+            return c.json({ 
+                success: false, 
+                message: 'Offer not found or access denied' 
+            }, 404);
+        }
+
+        // Soft delete by setting is_active to false
+        const result = await sql`
+            UPDATE wholesaler_offers 
+            SET is_active = false, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ${offer_id} AND wholesaler_id = ${wholesaler_id}
+            RETURNING *
+        `;
+
+        return c.json({
+            success: true,
+            message: 'Offer deleted successfully',
+            data: result[0]
+        });
+    } catch (error) {
+        console.error('Error deleting offer:', error);
+        return c.json({ success: false, message: 'Failed to delete offer' }, 500);
     }
 };
 
