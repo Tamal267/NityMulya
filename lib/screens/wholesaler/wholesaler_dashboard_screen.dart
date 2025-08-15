@@ -3,6 +3,8 @@ import 'package:nitymulya/network/auth.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
 import 'package:nitymulya/network/wholesaler_api.dart';
 import 'package:nitymulya/screens/welcome_screen.dart';
+import 'package:nitymulya/screens/wholesaler/add_order_screen.dart';
+import 'package:nitymulya/screens/wholesaler/order_status_update_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
@@ -45,6 +47,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   bool isLoadingLowStock = false;
   String? categoriesError;
   String? lowStockError;
+  
+  // Order History state
+  List<Map<String, dynamic>> orderHistory = [];
+  bool isLoadingHistory = false;
+  String? historyError;
   List<Map<String, dynamic>> categoryList = [];
   
   // TODO: Remove this hardcoded ID - now using token-based authentication
@@ -72,6 +79,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     _loadCategories(); // Load categories for filters
     _loadLowStockProducts(); // Load low stock products on startup
     _loadProductsFromDatabase(); // Load products for the filter
+    _loadOrderHistory(); // Load order history on startup
   }
 
   Future<void> _loadProductsFromDatabase() async {
@@ -168,6 +176,57 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         offersError = 'Error loading offers: $e';
         isLoadingOffers = false;
       });
+    }
+  }
+
+  Future<void> _loadOrderHistory() async {
+    print('🔄 Loading order history...');
+    setState(() {
+      isLoadingHistory = true;
+      historyError = null;
+    });
+
+    try {
+      final result = await WholesalerApiService.getShopOrders();
+      print('📦 Order history API result: $result');
+      
+      if (result['success']) {
+        final orders = List<Map<String, dynamic>>.from(result['data'] ?? []);
+        print('✅ Successfully loaded ${orders.length} orders');
+        setState(() {
+          orderHistory = orders;
+          isLoadingHistory = false;
+        });
+      } else {
+        print('❌ Failed to load orders: ${result['message']}');
+        setState(() {
+          historyError = result['message'] ?? 'Failed to load order history';
+          isLoadingHistory = false;
+        });
+        
+        // Handle token expiration or authentication errors
+        if (result['requiresLogin'] == true) {
+          _handleAuthError();
+        }
+      }
+    } catch (e) {
+      print('💥 Exception loading order history: $e');
+      setState(() {
+        historyError = 'Error loading order history: $e';
+        isLoadingHistory = false;
+      });
+    }
+  }
+
+  Future<void> _navigateToAddOrder() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddOrderScreen()),
+    );
+    
+    // If order was created successfully, reload the order history
+    if (result == true) {
+      await _loadOrderHistory();
     }
   }
 
@@ -1187,12 +1246,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _exportCSV(),
-                  icon: const Icon(Icons.table_chart, color: Colors.white),
-                  label: const Text("Export CSV",
+                  onPressed: () => _navigateToAddOrder(),
+                  icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
+                  label: const Text("Add Order",
                       style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[600],
+                    backgroundColor: Colors.blue[600],
                   ),
                 ),
               ),
@@ -1200,12 +1259,42 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.builder(
-              itemCount: 10,
-              itemBuilder: (context, index) {
-                return _buildHistoryItem(index);
-              },
-            ),
+            child: isLoadingHistory
+                ? const Center(child: CircularProgressIndicator())
+                : historyError != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                            const SizedBox(height: 16),
+                            Text(historyError!, style: const TextStyle(color: Colors.red)),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadOrderHistory,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : orderHistory.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.history, size: 64, color: Colors.grey[400]),
+                                const SizedBox(height: 16),
+                                Text('No order history found', 
+                                     style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: orderHistory.length,
+                            itemBuilder: (context, index) {
+                              return _buildHistoryItem(index);
+                            },
+                          ),
           ),
         ],
       ),
@@ -1213,105 +1302,50 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   Widget _buildHistoryItem(int index) {
-    final transactions = [
-      {
-        "shop": "আহমেদ স্টোর",
-        "product": "চাল সরু (নাজির/মিনিকেট)",
-        "quantity": "50 কেজি",
-        "date": "২৫/০৭/২৫",
-        "status": "Delivered"
-      },
-      {
-        "shop": "করিম ট্রেডার্স",
-        "product": "সয়াবিন তেল (বোতল)",
-        "quantity": "20 লিটার",
-        "date": "২৪/০৭/২৫",
-        "status": "Pending"
-      },
-      {
-        "shop": "রহিম মার্ট",
-        "product": "মশুর ডাল (বড় দানা)",
-        "quantity": "30 কেজি",
-        "date": "২৩/০৭/২৫",
-        "status": "Delivered"
-      },
-      {
-        "shop": "ফাতিমা স্টোর",
-        "product": "পিঁয়াজ (দেশী)",
-        "quantity": "100 কেজি",
-        "date": "২২/০৭/২৫",
-        "status": "Processing"
-      },
-      {
-        "shop": "নাসির এন্টারপ্রাইজ",
-        "product": "চিনি",
-        "quantity": "40 কেজি",
-        "date": "২১/০৭/২৫",
-        "status": "Delivered"
-      },
-      {
-        "shop": "সালমা ট্রেডিং",
-        "product": "আটা সাদা (খোলা)",
-        "quantity": "60 কেজি",
-        "date": "২০/০৭/২৫",
-        "status": "Delivered"
-      },
-      {
-        "shop": "আব্দুল মার্ট",
-        "product": "ছোলা (মানভেদে)",
-        "quantity": "25 কেজি",
-        "date": "১৯/০৭/২৫",
-        "status": "Delivered"
-      },
-      {
-        "shop": "রশিদ স্টোর",
-        "product": "সয়াবিন তেল (লুজ)",
-        "quantity": "15 লিটার",
-        "date": "১৮/০৭/২৫",
-        "status": "Cancelled"
-      },
-      {
-        "shop": "হাসান ট্রেডার্স",
-        "product": "চাল (মোটা)/স্বর্ণা/চায়না ইরি",
-        "quantity": "80 কেজি",
-        "date": "১৭/০৭/২৫",
-        "status": "Delivered"
-      },
-      {
-        "shop": "কবির স্টোর",
-        "product": "মশুর ডাল (মাঝারী দানা)",
-        "quantity": "35 কেজি",
-        "date": "১৬/০৭/২৫",
-        "status": "Delivered"
-      },
-    ];
-
-    final transaction = transactions[index];
-    final status = transaction["status"] as String;
+    final order = orderHistory[index];
+    final status = order["status"] as String? ?? "unknown";
 
     Color statusColor;
     IconData statusIcon;
 
-    switch (status) {
-      case "Delivered":
+    switch (status.toLowerCase()) {
+      case "delivered":
+      case "completed":
         statusColor = Colors.green;
         statusIcon = Icons.check_circle;
         break;
-      case "Pending":
+      case "pending":
         statusColor = Colors.orange;
         statusIcon = Icons.access_time;
         break;
-      case "Processing":
+      case "processing":
+      case "in_progress":
         statusColor = Colors.blue;
         statusIcon = Icons.sync;
         break;
-      case "Cancelled":
+      case "cancelled":
+      case "canceled":
         statusColor = Colors.red;
         statusIcon = Icons.cancel;
         break;
       default:
         statusColor = Colors.grey;
         statusIcon = Icons.help;
+    }
+
+    // Format date
+    String formattedDate = order["created_at"] as String? ?? 
+                          order["order_date"] as String? ?? 
+                          order["date"] as String? ?? "N/A";
+    
+    // Try to format the date if it's in ISO format
+    try {
+      if (formattedDate.contains('T')) {
+        final dateTime = DateTime.parse(formattedDate);
+        formattedDate = "${dateTime.day}/${dateTime.month}/${dateTime.year}";
+      }
+    } catch (e) {
+      // Keep original format if parsing fails
     }
 
     return Card(
@@ -1325,13 +1359,15 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
         ),
         title: Text(
-          transaction["shop"] as String,
+          order["shop_name"] as String? ?? 
+          order["full_name"] as String? ?? 
+          "Unknown Shop",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("${transaction["product"]} - ${transaction["quantity"]}"),
+            Text("${order["subcat_name"] as String? ?? "Unknown Product"} - ${order["quantity_requested"] ?? order["quantity"] ?? 0} ${order["unit"] ?? ""}"),
             const SizedBox(height: 4),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1341,14 +1377,27 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                     Icon(Icons.calendar_today, size: 12, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
-                      transaction["date"] as String,
+                      formattedDate,
                       style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
+                if (order["total_amount"] != null) ...[
+                  Row(
+                    children: [
+                      Icon(Icons.monetization_on, size: 12, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(
+                        "৳${order["total_amount"]}",
+                        style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                ],
                 GestureDetector(
-                  onTap: () => _changeTransactionStatus(transaction, index),
+                  onTap: () => _changeTransactionStatus(order, index),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
@@ -1360,7 +1409,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          status,
+                          status.toUpperCase(),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 9,
@@ -1383,7 +1432,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         ),
         trailing: IconButton(
           icon: const Icon(Icons.receipt),
-          onPressed: () => _viewReceipt(transaction),
+          onPressed: () => _viewReceipt(order),
           tooltip: "View Receipt",
         ),
       ),
@@ -2167,12 +2216,6 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _exportCSV() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Exporting to CSV...")),
-    );
-  }
-
   void _viewReceipt(Map<String, dynamic> transaction) {
     showDialog(
       context: context,
@@ -2182,69 +2225,19 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _changeTransactionStatus(Map<String, dynamic> transaction, int index) {
-    final currentStatus = transaction["status"] as String;
-    String selectedStatus = currentStatus;
-    
-    final statuses = ["Pending", "Processing", "Delivered", "Cancelled"];
-    
-    showDialog(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text("Change Status - ${transaction["shop"]}"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                "Product: ${transaction["product"]} - ${transaction["quantity"]}",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              const Text("Select new status:"),
-              const SizedBox(height: 8),
-              ...statuses.map((status) => RadioListTile<String>(
-                title: Text(status),
-                value: status,
-                groupValue: selectedStatus,
-                onChanged: (value) {
-                  setDialogState(() {
-                    selectedStatus = value!;
-                  });
-                },
-                dense: true,
-              )),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: selectedStatus == currentStatus ? null : () {
-                Navigator.pop(context);
-                setState(() {
-                  // In a real app, this would update the database
-                  // For now, we'll just show a snackbar
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Status changed from '$currentStatus' to '$selectedStatus'"),
-                    backgroundColor: Colors.green[800],
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[800],
-              ),
-              child: const Text("Confirm", style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        ),
+  void _changeTransactionStatus(Map<String, dynamic> transaction, int index) async {
+    // Navigate to the status update screen
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrderStatusUpdateScreen(transaction: transaction),
       ),
     );
+    
+    // If status was updated successfully, reload the order history
+    if (result == true) {
+      await _loadOrderHistory();
+    }
   }
 
   Widget _buildReceiptWidget(Map<String, dynamic> transaction) {
@@ -2253,9 +2246,16 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     final formattedDate = "${currentDate.day}/${currentDate.month}/${currentDate.year}";
     final formattedTime = "${currentDate.hour}:${currentDate.minute.toString().padLeft(2, '0')}";
     
+    // Get values with fallbacks
+    final shopName = transaction["shop_name"] as String? ?? 
+                    transaction["full_name"] as String? ?? 
+                    "Unknown Shop";
+    final productName = transaction["subcat_name"] as String? ?? "Unknown Product";
+    final status = transaction["status"] as String? ?? "pending";
+    
     // Sample pricing calculation
-    final unitPrice = _getUnitPrice(transaction["product"] as String);
-    final quantity = _extractQuantity(transaction["quantity"] as String);
+    final unitPrice = _getUnitPrice(productName);
+    final quantity = transaction["quantity"] as num? ?? 0;
     final subtotal = unitPrice * quantity;
     final tax = subtotal * 0.05; // 5% tax
     final total = subtotal + tax;
@@ -2324,11 +2324,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(transaction["status"] as String),
+                        color: _getStatusColor(status),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        transaction["status"] as String,
+                        status.toUpperCase(),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -2343,9 +2343,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 const Divider(),
                 
                 // Shop Details
-                _buildReceiptRow("Shop Name:", transaction["shop"] as String, isTitle: true),
-                _buildReceiptRow("Location:", _getShopLocation(transaction["shop"] as String)),
-                _buildReceiptRow("Contact:", "+880 1712-345678"),
+                _buildReceiptRow("Shop Name:", shopName, isTitle: true),
+                _buildReceiptRow("Location:", _getShopLocation(shopName)),
+                _buildReceiptRow("Contact:", transaction["phone"] as String? ?? "+880 1712-345678"),
                 
                 const SizedBox(height: 12),
                 const Divider(),
@@ -2356,8 +2356,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 const SizedBox(height: 8),
-                _buildReceiptRow("Product:", transaction["product"] as String),
-                _buildReceiptRow("Quantity:", transaction["quantity"] as String),
+                _buildReceiptRow("Product:", productName),
+                _buildReceiptRow("Quantity:", "${transaction["quantity"] ?? 0} ${transaction["unit"] ?? ""}"),
                 _buildReceiptRow("Unit Price:", "৳${unitPrice.toStringAsFixed(2)}"),
                 
                 const SizedBox(height: 12),
@@ -2483,13 +2483,6 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     return prices[product] ?? 100.0;
   }
 
-  double _extractQuantity(String quantityString) {
-    // Extract number from strings like "50 কেজি", "20 লিটার"
-    final regex = RegExp(r'(\d+)');
-    final match = regex.firstMatch(quantityString);
-    return match != null ? double.parse(match.group(1)!) : 1.0;
-  }
-
   String _getShopLocation(String shopName) {
     final locations = {
       "আহমেদ স্টোর": "ধানমন্ডি, ঢাকা",
@@ -2507,14 +2500,17 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   Color _getStatusColor(String status) {
-    switch (status) {
-      case "Delivered":
+    switch (status.toLowerCase()) {
+      case "delivered":
+      case "completed":
         return Colors.green;
-      case "Pending":
+      case "pending":
         return Colors.orange;
-      case "Processing":
+      case "processing":
+      case "in_progress":
         return Colors.blue;
-      case "Cancelled":
+      case "cancelled":
+      case "canceled":
         return Colors.red;
       default:
         return Colors.grey;
