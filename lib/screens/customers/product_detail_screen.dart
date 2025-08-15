@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/network/pricelist_api.dart';
 
-import '../../models/shop.dart';
-import '../../services/shop_service.dart';
-
-class ProductDetailScreen extends StatelessWidget {
+class ProductDetailScreen extends StatefulWidget {
   final String title;
   final String unit;
   final int low;
   final int high;
+  final String? subcatId; // Add subcategory ID
 
   const ProductDetailScreen({
     super.key,
@@ -15,38 +14,94 @@ class ProductDetailScreen extends StatelessWidget {
     required this.unit,
     required this.low,
     required this.high,
+    this.subcatId, // Optional for backward compatibility
   });
 
-  // Get shops that have this product available
-  List<Shop> getAvailableShops() {
-    return ShopService.getMockShops()
-        .where((shop) => shop.availableProducts.contains(title))
-        .toList();
+  @override
+  State<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends State<ProductDetailScreen> {
+  List<Map<String, dynamic>> availableShops = [];
+  Map<String, dynamic>? priceHistory;
+  bool isLoadingShops = true;
+  bool isLoadingHistory = true;
+  String? errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
   }
 
-  // Generate mock prices for shops (in real app, this would come from API)
-  Map<String, int> getShopPrices() {
-    final shops = getAvailableShops();
-    Map<String, int> prices = {};
-    
-    for (int i = 0; i < shops.length; i++) {
-      // Generate realistic price variations around the average
-      final basePrice = (low + high) / 2;
-      final variation = (i % 3 - 1) * 5; // -5, 0, +5 variation
-      prices[shops[i].id] = (basePrice + variation).round();
+  Future<void> _loadData() async {
+    await Future.wait([
+      _loadAvailableShops(),
+      _loadPriceHistory(),
+    ]);
+  }
+
+  Future<void> _loadAvailableShops() async {
+    try {
+      setState(() {
+        isLoadingShops = true;
+        errorMessage = null;
+      });
+
+      print('Loading shops for: ${widget.title} (ID: ${widget.subcatId})');
+
+      List<Map<String, dynamic>> shops;
+
+      // Use subcategory ID if available, otherwise fall back to product name
+      if (widget.subcatId != null && widget.subcatId!.isNotEmpty) {
+        shops = await fetchShopsBySubcategoryId(widget.subcatId!);
+      } else {
+        shops = await fetchShopsByProduct(widget.title);
+      }
+
+      print('Fetched ${shops.length} shops');
+
+      setState(() {
+        availableShops = shops;
+        isLoadingShops = false;
+      });
+    } catch (e) {
+      print('Error loading shops: $e');
+      setState(() {
+        // Don't show error message for shops, just show empty state
+        errorMessage = null;
+        isLoadingShops = false;
+        availableShops = [];
+      });
     }
-    
-    return prices;
+  }
+
+  Future<void> _loadPriceHistory() async {
+    try {
+      setState(() {
+        isLoadingHistory = true;
+      });
+
+      final history = await fetchProductPriceHistory(widget.title);
+
+      setState(() {
+        priceHistory = history;
+        isLoadingHistory = false;
+      });
+    } catch (e) {
+      print('Error loading price history: $e');
+      setState(() {
+        isLoadingHistory = false;
+        priceHistory = null;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final availableShops = getAvailableShops();
-    final shopPrices = getShopPrices();
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(widget.title),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
       ),
@@ -84,7 +139,7 @@ class ProductDetailScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                title,
+                                widget.title,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -92,7 +147,7 @@ class ProductDetailScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                "Unit: $unit",
+                                "Unit: ${widget.unit}",
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.grey,
@@ -124,7 +179,7 @@ class ProductDetailScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            "Low: ৳$low",
+                            "Low: ৳${widget.low}",
                             style: const TextStyle(
                               color: Colors.green,
                               fontWeight: FontWeight.bold,
@@ -142,7 +197,7 @@ class ProductDetailScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            "High: ৳$high",
+                            "High: ৳${widget.high}",
                             style: const TextStyle(
                               color: Colors.red,
                               fontWeight: FontWeight.bold,
@@ -155,9 +210,9 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Available Shops Section
             Row(
               children: [
@@ -171,11 +226,27 @@ class ProductDetailScreen extends StatelessWidget {
                     color: Colors.indigo,
                   ),
                 ),
+                if (isLoadingShops)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
-            
-            if (availableShops.isEmpty)
+
+            if (isLoadingShops)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (availableShops.isEmpty)
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -206,15 +277,40 @@ class ProductDetailScreen extends StatelessWidget {
                 itemCount: availableShops.length,
                 itemBuilder: (context, index) {
                   final shop = availableShops[index];
-                  final price = shopPrices[shop.id] ?? low;
-                  
+                  final price = shop['unit_price']?.toString() ?? '0';
+                  final shopName = shop['name']?.toString() ?? 'Unknown Shop';
+                  final shopAddress =
+                      shop['address']?.toString() ?? 'Unknown Address';
+                  final shopPhone = shop['phone']?.toString() ?? 'No Phone';
+                  final stockQuantity =
+                      shop['stock_quantity']?.toString() ?? '0';
+                  final shopDescription =
+                      shop['shop_description']?.toString() ?? '';
+                  final lowStockThreshold =
+                      shop['low_stock_threshold']?.toString() ?? '10';
+
+                  // Determine stock status
+                  final stock = int.tryParse(stockQuantity) ?? 0;
+                  final threshold = int.tryParse(lowStockThreshold) ?? 10;
+                  final isLowStock = stock <= threshold;
+                  final stockStatus = stock > 50
+                      ? 'High Stock'
+                      : stock > threshold
+                          ? 'Medium Stock'
+                          : 'Low Stock';
+                  final stockColor = stock > 50
+                      ? Colors.green
+                      : stock > threshold
+                          ? Colors.orange
+                          : Colors.red;
+
                   return Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
                       leading: CircleAvatar(
                         backgroundColor: Colors.indigo.withOpacity(0.1),
                         child: Text(
-                          shop.name[0],
+                          shopName.isNotEmpty ? shopName[0] : 'S',
                           style: const TextStyle(
                             color: Colors.indigo,
                             fontWeight: FontWeight.bold,
@@ -225,18 +321,39 @@ class ProductDetailScreen extends StatelessWidget {
                         children: [
                           Expanded(
                             child: Text(
-                              shop.name,
+                              shopName,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
-                          if (shop.isVerified)
+                          // Show verified icon if shop has good rating or stock
+                          if (stock > 50)
                             const Icon(
                               Icons.verified,
                               color: Colors.green,
                               size: 20,
                             ),
+                          // Show stock status chip
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: stockColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: stockColor, width: 1),
+                            ),
+                            child: Text(
+                              stockStatus,
+                              style: TextStyle(
+                                color: stockColor,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       subtitle: Column(
@@ -253,7 +370,7 @@ class ProductDetailScreen extends StatelessWidget {
                               const SizedBox(width: 4),
                               Expanded(
                                 child: Text(
-                                  shop.address,
+                                  shopAddress,
                                   style: const TextStyle(fontSize: 12),
                                 ),
                               ),
@@ -263,33 +380,63 @@ class ProductDetailScreen extends StatelessWidget {
                           Row(
                             children: [
                               const Icon(
-                                Icons.access_time,
+                                Icons.phone,
                                 size: 16,
                                 color: Colors.grey,
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                shop.openingHours,
+                                shopPhone,
                                 style: const TextStyle(fontSize: 12),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
+                          if (shopDescription.isNotEmpty) ...[
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.info_outline,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    shopDescription,
+                                    style: const TextStyle(fontSize: 12),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                          ],
                           Row(
                             children: [
-                              Icon(
-                                Icons.star,
+                              const Icon(
+                                Icons.inventory,
                                 size: 16,
-                                color: Colors.amber[600],
+                                color: Colors.grey,
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                "${shop.rating}",
-                                style: const TextStyle(
+                                "Stock: $stockQuantity ${widget.unit}",
+                                style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  color: stockColor,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
+                              if (isLowStock) ...[
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.warning,
+                                  size: 12,
+                                  color: Colors.orange[700],
+                                ),
+                              ],
                               const Spacer(),
                               Container(
                                 padding: const EdgeInsets.symmetric(
@@ -314,19 +461,29 @@ class ProductDetailScreen extends StatelessWidget {
                         ],
                       ),
                       onTap: () {
-                        // TODO: Navigate to shop details or show contact options
                         showDialog(
                           context: context,
                           builder: (context) => AlertDialog(
-                            title: Text(shop.name),
+                            title: Text(shopName),
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Address: ${shop.address}"),
-                                Text("Phone: ${shop.phone}"),
-                                Text("Hours: ${shop.openingHours}"),
-                                Text("Price: ৳$price per $unit"),
+                                Text("Address: $shopAddress"),
+                                Text("Phone: $shopPhone"),
+                                if (shopDescription.isNotEmpty)
+                                  Text("Description: $shopDescription"),
+                                Text("Stock: $stockQuantity ${widget.unit}"),
+                                Text("Stock Status: $stockStatus"),
+                                Text("Price: ৳$price per ${widget.unit}"),
+                                if (isLowStock)
+                                  const Text(
+                                    "⚠️ Low stock - order soon!",
+                                    style: TextStyle(
+                                      color: Colors.orange,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                               ],
                             ),
                             actions: [
@@ -337,10 +494,9 @@ class ProductDetailScreen extends StatelessWidget {
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.pop(context);
-                                  // TODO: Implement call or contact functionality
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(
-                                      content: Text("Calling ${shop.name}..."),
+                                      content: Text("Calling $shopName..."),
                                     ),
                                   );
                                 },
@@ -354,9 +510,9 @@ class ProductDetailScreen extends StatelessWidget {
                   );
                 },
               ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Price History Section
             Row(
               children: [
@@ -370,61 +526,94 @@ class ProductDetailScreen extends StatelessWidget {
                     color: Colors.indigo,
                   ),
                 ),
+                if (isLoadingHistory)
+                  const Padding(
+                    padding: EdgeInsets.only(left: 8),
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: 12),
-            
-            Card(
-              child: ListView(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                children: const [
-                  ListTile(
-                    leading: Icon(Icons.calendar_today, color: Colors.indigo),
-                    title: Text("2025-07-24"),
-                    subtitle: Text("Today"),
-                    trailing: Text(
-                      "৳75 - ৳85",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.indigo,
-                      ),
+
+            if (isLoadingHistory)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (priceHistory == null)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Text(
+                    "Price history not available",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 16,
                     ),
+                    textAlign: TextAlign.center,
                   ),
-                  Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.calendar_today, color: Colors.grey),
-                    title: Text("2025-07-23"),
-                    subtitle: Text("Yesterday"),
-                    trailing: Text("৳74 - ৳84"),
-                  ),
-                  Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.calendar_today, color: Colors.grey),
-                    title: Text("2025-07-22"),
-                    subtitle: Text("2 days ago"),
-                    trailing: Text("৳73 - ৳82"),
-                  ),
-                  Divider(height: 1),
-                  ListTile(
-                    leading: Icon(Icons.calendar_today, color: Colors.grey),
-                    title: Text("2025-07-21"),
-                    subtitle: Text("3 days ago"),
-                    trailing: Text("৳72 - ৳81"),
-                  ),
-                ],
+                ),
+              )
+            else
+              Card(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount:
+                      (priceHistory!['price_history'] as List?)?.length ?? 0,
+                  itemBuilder: (context, index) {
+                    final history = priceHistory!['price_history'] as List;
+                    final dayHistory = history[index];
+                    final date = dayHistory['date']?.toString() ?? '';
+                    final minPrice = dayHistory['min_price']?.toString() ?? '0';
+                    final maxPrice = dayHistory['max_price']?.toString() ?? '0';
+
+                    String subtitle = '';
+                    if (index == 0) {
+                      subtitle = 'Today';
+                    } else if (index == 1) {
+                      subtitle = 'Yesterday';
+                    } else {
+                      subtitle = '$index days ago';
+                    }
+
+                    return Column(
+                      children: [
+                        ListTile(
+                          leading: Icon(Icons.calendar_today,
+                              color: index == 0 ? Colors.indigo : Colors.grey),
+                          title: Text(date),
+                          subtitle: Text(subtitle),
+                          trailing: Text(
+                            "৳$minPrice - ৳$maxPrice",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: index == 0 ? Colors.indigo : Colors.black,
+                            ),
+                          ),
+                        ),
+                        if (index < (history.length - 1))
+                          const Divider(height: 1),
+                      ],
+                    );
+                  },
+                ),
               ),
-            ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Action Buttons
             Row(
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: Add to favorites
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text("Added to favorites!"),
@@ -445,7 +634,6 @@ class ProductDetailScreen extends StatelessWidget {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      // TODO: Set price alert
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text("Price alert set!"),

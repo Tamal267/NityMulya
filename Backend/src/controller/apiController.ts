@@ -1,44 +1,43 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import fetch from 'node-fetch';
-import * as XLSX from 'xlsx'; // Import the xlsx library
-import sql from '../db';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import fetch from "node-fetch";
+import * as XLSX from "xlsx"; // Import the xlsx library
+import sql from "../db";
 
-const GoogleApiKey = process.env.GOOGLE_API_KEY
+const GoogleApiKey = process.env.GOOGLE_API_KEY;
 
-const genAI = new GoogleGenerativeAI(GoogleApiKey ? GoogleApiKey : '')
+const genAI = new GoogleGenerativeAI(GoogleApiKey ? GoogleApiKey : "");
 
 export const getSheetUrl = async (c: any) => {
   try {
     const response = await fetch(
-      'https://tcb.gov.bd/api/datatable/daily_rmp_view.php?domain_id=6383&lang=bn&subdomain=tcb.portal.gov.bd&content_type=daily_rmp',
-    )
+      "https://tcb.gov.bd/api/datatable/daily_rmp_view.php?domain_id=6383&lang=bn&subdomain=tcb.portal.gov.bd&content_type=daily_rmp"
+    );
     if (!response.ok) {
       // Return a 500 error if the API request fails
-      return c.json({ error: 'Failed to fetch the sheet URL' }, 500)
+      return c.json({ error: "Failed to fetch the sheet URL" }, 500);
     }
 
-    const data: any = await response.json()
-    const htmlString = data.data[0][4]
-    const regex = /href="(.*?)"/
-    const match = htmlString.match(regex)
+    const data: any = await response.json();
+    const htmlString = data.data[0][4];
+    const regex = /href="(.*?)"/;
+    const match = htmlString.match(regex);
 
     if (match) {
-      const url = "http:" + match[1]
-      return c.json({ url })
+      const url = "http:" + match[1];
+      return c.json({ url });
     } else {
       // Return a 404 error if the URL is not found in the HTML string
-      return c.json({ error: 'URL not found in the HTML string' }, 404)
+      return c.json({ error: "URL not found in the HTML string" }, 404);
     }
-
   } catch (error) {
     // Handle any other errors that may occur
-    console.error('Error:', error)
+    console.error("Error:", error);
     return c.json(
-      { error: 'An error occurred while processing the request' },
-      500,
-    )
+      { error: "An error occurred while processing the request" },
+      500
+    );
   }
-}
+};
 
 const prompt = `
 give me the json format of unit, max price and min price of each subtopics under topics: 
@@ -396,118 +395,405 @@ example:
             "min_price": 40
         }
     }
-}`
+}`;
 
 export const getPrice = async (c: any) => {
   try {
-    const getUrlResponse = await getSheetUrl(c)
+    const getUrlResponse = await getSheetUrl(c);
     if (getUrlResponse.status === 200) {
-      const responseData = await getUrlResponse.json()
-      const { url } = responseData
-      const response = await fetch(url)
+      const responseData = await getUrlResponse.json();
+      const { url } = responseData;
+      const response = await fetch(url);
       if (!response.ok) {
         // Return a 500 error if the file download fails
-        return c.json({ error: 'Failed to download the file' }, 500)
+        return c.json({ error: "Failed to download the file" }, 500);
       }
 
-      const arrayBuffer = await response.arrayBuffer()
+      const arrayBuffer = await response.arrayBuffer();
 
-      const workbook = XLSX.read(arrayBuffer, { type: 'array' })
-      const sheetName = workbook.SheetNames[0]
-      const worksheet = workbook.Sheets[sheetName]
+      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
 
-      const fileContent = XLSX.utils.sheet_to_csv(worksheet)
+      const fileContent = XLSX.utils.sheet_to_csv(worksheet);
 
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-      const result = await model.generateContent([prompt, fileContent])
-      let geminiResponse = result.response.text()
+      const result = await model.generateContent([prompt, fileContent]);
+      let geminiResponse = result.response.text();
 
-      geminiResponse = geminiResponse.trim()
-      if (geminiResponse.startsWith('```json')) {
-        geminiResponse = geminiResponse.slice(7).trim() // Remove '```json' prefix
+      geminiResponse = geminiResponse.trim();
+      if (geminiResponse.startsWith("```json")) {
+        geminiResponse = geminiResponse.slice(7).trim(); // Remove '```json' prefix
       }
-      if (geminiResponse.endsWith('```')) {
-        geminiResponse = geminiResponse.slice(0, -3)
+      if (geminiResponse.endsWith("```")) {
+        geminiResponse = geminiResponse.slice(0, -3);
       }
-      geminiResponse = geminiResponse.trim()
+      geminiResponse = geminiResponse.trim();
 
-      const jsonData = JSON.parse(geminiResponse)
+      const jsonData = JSON.parse(geminiResponse);
 
       for (const topic in jsonData) {
         try {
-            for (const subtopic in jsonData[topic]) {
-                const { unit, max_price, min_price } = jsonData[topic][subtopic]
-                const subtopicData = await sql`
+          for (const subtopic in jsonData[topic]) {
+            const { unit, max_price, min_price } = jsonData[topic][subtopic];
+            const subtopicData = await sql`
                  UPDATE subcategories
                  SET unit = ${unit}, max_price = ${max_price}, min_price = ${min_price}, created_at = NOW()
                  WHERE subcat_name = ${subtopic}
                  RETURNING id
-               `
-            }
-
+               `;
+          }
         } catch (error) {
-            console.error('Error inserting price data:', error)
-            return c.json({ error: 'Failed to insert price data' }, 500)
+          console.error("Error inserting price data:", error);
+          return c.json({ error: "Failed to insert price data" }, 500);
         }
       }
 
-      return c.json(jsonData)
+      return c.json(jsonData);
     } else {
       // Return error if getSheetUrl failed
-      return c.json({ error: 'Failed to get sheet URL' }, getUrlResponse.status)
+      return c.json(
+        { error: "Failed to get sheet URL" },
+        getUrlResponse.status
+      );
     }
   } catch (error) {
     // Handle any other errors that may occur
-    console.error('Error:', error)
+    console.error("Error:", error);
     return c.json(
-      { error: 'An error occurred while processing the request' },
-      500,
-    )
+      { error: "An error occurred while processing the request" },
+      500
+    );
   }
-}
+};
 
 export const getPricesfromDB = async (c: any) => {
-    try {
-        let pricelist = await sql`select c.cat_name, sc.* from subcategories sc
+  try {
+    let pricelist = await sql`select c.cat_name, sc.* from subcategories sc
         join categories c on sc.cat_id = c.id
-        order by c.cat_name`
+        order by c.cat_name`;
 
-        // if day of created_at is today, then call getPrice function to update prices and then return pricelist
-        const today = new Date()
-        const todayString = today.toISOString().split('T')[0] // Get today's date in YYYY-MM-DD format
+    // if day of created_at is today, then call getPrice function to update prices and then return pricelist
+    const today = new Date();
+    const todayString = today.toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
 
-        const lastUpdated = pricelist[0]?.created_at ? new Date(pricelist[0].created_at) : null
-        if (lastUpdated && lastUpdated.toISOString().split('T')[0] === todayString) {
-            console.log('Prices already updated today, returning cached pricelist')
-            return c.json(pricelist)
-        }
-
-        await getPrice(c)
-        pricelist = await sql`select c.cat_name, sc.* from subcategories sc
-        join categories c on sc.cat_id = c.id
-        order by c.cat_name`
-
-        if (pricelist.length === 0) {
-            return c.json({ message: 'No prices found' }, 404)
-        }
-        return c.json(pricelist)
-    } catch (error) {
-        console.error('Error fetching prices:', error)
-        return c.json({ error: 'Failed to fetch prices' }, 500)
+    const lastUpdated = pricelist[0]?.created_at
+      ? new Date(pricelist[0].created_at)
+      : null;
+    if (
+      lastUpdated &&
+      lastUpdated.toISOString().split("T")[0] === todayString
+    ) {
+      console.log("Prices already updated today, returning cached pricelist");
+      return c.json(pricelist);
     }
-}
+
+    await getPrice(c);
+    pricelist = await sql`select c.cat_name, sc.* from subcategories sc
+        join categories c on sc.cat_id = c.id
+        order by c.cat_name`;
+
+    if (pricelist.length === 0) {
+      return c.json({ message: "No prices found" }, 404);
+    }
+    return c.json(pricelist);
+  } catch (error) {
+    console.error("Error fetching prices:", error);
+    return c.json({ error: "Failed to fetch prices" }, 500);
+  }
+};
 
 export const getCategories = async (c: any) => {
   try {
-    const categories = await sql`SELECT * FROM categories`
+    const categories = await sql`SELECT * FROM categories`;
     if (categories.length === 0) {
-      return c.json({ message: 'No categories found' }, 404)
+      return c.json({ message: "No categories found" }, 404);
     }
-    return c.json(categories)
+    return c.json(categories);
   } catch (error) {
-    console.error('Error fetching categories:', error)
-    return c.json({ error: 'Failed to fetch categories' }, 500)
+    console.error("Error fetching categories:", error);
+    return c.json({ error: "Failed to fetch categories" }, 500);
   }
-}
+};
 
+// Get all shop owners with their inventory
+export const getShops = async (c: any) => {
+  try {
+    // First check what columns exist in shop_owners table
+    const shops = await sql`
+      SELECT 
+        so.id,
+        so.full_name as name,
+        so.contact as phone,
+        so.address,
+        so.latitude,
+        so.longitude,
+        so.created_at
+      FROM shop_owners so
+      ORDER BY so.full_name
+    `;
+
+    if (shops.length === 0) {
+      return c.json({ message: "No shops found" }, 404);
+    }
+
+    return c.json(shops);
+  } catch (error) {
+    console.error("Error fetching shops:", error);
+    return c.json({ error: "Failed to fetch shops" }, 500);
+  }
+};
+
+// Get shops that have a specific product available (from shop inventory)
+// Get shops by product name (legacy endpoint)
+export const getShopsByProduct = async (c: any) => {
+  try {
+    const { productName } = c.req.param();
+
+    if (!productName) {
+      return c.json({ error: "Product name is required" }, 400);
+    }
+
+    const shops = await sql`
+      SELECT 
+        so.id,
+        so.full_name as name,
+        so.contact as phone,
+        so.address,
+        so.latitude,
+        so.longitude,
+        si.unit_price,
+        si.stock_quantity,
+        si.low_stock_threshold,
+        sc.unit,
+        sc.subcat_name as product_name,
+        sc.min_price,
+        sc.max_price
+      FROM shop_owners so
+      JOIN shop_inventory si ON si.shop_owner_id = so.id
+      JOIN subcategories sc ON si.subcat_id = sc.id
+      WHERE sc.subcat_name ILIKE ${`%${productName}%`}
+        AND si.is_active = true
+        AND si.stock_quantity > 0
+      ORDER BY si.unit_price ASC
+    `;
+
+    if (shops.length === 0) {
+      return c.json({ message: "No shops found with this product" }, 404);
+    }
+
+    return c.json(shops);
+  } catch (error) {
+    console.error("Error fetching shops by product:", error);
+    return c.json({ error: "Failed to fetch shops" }, 500);
+  }
+};
+
+// Get shops by subcategory ID (new preferred endpoint)
+export const getShopsBySubcategoryId = async (c: any) => {
+  try {
+    const { subcatId } = c.req.param();
+
+    if (!subcatId) {
+      return c.json({ error: "Subcategory ID is required" }, 400);
+    }
+
+    const shops = await sql`
+      SELECT 
+        so.id,
+        so.full_name as name,
+        so.contact as phone,
+        so.address,
+        so.latitude,
+        so.longitude,
+        si.unit_price,
+        si.stock_quantity,
+        si.low_stock_threshold,
+        sc.unit,
+        sc.subcat_name as product_name,
+        sc.min_price,
+        sc.max_price
+      FROM shop_owners so
+      JOIN shop_inventory si ON si.shop_owner_id = so.id
+      JOIN subcategories sc ON si.subcat_id = sc.id
+      WHERE sc.id = ${subcatId}
+        AND si.is_active = true
+        AND si.stock_quantity > 0
+      ORDER BY si.unit_price ASC
+    `;
+
+    if (shops.length === 0) {
+      return c.json({ message: "No shops found with this product" }, 404);
+    }
+
+    return c.json(shops);
+  } catch (error) {
+    console.error("Error fetching shops by product:", error);
+    return c.json({ error: "Failed to fetch shops by product" }, 500);
+  }
+};
+
+// Get product price history (mock data for now)
+export const getProductPriceHistory = async (c: any) => {
+  try {
+    const { productName } = c.req.param();
+
+    if (!productName) {
+      return c.json({ error: "Product name is required" }, 400);
+    }
+
+    // Get current prices
+    const currentPrices = await sql`
+      SELECT min_price, max_price, unit
+      FROM subcategories
+      WHERE subcat_name = ${productName}
+      LIMIT 1
+    `;
+
+    if (currentPrices.length === 0) {
+      return c.json({ message: "Product not found" }, 404);
+    }
+
+    const { min_price, max_price, unit } = currentPrices[0];
+
+    // Generate mock price history for the last 7 days
+    const today = new Date();
+    const priceHistory = [];
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+
+      // Generate slight variations in price
+      const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
+      const mockMinPrice = Math.round(min_price * (1 + variation));
+      const mockMaxPrice = Math.round(max_price * (1 + variation));
+
+      priceHistory.push({
+        date: date.toISOString().split("T")[0],
+        min_price: mockMinPrice,
+        max_price: mockMaxPrice,
+        unit: unit,
+      });
+    }
+
+    return c.json({
+      product_name: productName,
+      unit: unit,
+      price_history: priceHistory,
+    });
+  } catch (error) {
+    console.error("Error fetching price history:", error);
+    return c.json({ error: "Failed to fetch price history" }, 500);
+  }
+};
+
+// Initialize sample shop inventory data for testing
+export const initializeSampleData = async (c: any) => {
+  try {
+    // First create the shop_inventory table if it doesn't exist
+    await sql`
+      CREATE TABLE IF NOT EXISTS shop_inventory (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        shop_owner_id UUID REFERENCES shop_owners(id) ON DELETE CASCADE,
+        subcat_id UUID REFERENCES subcategories(id) ON DELETE CASCADE,
+        stock_quantity INTEGER NOT NULL DEFAULT 0,
+        unit_price DECIMAL(10, 2) NOT NULL,
+        low_stock_threshold INTEGER DEFAULT 10,
+        is_active BOOLEAN DEFAULT TRUE,
+        UNIQUE(shop_owner_id, subcat_id)
+      )
+    `;
+
+    // Create indexes for better performance
+    await sql`CREATE INDEX IF NOT EXISTS idx_shop_inventory_shop_owner ON shop_inventory (shop_owner_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_shop_inventory_subcat ON shop_inventory (subcat_id)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_shop_inventory_active ON shop_inventory (is_active)`;
+
+    // Check if shop_owners table has the name column, if not add it
+    try {
+      await sql`ALTER TABLE shop_owners ADD COLUMN IF NOT EXISTS name VARCHAR(100)`;
+    } catch (error) {
+      console.log(
+        "Name column might already exist or table structure is different"
+      );
+    }
+
+    // Now ensure we have shop owners
+    await sql`
+      INSERT INTO shop_owners (full_name, email, password, contact, address, latitude, longitude) VALUES 
+      ('রহমান গ্রোসারি', 'rahman.grocery@example.com', 'password123', '01711123456', 'ধানমন্ডি-৩২, ঢাকা', 23.7465, 90.3763),
+      ('করিম স্টোর', 'karim.store@example.com', 'password123', '01812345678', 'গুলশান-১, ঢাকা', 23.7925, 90.4078),
+      ('নিউ মার্কেট শপ', 'newmarket.shop@example.com', 'password123', '01913456789', 'নিউমার্কেট, ঢাকা', 23.7275, 90.3854),
+      ('ফ্রেশ মার্ট', 'fresh.mart@example.com', 'password123', '01615678901', 'উত্তরা-৭, ঢাকা', 23.8759, 90.3795)
+      ON CONFLICT (email) DO NOTHING
+    `;
+
+    // Add sample inventory data for চাল সরু (নাজির/মিনিকেট)
+    await sql`
+      INSERT INTO shop_inventory (shop_owner_id, subcat_id, stock_quantity, unit_price, low_stock_threshold, is_active)
+      SELECT so.id, sc.id, 150, 78.00, 20, true
+      FROM shop_owners so, subcategories sc 
+      WHERE so.email = 'rahman.grocery@example.com' AND sc.subcat_name = 'চাল সরু (নাজির/মিনিকেট)'
+      ON CONFLICT (shop_owner_id, subcat_id) DO UPDATE SET
+          stock_quantity = EXCLUDED.stock_quantity,
+          unit_price = EXCLUDED.unit_price,
+          updated_at = CURRENT_TIMESTAMP
+    `;
+
+    await sql`
+      INSERT INTO shop_inventory (shop_owner_id, subcat_id, stock_quantity, unit_price, low_stock_threshold, is_active)
+      SELECT so.id, sc.id, 200, 80.00, 25, true
+      FROM shop_owners so, subcategories sc 
+      WHERE so.email = 'karim.store@example.com' AND sc.subcat_name = 'চাল সরু (নাজির/মিনিকেট)'
+      ON CONFLICT (shop_owner_id, subcat_id) DO UPDATE SET
+          stock_quantity = EXCLUDED.stock_quantity,
+          unit_price = EXCLUDED.unit_price,
+          updated_at = CURRENT_TIMESTAMP
+    `;
+
+    await sql`
+      INSERT INTO shop_inventory (shop_owner_id, subcat_id, stock_quantity, unit_price, low_stock_threshold, is_active)
+      SELECT so.id, sc.id, 80, 82.00, 15, true
+      FROM shop_owners so, subcategories sc 
+      WHERE so.email = 'newmarket.shop@example.com' AND sc.subcat_name = 'চাল সরু (নাজির/মিনিকেট)'
+      ON CONFLICT (shop_owner_id, subcat_id) DO UPDATE SET
+          stock_quantity = EXCLUDED.stock_quantity,
+          unit_price = EXCLUDED.unit_price,
+          updated_at = CURRENT_TIMESTAMP
+    `;
+
+    // Add sample data for আটা সাদা (খোলা)
+    await sql`
+      INSERT INTO shop_inventory (shop_owner_id, subcat_id, stock_quantity, unit_price, low_stock_threshold, is_active)
+      SELECT so.id, sc.id, 75, 42.00, 10, true
+      FROM shop_owners so, subcategories sc 
+      WHERE so.email = 'rahman.grocery@example.com' AND sc.subcat_name = 'আটা সাদা (খোলা)'
+      ON CONFLICT (shop_owner_id, subcat_id) DO UPDATE SET
+          stock_quantity = EXCLUDED.stock_quantity,
+          unit_price = EXCLUDED.unit_price,
+          updated_at = CURRENT_TIMESTAMP
+    `;
+
+    await sql`
+      INSERT INTO shop_inventory (shop_owner_id, subcat_id, stock_quantity, unit_price, low_stock_threshold, is_active)
+      SELECT so.id, sc.id, 60, 44.00, 8, true
+      FROM shop_owners so, subcategories sc 
+      WHERE so.email = 'karim.store@example.com' AND sc.subcat_name = 'আটা সাদা (খোলা)'
+      ON CONFLICT (shop_owner_id, subcat_id) DO UPDATE SET
+          stock_quantity = EXCLUDED.stock_quantity,
+          unit_price = EXCLUDED.unit_price,
+          updated_at = CURRENT_TIMESTAMP
+    `;
+
+    return c.json({
+      message: "Sample shop inventory data initialized successfully!",
+    });
+  } catch (error) {
+    console.error("Error initializing sample data:", error);
+    return c.json({ error: "Failed to initialize sample data" }, 500);
+  }
+};

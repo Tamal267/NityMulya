@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String searchQuery = "";
   bool isDarkMode = false;
   bool isBangla = true;
-  
+
   List<Map<String, dynamic>> products = [];
   List<String> categories = ["All"]; // Start with "All", will load from API
   bool isLoading = true;
@@ -35,45 +35,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Map<String, dynamic>> get filteredProducts {
     List<Map<String, dynamic>> result = products;
-    
+
     // First filter by category
     if (selectedCategory != "All") {
-      result = result
-          .where((p) => p["cat_name"] == selectedCategory)
-          .toList();
+      result = result.where((p) => p["cat_name"] == selectedCategory).toList();
     }
-    
+
     // Then filter by search query if present
     if (searchQuery.isNotEmpty) {
       result = result
-          .where((p) => p["subcat_name"]
-              ?.toString()
-              .toLowerCase()
-              .contains(searchQuery.toLowerCase()) ?? false)
+          .where((p) =>
+              p["subcat_name"]
+                  ?.toString()
+                  .toLowerCase()
+                  .contains(searchQuery.toLowerCase()) ??
+              false)
           .toList();
     }
-    
+
     return result;
   }
 
   // Get search suggestions that respect current category filter
   List<Map<String, dynamic>> get searchSuggestions {
     if (searchQuery.isEmpty) return [];
-    
+
     List<Map<String, dynamic>> searchBase = products;
-    
+
     // Respect category filter for search suggestions
     if (selectedCategory != "All") {
-      searchBase = searchBase
-          .where((p) => p["cat_name"] == selectedCategory)
-          .toList();
+      searchBase =
+          searchBase.where((p) => p["cat_name"] == selectedCategory).toList();
     }
-    
+
     return searchBase
-        .where((p) => p["subcat_name"]
-            ?.toString()
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase()) ?? false)
+        .where((p) =>
+            p["subcat_name"]
+                ?.toString()
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase()) ??
+            false)
         .take(5) // Limit suggestions to 5
         .toList();
   }
@@ -85,9 +86,9 @@ class _HomeScreenState extends State<HomeScreen> {
         isLoading = true;
         errorMessage = null;
       });
-      
+
       final apiProducts = await fetchPriceList();
-      
+
       setState(() {
         products = apiProducts;
         isLoading = false;
@@ -108,9 +109,9 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         isCategoriesLoading = true;
       });
-      
+
       final apiCategories = await fetchCategories();
-      
+
       // Extract cat_name from API response and create list with "All" first
       final categoryNames = ["All"];
       for (final category in apiCategories) {
@@ -119,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
           categoryNames.add(catName);
         }
       }
-      
+
       setState(() {
         categories = categoryNames;
         isCategoriesLoading = false;
@@ -128,10 +129,39 @@ class _HomeScreenState extends State<HomeScreen> {
       print('Error loading categories: $e');
       setState(() {
         // Keep fallback categories if API fails
-        categories = ["All", "চাল", "আটা ও ময়দা", "তেল", "ডাল", "সবজি ও মসলা", "মাছ ও গোশত", "দুধ"];
+        categories = [
+          "All",
+          "চাল",
+          "আটা ও ময়দা",
+          "তেল",
+          "ডাল",
+          "সবজি ও মসলা",
+          "মাছ ও গোশত",
+          "দুধ"
+        ];
         isCategoriesLoading = false;
       });
     }
+  }
+
+  // Helper method to safely parse price values from API response
+  int _parsePrice(dynamic price) {
+    if (price == null) return 0;
+
+    if (price is num) {
+      return price.toInt();
+    }
+
+    if (price is String) {
+      try {
+        return double.parse(price).toInt();
+      } catch (e) {
+        print('Error parsing price: $price, error: $e');
+        return 0;
+      }
+    }
+
+    return 0;
   }
 
   @override
@@ -143,12 +173,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildProductImage(Map<String, dynamic> product) {
     final imageUrl = product["subcat_img"]?.toString();
-    
+
     // If image URL is null or empty, show the inventory icon
     if (imageUrl == null || imageUrl.trim().isEmpty) {
       return const Icon(Icons.inventory_2, size: 60, color: Colors.grey);
     }
-    
+
     // Try to load the image, with fallback to inventory icon on error
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
@@ -228,7 +258,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },
                 decoration: InputDecoration(
-                  hintText: selectedCategory == "All" 
+                  hintText: selectedCategory == "All"
                       ? "Search all products"
                       : "Search in $selectedCategory",
                   prefixIcon: const Icon(Icons.search),
@@ -264,8 +294,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           shrinkWrap: true,
                           children: searchSuggestions
                               .map((p) => ListTile(
-                                    title: Text(p["subcat_name"]?.toString() ?? 'Unknown Product'),
-                                    subtitle: Text('${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
+                                    title: Text(p["subcat_name"]?.toString() ??
+                                        'Unknown Product'),
+                                    subtitle: Text(
+                                        '${p["cat_name"] ?? "Unknown Category"} • ৳${_parsePrice(p["min_price"])} - ৳${_parsePrice(p["max_price"])}'),
                                     onTap: () {
                                       // Clear search and navigate to product
                                       setState(() {
@@ -275,10 +307,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (_) => ProductDetailScreen(
-                                            title: p["subcat_name"]?.toString() ?? 'Unknown Product',
-                                            unit: p["unit"]?.toString() ?? 'Unknown Unit',
-                                            low: (p["min_price"] as num?)?.toInt() ?? 0,
-                                            high: (p["max_price"] as num?)?.toInt() ?? 0,
+                                            title:
+                                                p["subcat_name"]?.toString() ??
+                                                    'Unknown Product',
+                                            unit: p["unit"]?.toString() ??
+                                                'Unknown Unit',
+                                            low: _parsePrice(p["min_price"]),
+                                            high: _parsePrice(p["max_price"]),
+                                            subcatId: p["id"]
+                                                ?.toString(), // Pass the subcategory ID
                                           ),
                                         ),
                                       );
@@ -326,7 +363,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             onSelected: (_) {
                               setState(() {
                                 selectedCategory = categories[index];
-                                searchQuery = ""; // Clear search when changing category
+                                searchQuery =
+                                    ""; // Clear search when changing category
                               });
                             },
                           ),
@@ -342,11 +380,13 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.error_outline, size: 64, color: Colors.red),
+                              Icon(Icons.error_outline,
+                                  size: 64, color: Colors.red),
                               SizedBox(height: 16),
                               Text('Error loading products'),
                               SizedBox(height: 8),
-                              Text(errorMessage!, style: TextStyle(color: Colors.grey)),
+                              Text(errorMessage!,
+                                  style: TextStyle(color: Colors.grey)),
                               SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: loadProducts,
@@ -361,7 +401,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             )
                           : GridView.builder(
                               padding: const EdgeInsets.all(12),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 8,
                                 mainAxisSpacing: 8,
@@ -382,21 +423,31 @@ class _HomeScreenState extends State<HomeScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (_) => ProductDetailScreen(
-                                            title: product["subcat_name"]?.toString() ?? 'Unknown Product',
-                                            unit: product["unit"]?.toString() ?? 'Unknown Unit',
-                                            low: (product["min_price"] as num?)?.toInt() ?? 0,
-                                            high: (product["max_price"] as num?)?.toInt() ?? 0,
+                                            title: product["subcat_name"]
+                                                    ?.toString() ??
+                                                'Unknown Product',
+                                            unit: product["unit"]?.toString() ??
+                                                'Unknown Unit',
+                                            low: _parsePrice(
+                                                product["min_price"]),
+                                            high: _parsePrice(
+                                                product["max_price"]),
+                                            subcatId: product["id"]
+                                                ?.toString(), // Pass the subcategory ID
                                           ),
                                         ),
                                       );
                                     },
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
                                       children: [
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
-                                            product["subcat_name"]?.toString() ?? 'Unknown Product',
+                                            product["subcat_name"]
+                                                    ?.toString() ??
+                                                'Unknown Product',
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
@@ -406,10 +457,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                         Padding(
-                                          padding:
-                                              const EdgeInsets.symmetric(horizontal: 8.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0),
                                           child: Text(
-                                            product["unit"]?.toString() ?? 'Unknown Unit',
+                                            product["unit"]?.toString() ??
+                                                'Unknown Unit',
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: Colors.grey,
@@ -422,10 +474,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                             child: Container(
                                               decoration: BoxDecoration(
                                                 color: Colors.grey[200],
-                                                borderRadius: BorderRadius.circular(8),
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
                                               ),
                                               child: Center(
-                                                child: _buildProductImage(product),
+                                                child:
+                                                    _buildProductImage(product),
                                               ),
                                             ),
                                           ),
@@ -434,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           padding: const EdgeInsets.only(
                                               bottom: 8, left: 8, right: 8),
                                           child: Text(
-                                            "৳${product["min_price"] ?? 0} - ৳${product["max_price"] ?? 0}",
+                                            "৳${_parsePrice(product["min_price"])} - ৳${_parsePrice(product["max_price"])}",
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,

@@ -174,7 +174,7 @@ class WholesalerApiService {
       List<String> params = [];
       if (productFilter != null) params.add('product=$productFilter');
       if (locationFilter != null) params.add('location=$locationFilter');
-      if (params.isNotEmpty) url += '?' + params.join('&');
+      if (params.isNotEmpty) url += '?${params.join('&')}';
       
       final response = await _networkHelper.getWithToken(url);
       
