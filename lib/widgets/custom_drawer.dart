@@ -5,7 +5,7 @@ import '../screens/customers/complaint_form_screen.dart';
 import '../screens/customers/favorite_products_screen.dart';
 import '../screens/customers/price_alert_screen.dart';
 import '../screens/customers/profile_screen.dart';
-import '../screens/customers/review_screen.dart';
+import '../screens/customers/reviews_screen.dart';
 import '../screens/customers/rewarded_shops_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -77,7 +77,7 @@ class CustomDrawer extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Profile
           ListTile(
             leading: const Icon(Icons.person, color: Colors.indigo),
@@ -96,9 +96,9 @@ class CustomDrawer extends StatelessWidget {
               );
             },
           ),
-          
+
           const Divider(),
-          
+
           // Favorites
           ListTile(
             leading: const Icon(Icons.favorite, color: Colors.red),
@@ -107,11 +107,12 @@ class CustomDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const FavoriteProductsScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const FavoriteProductsScreen()),
               );
             },
           ),
-          
+
           // Price Alerts
           ListTile(
             leading: const Icon(Icons.notifications, color: Colors.orange),
@@ -120,11 +121,12 @@ class CustomDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const PriceAlertScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const PriceAlertScreen()),
               );
             },
           ),
-          
+
           // Reviews
           ListTile(
             leading: const Icon(Icons.star, color: Colors.amber),
@@ -133,11 +135,21 @@ class CustomDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ReviewScreen()),
+                MaterialPageRoute(builder: (context) => const ReviewsScreen()),
               );
             },
           ),
-          
+
+          // Map
+          ListTile(
+            leading: const Icon(Icons.map, color: Colors.blue),
+            title: const Text('Shop Map'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/map');
+            },
+          ),
+
           // Rewarded Shops
           ListTile(
             leading: const Icon(Icons.card_giftcard, color: Colors.green),
@@ -146,13 +158,14 @@ class CustomDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const RewardedShopsScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const RewardedShopsScreen()),
               );
             },
           ),
-          
+
           const Divider(),
-          
+
           // Complaints
           ListTile(
             leading: const Icon(Icons.report_problem, color: Colors.red),
@@ -161,13 +174,14 @@ class CustomDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ComplaintFormScreen()),
+                MaterialPageRoute(
+                    builder: (context) => const ComplaintFormScreen()),
               );
             },
           ),
-          
+
           const Divider(),
-          
+
           // Settings
           ListTile(
             leading: const Icon(Icons.settings, color: Colors.grey),
@@ -186,7 +200,7 @@ class CustomDrawer extends StatelessWidget {
               );
             },
           ),
-          
+
           // Help
           ListTile(
             leading: const Icon(Icons.help, color: Colors.blue),
@@ -194,11 +208,12 @@ class CustomDrawer extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Help & Support feature coming soon')),
+                const SnackBar(
+                    content: Text('Help & Support feature coming soon')),
               );
             },
           ),
-          
+
           // Logout
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
@@ -221,7 +236,8 @@ class CustomDrawer extends StatelessWidget {
                           Navigator.pop(context);
                           Navigator.pushAndRemoveUntil(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginScreen()),
+                            MaterialPageRoute(
+                                builder: (context) => const LoginScreen()),
                             (route) => false,
                           );
                         },

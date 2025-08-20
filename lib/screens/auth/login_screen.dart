@@ -5,6 +5,7 @@ import 'package:nitymulya/screens/auth/signup_screen.dart';
 import 'package:nitymulya/screens/customers/home_screen.dart';
 import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
+import 'package:nitymulya/utils/user_session.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -50,9 +51,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result['success'] == true) {
         final userData = result['user'];
-        final userName = userData?['full_name'] ?? userData?['name'] ?? email.split('@')[0];
+        final userName =
+            userData?['full_name'] ?? userData?['name'] ?? email.split('@')[0];
         final userRole = result['role'] ?? selectedRole.toLowerCase();
-        
+        final userId = userData?['id']?.toString() ?? '';
+
+        // Save user session
+        await UserSession.saveUserSession(
+          userId: userId,
+          userType: userRole,
+          userData: userData ?? {},
+          token: result['token'],
+        );
+
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'] ?? 'Login successful')),
@@ -77,7 +88,8 @@ class _LoginScreenState extends State<LoginScreen> {
               builder: (context) => const ShopOwnerDashboard(),
             ),
           );
-        } else if (userRole.contains('wholesaler') || selectedRole == 'Wholesaler') {
+        } else if (userRole.contains('wholesaler') ||
+            selectedRole == 'Wholesaler') {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -98,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _isLoading = false;
       });
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Login failed: $e'),
@@ -137,7 +149,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   // Logo with rounded border
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(60), // Makes the image round
+                    borderRadius:
+                        BorderRadius.circular(60), // Makes the image round
                     child: Image.asset(
                       'assets/image/logo.jpeg',
                       width: 120,
@@ -199,19 +212,19 @@ class _LoginScreenState extends State<LoginScreen> {
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         foregroundColor: Colors.white, // Text color
                       ),
-                      child: _isLoading 
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Login',
+                              style: TextStyle(fontSize: 16),
                             ),
-                          )
-                        : const Text(
-                            'Login',
-                            style: TextStyle(fontSize: 16),
-                          ),
                     ),
                   ),
 

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../models/shop.dart';
+import '../../services/review_service.dart';
 import 'product_detail_screen.dart';
+import 'reviews_screen.dart';
 
 class ShopItemsScreen extends StatefulWidget {
   final Shop shop;
@@ -25,6 +27,13 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
   void initState() {
     super.initState();
     _initializeShopProducts();
+  }
+
+  void _showShopReviewDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => _ShopReviewDialog(shop: widget.shop),
+    );
   }
 
   void _initializeShopProducts() {
@@ -423,40 +432,351 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Call shop functionality
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text("${widget.shop.name} এ কল করুন"),
-              content: Text("ফোন নম্বর: ${widget.shop.phone}"),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("বাতিল"),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    // In a real app, this would initiate a phone call
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("কল করা হচ্ছে ${widget.shop.phone}"),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          // Review Shop Button
+          FloatingActionButton(
+            heroTag: "review_shop",
+            onPressed: () => _showShopReviewDialog(),
+            backgroundColor: Colors.indigo,
+            child: const Icon(Icons.star, color: Colors.white),
+            tooltip: "Review Shop",
+          ),
+          const SizedBox(height: 16),
+          // Call Shop Button
+          FloatingActionButton(
+            heroTag: "call_shop",
+            onPressed: () {
+              // Call shop functionality
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: Text("${widget.shop.name} এ কল করুন"),
+                  content: Text("ফোন নম্বর: ${widget.shop.phone}"),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("বাতিল"),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        // In a real app, this would initiate a phone call
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("কল করা হচ্ছে ${widget.shop.phone}"),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF079b11),
                       ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF079b11),
-                  ),
-                  child: const Text("কল করুন"),
+                      child: const Text("কল করুন"),
+                    ),
+                  ],
                 ),
-              ],
+              );
+            },
+            backgroundColor: const Color(0xFF079b11),
+            child: const Icon(Icons.phone, color: Colors.white),
+            tooltip: "Call Shop",
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Shop Review Dialog Widget
+class _ShopReviewDialog extends StatefulWidget {
+  final Shop shop;
+
+  const _ShopReviewDialog({required this.shop});
+
+  @override
+  State<_ShopReviewDialog> createState() => _ShopReviewDialogState();
+}
+
+class _ShopReviewDialogState extends State<_ShopReviewDialog> {
+  final TextEditingController _commentController = TextEditingController();
+  int _overallRating = 5;
+  int _deliveryRating = 5;
+  int _serviceRating = 5;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitReview() async {
+    if (_commentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add a comment for your review'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      await ReviewService.createShopReview(
+        shopId: widget.shop.name.toLowerCase().replaceAll(' ', '_'),
+        shopName: widget.shop.name,
+        customerId: 'customer_current', // Replace with actual customer ID
+        customerName: 'Current Customer', // Replace with actual customer name
+        rating: _overallRating,
+        deliveryRating: _deliveryRating,
+        serviceRating: _serviceRating,
+        comment: _commentController.text.trim(),
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Review submitted for ${widget.shop.name}!'),
+            backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'View Reviews',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ReviewsScreen(),
+                  ),
+                );
+              },
             ),
-          );
-        },
-        backgroundColor: const Color(0xFF079b11),
-        child: const Icon(Icons.phone),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error submitting review: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  Widget _buildRatingSelector(
+      String label, int rating, Function(int) onChanged, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w500,
+            color: color,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: List.generate(5, (index) {
+            return GestureDetector(
+              onTap: () => onChanged(index + 1),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Icon(
+                  index < rating ? Icons.star : Icons.star_border,
+                  color: Colors.amber,
+                  size: 24,
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Icon(Icons.store, color: Colors.indigo, size: 24),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Review ${widget.shop.name}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Shop Info
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.indigo.withOpacity(0.2),
+                      child: Text(
+                        widget.shop.name[0],
+                        style: const TextStyle(
+                          color: Colors.indigo,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.shop.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Row(
+                            children: [
+                              Icon(Icons.location_on,
+                                  size: 14, color: Colors.grey[600]),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  widget.shop.address,
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Rating Sections
+              _buildRatingSelector('Overall Rating', _overallRating, (rating) {
+                setState(() => _overallRating = rating);
+              }, Colors.indigo),
+              const SizedBox(height: 16),
+
+              _buildRatingSelector('Delivery Experience', _deliveryRating,
+                  (rating) {
+                setState(() => _deliveryRating = rating);
+              }, Colors.orange),
+              const SizedBox(height: 16),
+
+              _buildRatingSelector('Customer Service', _serviceRating,
+                  (rating) {
+                setState(() => _serviceRating = rating);
+              }, Colors.green),
+              const SizedBox(height: 20),
+
+              // Comment Section
+              Text(
+                'Share your experience',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 14,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _commentController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText:
+                      'Tell others about your experience with ${widget.shop.name}...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Colors.indigo),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed:
+                          _isSubmitting ? null : () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _isSubmitting ? null : _submitReview,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.indigo,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: _isSubmitting
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('Submit Review'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

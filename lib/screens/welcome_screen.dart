@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
 import 'package:nitymulya/screens/auth/login_screen.dart';
 import 'package:nitymulya/screens/customers/product_detail_screen.dart';
+import 'package:nitymulya/widgets/nearby_shops_widget.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String? userName;
@@ -27,7 +28,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   bool isDarkMode = false;
   bool isBangla = true;
   bool showSplash = true;
-  
+
   List<Map<String, dynamic>> products = [];
   List<String> categories = ["All"]; // Start with "All", will load from API
   bool isLoading = true;
@@ -39,45 +40,46 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   List<Map<String, dynamic>> get filteredProducts {
     List<Map<String, dynamic>> result = products;
-    
+
     // First filter by category
     if (selectedCategory != "All") {
-      result = result
-          .where((p) => p["cat_name"] == selectedCategory)
-          .toList();
+      result = result.where((p) => p["cat_name"] == selectedCategory).toList();
     }
-    
+
     // Then filter by search query if present
     if (searchQuery.isNotEmpty) {
       result = result
-          .where((p) => p["subcat_name"]
-              ?.toString()
-              .toLowerCase()
-              .contains(searchQuery.toLowerCase()) ?? false)
+          .where((p) =>
+              p["subcat_name"]
+                  ?.toString()
+                  .toLowerCase()
+                  .contains(searchQuery.toLowerCase()) ??
+              false)
           .toList();
     }
-    
+
     return result;
   }
 
   // Get search suggestions that respect current category filter
   List<Map<String, dynamic>> get searchSuggestions {
     if (searchQuery.isEmpty) return [];
-    
+
     List<Map<String, dynamic>> searchBase = products;
-    
+
     // Respect category filter for search suggestions
     if (selectedCategory != "All") {
-      searchBase = searchBase
-          .where((p) => p["cat_name"] == selectedCategory)
-          .toList();
+      searchBase =
+          searchBase.where((p) => p["cat_name"] == selectedCategory).toList();
     }
-    
+
     return searchBase
-        .where((p) => p["subcat_name"]
-            ?.toString()
-            .toLowerCase()
-            .contains(searchQuery.toLowerCase()) ?? false)
+        .where((p) =>
+            p["subcat_name"]
+                ?.toString()
+                .toLowerCase()
+                .contains(searchQuery.toLowerCase()) ??
+            false)
         .take(5) // Limit suggestions to 5
         .toList();
   }
@@ -89,9 +91,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         isLoading = true;
         errorMessage = null;
       });
-      
+
       final apiProducts = await fetchPriceList();
-      
+
       setState(() {
         products = apiProducts;
         isLoading = false;
@@ -112,9 +114,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       setState(() {
         isCategoriesLoading = true;
       });
-      
+
       final apiCategories = await fetchCategories();
-      
+
       // Extract cat_name from API response and create list with "All" first
       final categoryNames = ["All"];
       for (final category in apiCategories) {
@@ -123,7 +125,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           categoryNames.add(catName);
         }
       }
-      
+
       setState(() {
         categories = categoryNames;
         isCategoriesLoading = false;
@@ -131,7 +133,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     } catch (e) {
       setState(() {
         // Keep fallback categories if API fails
-        categories = ["All", "চাল", "আটা ও ময়দা", "তেল", "ডাল", "সবজি ও মসলা", "মাছ ও গোশত", "দুধ"];
+        categories = [
+          "All",
+          "চাল",
+          "আটা ও ময়দা",
+          "তেল",
+          "ডাল",
+          "সবজি ও মসলা",
+          "মাছ ও গোশত",
+          "দুধ"
+        ];
         isCategoriesLoading = false;
       });
     }
@@ -143,7 +154,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     super.initState();
     loadCategories(); // Load categories from API
     loadProducts(); // Load products from API
-    
+
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -268,6 +279,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             onTap: _handleRestrictedAction,
           ),
           ListTile(
+            leading: const Icon(Icons.shopping_bag),
+            title: const Text("My Orders"),
+            onTap: () {
+              Navigator.pushNamed(context, '/my-orders');
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.favorite),
             title: const Text("Favorites"),
             onTap: _handleRestrictedAction,
@@ -289,12 +307,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   Widget _buildProductImage(Map<String, dynamic> product) {
     final imageUrl = product["subcat_img"]?.toString();
-    
+
     // If image URL is null or empty, show the inventory icon
     if (imageUrl == null || imageUrl.trim().isEmpty) {
       return const Icon(Icons.inventory_2, size: 60, color: Colors.grey);
     }
-    
+
     // Try to load the image, with fallback to inventory icon on error
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
@@ -414,7 +432,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               child: TextField(
                 onChanged: (value) => setState(() => searchQuery = value),
                 decoration: InputDecoration(
-                  hintText: selectedCategory == "All" 
+                  hintText: selectedCategory == "All"
                       ? "Search all products"
                       : "Search in $selectedCategory",
                   prefixIcon: const Icon(Icons.search),
@@ -450,8 +468,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           shrinkWrap: true,
                           children: searchSuggestions
                               .map((p) => ListTile(
-                                    title: Text(p["subcat_name"]?.toString() ?? 'Unknown Product'),
-                                    subtitle: Text('${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
+                                    title: Text(p["subcat_name"]?.toString() ??
+                                        'Unknown Product'),
+                                    subtitle: Text(
+                                        '${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
                                     onTap: () {
                                       // Clear search and navigate to product
                                       setState(() {
@@ -461,10 +481,19 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                         context,
                                         MaterialPageRoute(
                                           builder: (_) => ProductDetailScreen(
-                                            title: p["subcat_name"]?.toString() ?? 'Unknown Product',
-                                            unit: p["unit"]?.toString() ?? 'Unknown Unit',
-                                            low: (p["min_price"] as num?)?.toInt() ?? 0,
-                                            high: (p["max_price"] as num?)?.toInt() ?? 0,
+                                            title:
+                                                p["subcat_name"]?.toString() ??
+                                                    'Unknown Product',
+                                            unit: p["unit"]?.toString() ??
+                                                'Unknown Unit',
+                                            low: (p["min_price"] as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                            high: (p["max_price"] as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                            subcatId: p["id"]
+                                                ?.toString(), // Pass the subcategory ID
                                           ),
                                         ),
                                       );
@@ -509,13 +538,21 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             selected: selectedCategory == categories[index],
                             onSelected: (_) => setState(() {
                               selectedCategory = categories[index];
-                              searchQuery = ""; // Clear search when changing category
+                              searchQuery =
+                                  ""; // Clear search when changing category
                             }),
                           ),
                         );
                       },
                     ),
             ),
+
+            // Nearby Shops Section
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: NearbyShopsWidget(maxShops: 3),
+            ),
+
             Expanded(
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
@@ -524,11 +561,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.error_outline, size: 64, color: Colors.red),
+                              Icon(Icons.error_outline,
+                                  size: 64, color: Colors.red),
                               SizedBox(height: 16),
                               Text('Error loading products'),
                               SizedBox(height: 8),
-                              Text(errorMessage!, style: TextStyle(color: Colors.grey)),
+                              Text(errorMessage!,
+                                  style: TextStyle(color: Colors.grey)),
                               SizedBox(height: 16),
                               ElevatedButton(
                                 onPressed: loadProducts,
@@ -543,7 +582,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             )
                           : GridView.builder(
                               padding: const EdgeInsets.all(12),
-                              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: 2,
                                 crossAxisSpacing: 8,
                                 mainAxisSpacing: 8,
@@ -563,21 +603,33 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                         context,
                                         MaterialPageRoute(
                                           builder: (_) => ProductDetailScreen(
-                                            title: product["subcat_name"]?.toString() ?? 'Unknown Product',
-                                            unit: product["unit"]?.toString() ?? 'Unknown Unit',
-                                            low: (product["min_price"] as num?)?.toInt() ?? 0,
-                                            high: (product["max_price"] as num?)?.toInt() ?? 0,
+                                            title: product["subcat_name"]
+                                                    ?.toString() ??
+                                                'Unknown Product',
+                                            unit: product["unit"]?.toString() ??
+                                                'Unknown Unit',
+                                            low: (product["min_price"] as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                            high: (product["max_price"] as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                            subcatId: product["id"]
+                                                ?.toString(), // Pass the subcategory ID
                                           ),
                                         ),
                                       );
                                     },
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
                                       children: [
                                         Padding(
                                           padding: const EdgeInsets.all(8.0),
                                           child: Text(
-                                            product["subcat_name"]?.toString() ?? 'Unknown Product',
+                                            product["subcat_name"]
+                                                    ?.toString() ??
+                                                'Unknown Product',
                                             style: const TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold,
@@ -587,27 +639,32 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                           ),
                                         ),
                                         Padding(
-                                          padding:
-                                              const EdgeInsets.symmetric(horizontal: 8.0),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0),
                                           child: Text(
-                                            product["unit"]?.toString() ?? 'Unknown Unit',
+                                            product["unit"]?.toString() ??
+                                                'Unknown Unit',
                                             style: const TextStyle(
-                                                fontSize: 12, color: Colors.grey),
+                                                fontSize: 12,
+                                                color: Colors.grey),
                                           ),
-                                        ),                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Center(
-                                child: _buildProductImage(product),
-                              ),
-                            ),
-                          ),
-                        ),
+                                        ),
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                color: Colors.grey[200],
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                              ),
+                                              child: Center(
+                                                child:
+                                                    _buildProductImage(product),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               bottom: 8, left: 8, right: 8),
@@ -636,15 +693,25 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           selectedItemColor:
               const Color(0xFF079b11), // Green color for selected tab
           unselectedItemColor: Colors.grey, // Grey for unselected tabs
+          type: BottomNavigationBarType.fixed, // Show all tabs
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.shopping_bag), label: 'Orders'),
+            BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
             BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shops'),
             BottomNavigationBarItem(
                 icon: Icon(Icons.favorite), label: 'Favorites'),
           ],
           onTap: (index) {
-            if (index == 1 || index == 2) {
-              // Both Shops and Favorites tabs
+            if (index == 1) {
+              // My Orders tab
+              Navigator.pushNamed(context, '/my-orders');
+            } else if (index == 2) {
+              // Map tab
+              Navigator.pushNamed(context, '/enhanced-map');
+            } else if (index == 3 || index == 4) {
+              // Shops and Favorites tabs
               _handleRestrictedAction();
             }
             // Home tab (index 0) does nothing since we're already there

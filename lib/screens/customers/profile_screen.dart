@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../services/order_service.dart';
+import '../../services/review_service.dart';
 import '../auth/login_screen.dart';
+import 'my_orders_screen.dart';
+import 'reviews_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String userName;
@@ -22,6 +26,87 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool isDarkMode = false;
   bool enableNotifications = true;
   bool enableLocationServices = true;
+  int totalOrders = 0;
+  int pendingOrders = 0;
+  int totalReviews = 0;
+  double averageRating = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOrderStats();
+    _loadReviewStats();
+  }
+
+  Future<void> _loadReviewStats() async {
+    try {
+      final reviewService = ReviewService();
+      final productReviews =
+          await reviewService.getCustomerReviews('customer_current');
+      final shopReviews =
+          await reviewService.getShopReviews('customer_current');
+
+      final allReviews = [...productReviews, ...shopReviews];
+
+      if (allReviews.isNotEmpty) {
+        final totalRating = allReviews.fold<double>(
+            0.0, (sum, review) => sum + (review['rating'] ?? 0).toDouble());
+        setState(() {
+          totalReviews = allReviews.length;
+          averageRating = totalRating / allReviews.length;
+        });
+      } else {
+        // Use sample data for demonstration
+        setState(() {
+          totalReviews = 8;
+          averageRating = 4.3;
+        });
+      }
+    } catch (e) {
+      // Fallback to sample data
+      setState(() {
+        totalReviews = 8;
+        averageRating = 4.3;
+      });
+    }
+  }
+
+  Future<void> _loadOrderStats() async {
+    try {
+      final orders = await OrderService().getOrders();
+      if (orders.isEmpty) {
+        // Use sample data if no real orders exist
+        final sampleOrders = OrderService().getSampleOrders();
+        setState(() {
+          totalOrders = sampleOrders.length;
+          pendingOrders = sampleOrders
+              .where((order) =>
+                  order['status'] == 'pending' ||
+                  order['status'] == 'confirmed')
+              .length;
+        });
+      } else {
+        setState(() {
+          totalOrders = orders.length;
+          pendingOrders = orders
+              .where((order) =>
+                  order['status'] == 'pending' ||
+                  order['status'] == 'confirmed')
+              .length;
+        });
+      }
+    } catch (e) {
+      // Fallback to sample data
+      final sampleOrders = OrderService().getSampleOrders();
+      setState(() {
+        totalOrders = sampleOrders.length;
+        pendingOrders = sampleOrders
+            .where((order) =>
+                order['status'] == 'pending' || order['status'] == 'confirmed')
+            .length;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +157,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 5),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: Colors.indigo,
                       borderRadius: BorderRadius.circular(20),
@@ -91,15 +177,256 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 20),
 
+            // Order Summary Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MyOrdersScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.indigo.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.shopping_bag,
+                              color: Colors.indigo,
+                              size: 28,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '$totalOrders',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.indigo,
+                              ),
+                            ),
+                            const Text(
+                              'Total Orders',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.indigo,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MyOrdersScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.pending_actions,
+                              color: Colors.orange,
+                              size: 28,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '$pendingOrders',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.orange,
+                              ),
+                            ),
+                            const Text(
+                              'Pending Orders',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.orange,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Reviews Summary Section
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.1),
+                    spreadRadius: 1,
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ReviewsScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              color: Colors.amber,
+                              size: 28,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '$totalReviews',
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber,
+                              ),
+                            ),
+                            const Text(
+                              'My Reviews',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.amber,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const ReviewsScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.green,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  averageRating.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Text(
+                              'Avg Rating',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.green,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+
             // Profile Options
             _buildProfileSection('Account', [
+              _buildProfileTile(
+                icon: Icons.shopping_bag,
+                title: 'My Orders',
+                subtitle: 'View purchase history & track orders',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const MyOrdersScreen(),
+                    ),
+                  );
+                },
+              ),
               _buildProfileTile(
                 icon: Icons.edit,
                 title: 'Edit Profile',
                 onTap: () {
                   // TODO: Navigate to edit profile screen
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Edit Profile feature coming soon')),
+                    const SnackBar(
+                        content: Text('Edit Profile feature coming soon')),
                   );
                 },
               ),
@@ -109,7 +436,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () {
                   // TODO: Navigate to change password screen
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Change Password feature coming soon')),
+                    const SnackBar(
+                        content: Text('Change Password feature coming soon')),
                   );
                 },
               ),
@@ -119,7 +447,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () {
                   // TODO: Navigate to address management
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Address management coming soon')),
+                    const SnackBar(
+                        content: Text('Address management coming soon')),
                   );
                 },
               ),
@@ -171,7 +500,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () {
                   // TODO: Navigate to help screen
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Help & Support feature coming soon')),
+                    const SnackBar(
+                        content: Text('Help & Support feature coming soon')),
                   );
                 },
               ),
@@ -183,7 +513,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     context: context,
                     applicationName: 'NitiMulya',
                     applicationVersion: '1.0.0',
-                    applicationLegalese: '© 2025 NitiMulya. All rights reserved.',
+                    applicationLegalese:
+                        '© 2025 NitiMulya. All rights reserved.',
                   );
                 },
               ),
@@ -193,7 +524,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () {
                   // TODO: Navigate to privacy policy
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Privacy Policy feature coming soon')),
+                    const SnackBar(
+                        content: Text('Privacy Policy feature coming soon')),
                   );
                 },
               ),
@@ -222,7 +554,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Navigator.pop(context);
                               Navigator.pushAndRemoveUntil(
                                 context,
-                                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                MaterialPageRoute(
+                                    builder: (context) => const LoginScreen()),
                                 (route) => false,
                               );
                             },
@@ -290,11 +623,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileTile({
     required IconData icon,
     required String title,
+    String? subtitle,
     required VoidCallback onTap,
   }) {
     return ListTile(
       leading: Icon(icon, color: Colors.indigo),
       title: Text(title),
+      subtitle: subtitle != null
+          ? Text(
+              subtitle,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            )
+          : null,
       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
       onTap: onTap,
     );
