@@ -5,6 +5,7 @@ import 'package:nitymulya/network/wholesaler_api.dart';
 import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/add_order_screen.dart';
 import 'package:nitymulya/screens/wholesaler/order_status_update_screen.dart';
+import 'package:nitymulya/screens/wholesaler/shop_reviews_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
@@ -13,7 +14,8 @@ class WholesalerDashboardScreen extends StatefulWidget {
   const WholesalerDashboardScreen({super.key});
 
   @override
-  State<WholesalerDashboardScreen> createState() => _WholesalerDashboardScreenState();
+  State<WholesalerDashboardScreen> createState() =>
+      _WholesalerDashboardScreenState();
 }
 
 class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
@@ -25,42 +27,42 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   int lowStockProducts = 8;
   int outOfStockProducts = 3;
   String supplyStatus = "Active";
-  
+
   // Inventory state
   List<Map<String, dynamic>> inventoryItems = [];
   bool isLoadingInventory = false;
   String? inventoryError;
-  
+
   // Categories and subcategories data
   List<Map<String, dynamic>> categories = [];
   List<Map<String, dynamic>> priceList = [];
   List<String> products = ["All Products"];
   bool isLoadingProducts = false;
-  
+
   // Offers state
   List<Map<String, dynamic>> offers = [];
   bool isLoadingOffers = false;
   String? offersError;
-  
+
   // Stock Monitor state (additional variables)
   List<Map<String, dynamic>> lowStockProductsList = [];
   bool isLoadingLowStock = false;
   String? categoriesError;
   String? lowStockError;
-  
+
   // Order History state
   List<Map<String, dynamic>> orderHistory = [];
   bool isLoadingHistory = false;
   String? historyError;
   List<Map<String, dynamic>> categoryList = [];
-  
+
   // TODO: Remove this hardcoded ID - now using token-based authentication
   // final String currentWholesalerId = 'cdb69b0f-27bc-41b5-9ce3-525f54e1f316';
-  
+
   String selectedProduct = "All Products";
   String selectedLocation = "All Areas";
   int quantityThreshold = 10;
-  
+
   final List<String> locations = [
     "All Areas",
     "Dhaka (ঢাকা)",
@@ -90,18 +92,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     try {
       final fetchedCategories = await fetchCategories();
       final fetchedPriceList = await fetchPriceList();
-      
+
       setState(() {
         categories = fetchedCategories;
         priceList = fetchedPriceList;
-        
+
         // Extract unique product names (subcategory names) from price list
         final productNames = priceList
             .map((item) => item['subcat_name']?.toString() ?? '')
             .where((name) => name.isNotEmpty)
             .toSet()
             .toList();
-        
+
         products = ["All Products", ...productNames];
         isLoadingProducts = false;
       });
@@ -121,10 +123,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
     try {
       final result = await WholesalerApiService.getInventory();
-      
+
       if (result['success']) {
         setState(() {
-          inventoryItems = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          inventoryItems =
+              List<Map<String, dynamic>>.from(result['data'] ?? []);
           isLoadingInventory = false;
         });
       } else {
@@ -132,7 +135,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           inventoryError = result['message'] ?? 'Failed to load inventory';
           isLoadingInventory = false;
         });
-        
+
         // Handle token expiration or authentication errors
         if (result['requiresLogin'] == true) {
           _handleAuthError();
@@ -154,7 +157,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
     try {
       final result = await WholesalerApiService.getOffers();
-      
+
       if (result['success']) {
         setState(() {
           offers = List<Map<String, dynamic>>.from(result['data'] ?? []);
@@ -165,7 +168,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           offersError = result['message'] ?? 'Failed to load offers';
           isLoadingOffers = false;
         });
-        
+
         // Handle token expiration or authentication errors
         if (result['requiresLogin'] == true) {
           _handleAuthError();
@@ -189,7 +192,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     try {
       final result = await WholesalerApiService.getShopOrders();
       print('📦 Order history API result: $result');
-      
+
       if (result['success']) {
         final orders = List<Map<String, dynamic>>.from(result['data'] ?? []);
         print('✅ Successfully loaded ${orders.length} orders');
@@ -203,7 +206,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           historyError = result['message'] ?? 'Failed to load order history';
           isLoadingHistory = false;
         });
-        
+
         // Handle token expiration or authentication errors
         if (result['requiresLogin'] == true) {
           _handleAuthError();
@@ -223,7 +226,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       context,
       MaterialPageRoute(builder: (context) => const AddOrderScreen()),
     );
-    
+
     // If order was created successfully, reload the order history
     if (result == true) {
       await _loadOrderHistory();
@@ -238,21 +241,25 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
     try {
       final result = await WholesalerApiService.getLowStockProducts(
-        productFilter: selectedProduct != "All Products" ? selectedProduct : null,
-        locationFilter: selectedLocation != "All Areas" ? selectedLocation : null,
+        productFilter:
+            selectedProduct != "All Products" ? selectedProduct : null,
+        locationFilter:
+            selectedLocation != "All Areas" ? selectedLocation : null,
       );
-      
+
       if (result['success']) {
         setState(() {
-          lowStockProductsList = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          lowStockProductsList =
+              List<Map<String, dynamic>>.from(result['data'] ?? []);
           isLoadingLowStock = false;
         });
       } else {
         setState(() {
-          lowStockError = result['message'] ?? 'Failed to load low stock products';
+          lowStockError =
+              result['message'] ?? 'Failed to load low stock products';
           isLoadingLowStock = false;
         });
-        
+
         // Handle token expiration or authentication errors
         if (result['requiresLogin'] == true) {
           _handleAuthError();
@@ -418,6 +425,66 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ],
           ),
 
+          const SizedBox(height: 16),
+
+          // Reviews Section
+          Card(
+            elevation: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.star, color: Colors.amber, size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Shop Reviews & Ratings",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          "Manage customer feedback and ratings",
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ShopReviewsScreen(
+                            shopId:
+                                'wholesaler_shop_id', // Replace with actual shop ID
+                            shopName:
+                                'Your Wholesale Shop', // Replace with actual shop name
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.rate_review, size: 18),
+                    label: const Text("View Reviews"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 8),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
           const SizedBox(height: 24),
 
           // Tab Content
@@ -486,7 +553,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   // Summary Card Builder - Matches Shop Owner Dashboard Style
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
+  Widget _buildSummaryCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       height: 90, // Fixed height for equal sizing
       padding: const EdgeInsets.all(12),
@@ -512,14 +580,18 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               const Spacer(),
               if (title.contains("Low") || title.contains("Requests"))
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     "!",
-                    style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 8,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
             ],
@@ -561,7 +633,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             elevation: 2,
             child: ExpansionTile(
               initiallyExpanded: false,
-              leading: Icon(Icons.filter_list, color: Colors.green[800], size: 20),
+              leading:
+                  Icon(Icons.filter_list, color: Colors.green[800], size: 20),
               title: const Text(
                 "🏪 Shop Stock Monitor - Track Low Stock Shops",
                 style: TextStyle(
@@ -579,18 +652,22 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                         value: selectedProduct,
                         decoration: InputDecoration(
                           labelText: "Product",
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                         ),
-                        items: products.map((product) => DropdownMenuItem(
-                          value: product,
-                          child: Text(
-                            product,
-                            style: const TextStyle(fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        )).toList(),
+                        items: products
+                            .map((product) => DropdownMenuItem(
+                                  value: product,
+                                  child: Text(
+                                    product,
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ))
+                            .toList(),
                         onChanged: (value) {
                           setState(() {
                             selectedProduct = value!;
@@ -600,24 +677,28 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                         },
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Location Dropdown (Full Width)
                       DropdownButtonFormField<String>(
                         value: selectedLocation,
                         decoration: InputDecoration(
                           labelText: "Location",
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8)),
                           isDense: true,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                         ),
-                        items: locations.map((location) => DropdownMenuItem(
-                          value: location,
-                          child: Text(
-                            location,
-                            style: const TextStyle(fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        )).toList(),
+                        items: locations
+                            .map((location) => DropdownMenuItem(
+                                  value: location,
+                                  child: Text(
+                                    location,
+                                    style: const TextStyle(fontSize: 14),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ))
+                            .toList(),
                         onChanged: (value) {
                           setState(() {
                             selectedLocation = value!;
@@ -627,7 +708,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                         },
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Threshold Input and Filter Button
                       Row(
                         children: [
@@ -636,9 +717,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                               initialValue: quantityThreshold.toString(),
                               decoration: InputDecoration(
                                 labelText: "Threshold (units)",
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8)),
                                 isDense: true,
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
                               ),
                               style: const TextStyle(fontSize: 14),
                               keyboardType: TextInputType.number,
@@ -655,7 +738,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                             width: 48,
                             child: IconButton(
                               onPressed: () => _applyFilters(),
-                              icon: const Icon(Icons.search, color: Colors.white, size: 20),
+                              icon: const Icon(Icons.search,
+                                  color: Colors.white, size: 20),
                               style: IconButton.styleFrom(
                                 backgroundColor: Colors.green[800],
                                 shape: RoundedRectangleBorder(
@@ -673,7 +757,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
           ),
           const SizedBox(height: 12),
-          
+
           // Results List
           Expanded(
             child: isLoadingLowStock
@@ -683,9 +767,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                            Icon(Icons.error_outline,
+                                size: 64, color: Colors.red[400]),
                             const SizedBox(height: 16),
-                            Text(lowStockError!, style: const TextStyle(color: Colors.red)),
+                            Text(lowStockError!,
+                                style: const TextStyle(color: Colors.red)),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadLowStockProducts,
@@ -699,10 +785,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey[400]),
+                                Icon(Icons.inventory_2_outlined,
+                                    size: 64, color: Colors.grey[400]),
                                 const SizedBox(height: 16),
-                                Text('No shops with low stock found', 
-                                     style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                                Text('No shops with low stock found',
+                                    style: TextStyle(
+                                        color: Colors.grey[600], fontSize: 16)),
                               ],
                             ),
                           )
@@ -721,14 +809,14 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   Widget _buildLowStockItem(int index) {
     // Use real product data from the API
     final productData = lowStockProductsList[index];
-    
+
     // Extract data from the API response
     final shopName = productData['shop_name'] ?? 'Unknown Shop';
-    final shopLocation = productData['shop_location'] ?? 'Unknown Location';  
+    final shopLocation = productData['shop_location'] ?? 'Unknown Location';
     final productName = productData['product_name'] ?? 'Unknown Product';
     final quantity = productData['stock_quantity'] ?? 0;
     final minThreshold = productData['min_stock_threshold'] ?? 0;
-    
+
     // Consider it urgent if stock is below half the minimum threshold
     final isUrgent = quantity <= (minThreshold / 2);
 
@@ -857,7 +945,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const WholesalerAddProductScreen(),
+                        builder: (context) =>
+                            const WholesalerAddProductScreen(),
                       ),
                     ).then((_) {
                       // Refresh inventory when returning from add product screen
@@ -865,7 +954,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                     });
                   },
                   icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text("Add Product", style: TextStyle(color: Colors.white)),
+                  label: const Text("Add Product",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[800],
                   ),
@@ -875,13 +965,14 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: isLoadingInventory ? null : _loadInventory,
-                  icon: isLoadingInventory 
-                    ? const SizedBox(
-                        width: 16, 
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.refresh, color: Colors.white),
+                  icon: isLoadingInventory
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.refresh, color: Colors.white),
                   label: Text(
                     isLoadingInventory ? "Loading..." : "Refresh",
                     style: const TextStyle(color: Colors.white),
@@ -896,7 +987,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _uploadCatalog(),
                   icon: const Icon(Icons.upload, color: Colors.white),
-                  label: const Text("Upload", style: TextStyle(color: Colors.white)),
+                  label: const Text("Upload",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[600],
                   ),
@@ -1010,9 +1102,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     final unitPrice = item['unit_price'] ?? 0.0;
     final lowStockThreshold = item['low_stock_threshold'] ?? 10;
     final updatedAt = item['updated_at']?.toString() ?? '';
-    
+
     final isLowStock = stockQuantity < lowStockThreshold;
-    final displayPrice = unitPrice is String ? double.tryParse(unitPrice) ?? 0.0 : unitPrice.toDouble();
+    final displayPrice = unitPrice is String
+        ? double.tryParse(unitPrice) ?? 0.0
+        : unitPrice.toDouble();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1069,7 +1163,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         trailing: PopupMenuButton(
           itemBuilder: (context) => [
             const PopupMenuItem(value: "edit", child: Text("Edit")),
-            const PopupMenuItem(value: "history", child: Text("Supply History")),
+            const PopupMenuItem(
+                value: "history", child: Text("Supply History")),
             const PopupMenuItem(value: "delete", child: Text("Delete")),
           ],
           onSelected: (value) {
@@ -1104,7 +1199,6 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
           Expanded(
             child: ListView.builder(
               itemCount: 6,
@@ -1247,7 +1341,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _navigateToAddOrder(),
-                  icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
+                  icon:
+                      const Icon(Icons.add_shopping_cart, color: Colors.white),
                   label: const Text("Add Order",
                       style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
@@ -1266,9 +1361,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.error_outline, size: 64, color: Colors.red[400]),
+                            Icon(Icons.error_outline,
+                                size: 64, color: Colors.red[400]),
                             const SizedBox(height: 16),
-                            Text(historyError!, style: const TextStyle(color: Colors.red)),
+                            Text(historyError!,
+                                style: const TextStyle(color: Colors.red)),
                             const SizedBox(height: 16),
                             ElevatedButton(
                               onPressed: _loadOrderHistory,
@@ -1282,10 +1379,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.history, size: 64, color: Colors.grey[400]),
+                                Icon(Icons.history,
+                                    size: 64, color: Colors.grey[400]),
                                 const SizedBox(height: 16),
-                                Text('No order history found', 
-                                     style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+                                Text('No order history found',
+                                    style: TextStyle(
+                                        color: Colors.grey[600], fontSize: 16)),
                               ],
                             ),
                           )
@@ -1334,10 +1433,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     }
 
     // Format date
-    String formattedDate = order["created_at"] as String? ?? 
-                          order["order_date"] as String? ?? 
-                          order["date"] as String? ?? "N/A";
-    
+    String formattedDate = order["created_at"] as String? ??
+        order["order_date"] as String? ??
+        order["date"] as String? ??
+        "N/A";
+
     // Try to format the date if it's in ISO format
     try {
       if (formattedDate.contains('T')) {
@@ -1359,22 +1459,24 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
         ),
         title: Text(
-          order["shop_name"] as String? ?? 
-          order["full_name"] as String? ?? 
-          "Unknown Shop",
+          order["shop_name"] as String? ??
+              order["full_name"] as String? ??
+              "Unknown Shop",
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("${order["subcat_name"] as String? ?? "Unknown Product"} - ${order["quantity_requested"] ?? order["quantity"] ?? 0} ${order["unit"] ?? ""}"),
+            Text(
+                "${order["subcat_name"] as String? ?? "Unknown Product"} - ${order["quantity_requested"] ?? order["quantity"] ?? 0} ${order["unit"] ?? ""}"),
             const SizedBox(height: 4),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    Icon(Icons.calendar_today, size: 12, color: Colors.grey[600]),
+                    Icon(Icons.calendar_today,
+                        size: 12, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
                       formattedDate,
@@ -1386,7 +1488,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 if (order["total_amount"] != null) ...[
                   Row(
                     children: [
-                      Icon(Icons.monetization_on, size: 12, color: Colors.grey[600]),
+                      Icon(Icons.monetization_on,
+                          size: 12, color: Colors.grey[600]),
                       const SizedBox(width: 4),
                       Text(
                         "৳${order["total_amount"]}",
@@ -1399,11 +1502,13 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 GestureDetector(
                   onTap: () => _changeTransactionStatus(order, index),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: statusColor,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: statusColor.withValues(alpha: 0.3), width: 1),
+                      border: Border.all(
+                          color: statusColor.withValues(alpha: 0.3), width: 1),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -1581,7 +1686,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     final isActive = offer['is_active'] ?? false;
     final title = offer['title'] ?? '';
     final description = offer['description'] ?? '';
-    final validUntil = offer['valid_until'] != null 
+    final validUntil = offer['valid_until'] != null
         ? DateTime.parse(offer['valid_until']).isAfter(DateTime.now())
             ? 'Valid until ${DateTime.parse(offer['valid_until']).day}/${DateTime.parse(offer['valid_until']).month}'
             : 'Expired'
@@ -1643,7 +1748,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             const PopupMenuItem(value: "edit", child: Text("Edit")),
             const PopupMenuItem(value: "duplicate", child: Text("Duplicate")),
             if (isActive)
-              const PopupMenuItem(value: "deactivate", child: Text("Deactivate"))
+              const PopupMenuItem(
+                  value: "deactivate", child: Text("Deactivate"))
             else
               const PopupMenuItem(value: "activate", child: Text("Activate")),
             const PopupMenuItem(value: "delete", child: Text("Delete")),
@@ -1790,11 +1896,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             onPressed: () async {
               // Clear any stored token
               await logout();
-              
+
               // Navigate to welcome screen
               if (mounted) {
                 Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const WelcomeScreen()),
+                  MaterialPageRoute(
+                      builder: (context) => const WelcomeScreen()),
                   (route) => false,
                 );
               }
@@ -1828,7 +1935,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const WholesalerAddProductScreen(),
+                          builder: (context) =>
+                              const WholesalerAddProductScreen(),
                         ),
                       ).then((_) {
                         // Refresh inventory after adding product
@@ -1909,7 +2017,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text("Upload an Excel or CSV file with your product catalog."),
+            const Text(
+                "Upload an Excel or CSV file with your product catalog."),
             const SizedBox(height: 16),
             Container(
               width: double.infinity,
@@ -1952,7 +2061,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _handleInventoryAction(String action, String productName, [Map<String, dynamic>? item]) {
+  void _handleInventoryAction(String action, String productName,
+      [Map<String, dynamic>? item]) {
     switch (action) {
       case "edit":
         _editProduct(productName, item);
@@ -1971,10 +2081,12 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     final priceController = TextEditingController();
     final stockController = TextEditingController();
     final thresholdController = TextEditingController();
-    
+
     if (item != null) {
       final currentPrice = item['unit_price'] ?? 0.0;
-      final displayPrice = currentPrice is String ? double.tryParse(currentPrice) ?? 0.0 : currentPrice.toDouble();
+      final displayPrice = currentPrice is String
+          ? double.tryParse(currentPrice) ?? 0.0
+          : currentPrice.toDouble();
       priceController.text = displayPrice.toStringAsFixed(2);
       stockController.text = (item['stock_quantity'] ?? 0).toString();
       thresholdController.text = (item['low_stock_threshold'] ?? 10).toString();
@@ -2032,7 +2144,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           TextButton(
             onPressed: () async {
               // Validate inputs
-              if (priceController.text.trim().isEmpty || 
+              if (priceController.text.trim().isEmpty ||
                   stockController.text.trim().isEmpty ||
                   thresholdController.text.trim().isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -2043,7 +2155,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
               final newPrice = double.tryParse(priceController.text.trim());
               final newStock = int.tryParse(stockController.text.trim());
-              final newThreshold = int.tryParse(thresholdController.text.trim());
+              final newThreshold =
+                  int.tryParse(thresholdController.text.trim());
 
               if (newPrice == null || newPrice <= 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -2054,21 +2167,24 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
               if (newStock == null || newStock < 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please enter a valid stock quantity")),
+                  const SnackBar(
+                      content: Text("Please enter a valid stock quantity")),
                 );
                 return;
               }
 
               if (newThreshold == null || newThreshold < 0) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Please enter a valid threshold")),
+                  const SnackBar(
+                      content: Text("Please enter a valid threshold")),
                 );
                 return;
               }
 
               if (item == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Error: Product data not available")),
+                  const SnackBar(
+                      content: Text("Error: Product data not available")),
                 );
                 return;
               }
@@ -2109,20 +2225,22 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   if (mounted) {
                     Navigator.pop(context);
                   }
-                  
+
                   // Refresh inventory to show updated data
                   await _loadInventory();
-                  
+
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("$productName updated successfully!")),
+                      SnackBar(
+                          content: Text("$productName updated successfully!")),
                     );
                   }
                 } else {
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text(result['message'] ?? 'Failed to update product'),
+                        content: Text(
+                            result['message'] ?? 'Failed to update product'),
                         backgroundColor: Colors.red,
                       ),
                     );
@@ -2164,7 +2282,13 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           child: ListView.builder(
             itemCount: 5,
             itemBuilder: (context, index) {
-              final dates = ["2024-01-15", "2024-01-10", "2024-01-05", "2023-12-28", "2023-12-20"];
+              final dates = [
+                "2024-01-15",
+                "2024-01-10",
+                "2024-01-05",
+                "2023-12-28",
+                "2023-12-20"
+              ];
               final quantities = [100, 150, 200, 80, 120];
               return ListTile(
                 leading: const Icon(Icons.history),
@@ -2190,7 +2314,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: Text("Delete $productName"),
-        content: Text("Are you sure you want to delete $productName from your inventory?"),
+        content: Text(
+            "Are you sure you want to delete $productName from your inventory?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -2225,7 +2350,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  void _changeTransactionStatus(Map<String, dynamic> transaction, int index) async {
+  void _changeTransactionStatus(
+      Map<String, dynamic> transaction, int index) async {
     // Navigate to the status update screen
     final result = await Navigator.push(
       context,
@@ -2233,7 +2359,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         builder: (context) => OrderStatusUpdateScreen(transaction: transaction),
       ),
     );
-    
+
     // If status was updated successfully, reload the order history
     if (result == true) {
       await _loadOrderHistory();
@@ -2241,25 +2367,29 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   Widget _buildReceiptWidget(Map<String, dynamic> transaction) {
-    final receiptNumber = "R${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
+    final receiptNumber =
+        "R${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}";
     final currentDate = DateTime.now();
-    final formattedDate = "${currentDate.day}/${currentDate.month}/${currentDate.year}";
-    final formattedTime = "${currentDate.hour}:${currentDate.minute.toString().padLeft(2, '0')}";
-    
+    final formattedDate =
+        "${currentDate.day}/${currentDate.month}/${currentDate.year}";
+    final formattedTime =
+        "${currentDate.hour}:${currentDate.minute.toString().padLeft(2, '0')}";
+
     // Get values with fallbacks
-    final shopName = transaction["shop_name"] as String? ?? 
-                    transaction["full_name"] as String? ?? 
-                    "Unknown Shop";
-    final productName = transaction["subcat_name"] as String? ?? "Unknown Product";
+    final shopName = transaction["shop_name"] as String? ??
+        transaction["full_name"] as String? ??
+        "Unknown Shop";
+    final productName =
+        transaction["subcat_name"] as String? ?? "Unknown Product";
     final status = transaction["status"] as String? ?? "pending";
-    
+
     // Sample pricing calculation
     final unitPrice = _getUnitPrice(productName);
     final quantity = transaction["quantity"] as num? ?? 0;
     final subtotal = unitPrice * quantity;
     final tax = subtotal * 0.05; // 5% tax
     final total = subtotal + tax;
-    
+
     return Container(
       width: 350,
       padding: const EdgeInsets.all(20),
@@ -2291,7 +2421,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               ],
             ),
           ),
-          
+
           // Receipt Body
           Container(
             padding: const EdgeInsets.all(16),
@@ -2322,7 +2452,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: _getStatusColor(status),
                         borderRadius: BorderRadius.circular(8),
@@ -2338,18 +2469,19 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 16),
                 const Divider(),
-                
+
                 // Shop Details
                 _buildReceiptRow("Shop Name:", shopName, isTitle: true),
                 _buildReceiptRow("Location:", _getShopLocation(shopName)),
-                _buildReceiptRow("Contact:", transaction["phone"] as String? ?? "+880 1712-345678"),
-                
+                _buildReceiptRow("Contact:",
+                    transaction["phone"] as String? ?? "+880 1712-345678"),
+
                 const SizedBox(height: 12),
                 const Divider(),
-                
+
                 // Product Details
                 const Text(
                   "Product Details:",
@@ -2357,20 +2489,25 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 ),
                 const SizedBox(height: 8),
                 _buildReceiptRow("Product:", productName),
-                _buildReceiptRow("Quantity:", "${transaction["quantity"] ?? 0} ${transaction["unit"] ?? ""}"),
-                _buildReceiptRow("Unit Price:", "৳${unitPrice.toStringAsFixed(2)}"),
-                
+                _buildReceiptRow("Quantity:",
+                    "${transaction["quantity"] ?? 0} ${transaction["unit"] ?? ""}"),
+                _buildReceiptRow(
+                    "Unit Price:", "৳${unitPrice.toStringAsFixed(2)}"),
+
                 const SizedBox(height: 12),
                 const Divider(),
-                
+
                 // Pricing
-                _buildReceiptRow("Subtotal:", "৳${subtotal.toStringAsFixed(2)}"),
+                _buildReceiptRow(
+                    "Subtotal:", "৳${subtotal.toStringAsFixed(2)}"),
                 _buildReceiptRow("Tax (5%):", "৳${tax.toStringAsFixed(2)}"),
                 const Divider(thickness: 2),
-                _buildReceiptRow("Total Amount:", "৳${total.toStringAsFixed(2)}", isTotal: true),
-                
+                _buildReceiptRow(
+                    "Total Amount:", "৳${total.toStringAsFixed(2)}",
+                    isTotal: true),
+
                 const SizedBox(height: 16),
-                
+
                 // Footer
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -2398,7 +2535,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               ],
             ),
           ),
-          
+
           // Action Buttons
           const SizedBox(height: 16),
           Row(
@@ -2415,7 +2552,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                 child: ElevatedButton.icon(
                   onPressed: () => _printReceipt(transaction, receiptNumber),
                   icon: const Icon(Icons.print, color: Colors.white),
-                  label: const Text("Print", style: TextStyle(color: Colors.white)),
+                  label: const Text("Print",
+                      style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[800],
                   ),
@@ -2428,7 +2566,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     );
   }
 
-  Widget _buildReceiptRow(String label, String value, {bool isTitle = false, bool isTotal = false}) {
+  Widget _buildReceiptRow(String label, String value,
+      {bool isTitle = false, bool isTotal = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -2437,14 +2576,16 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           Text(
             label,
             style: TextStyle(
-              fontWeight: isTitle || isTotal ? FontWeight.bold : FontWeight.normal,
+              fontWeight:
+                  isTitle || isTotal ? FontWeight.bold : FontWeight.normal,
               fontSize: isTotal ? 16 : 14,
             ),
           ),
           Text(
             value,
             style: TextStyle(
-              fontWeight: isTitle || isTotal ? FontWeight.bold : FontWeight.normal,
+              fontWeight:
+                  isTitle || isTotal ? FontWeight.bold : FontWeight.normal,
               fontSize: isTotal ? 16 : 14,
               color: isTotal ? Colors.green[800] : Colors.black,
             ),
@@ -2459,14 +2600,16 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     if (priceList.isNotEmpty) {
       for (final item in priceList) {
         if (item['subcat_name'] == product) {
-          final minPrice = double.tryParse(item['min_price']?.toString() ?? '0') ?? 0.0;
-          final maxPrice = double.tryParse(item['max_price']?.toString() ?? '0') ?? 0.0;
+          final minPrice =
+              double.tryParse(item['min_price']?.toString() ?? '0') ?? 0.0;
+          final maxPrice =
+              double.tryParse(item['max_price']?.toString() ?? '0') ?? 0.0;
           // Return average price between min and max
           return (minPrice + maxPrice) / 2;
         }
       }
     }
-    
+
     // Fallback prices based on actual database product names
     final prices = {
       "চাল সরু (নাজির/মিনিকেট)": 80.0,
@@ -2584,7 +2727,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         await _loadOffers(); // Reload offers
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Offer ${isActive ? 'activated' : 'deactivated'} successfully'),
+            content: Text(
+                'Offer ${isActive ? 'activated' : 'deactivated'} successfully'),
             backgroundColor: Colors.green,
           ),
         );
@@ -2611,7 +2755,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Offer'),
-        content: Text('Are you sure you want to delete "${offer['title']}"? This action cannot be undone.'),
+        content: Text(
+            'Are you sure you want to delete "${offer['title']}"? This action cannot be undone.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -2727,15 +2872,19 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   void _showOfferDialog({Map<String, dynamic>? offer}) {
     final isEditing = offer != null;
     final titleController = TextEditingController(text: offer?['title'] ?? '');
-    final descriptionController = TextEditingController(text: offer?['description'] ?? '');
-    final discountController = TextEditingController(text: offer?['discount_percentage']?.toString() ?? '');
-    final minimumQuantityController = TextEditingController(text: offer?['minimum_quantity']?.toString() ?? '');
-    final termsController = TextEditingController(text: offer?['terms_conditions'] ?? '');
-    
-    DateTime? validUntil = offer?['valid_until'] != null 
-        ? DateTime.tryParse(offer!['valid_until']) 
+    final descriptionController =
+        TextEditingController(text: offer?['description'] ?? '');
+    final discountController = TextEditingController(
+        text: offer?['discount_percentage']?.toString() ?? '');
+    final minimumQuantityController = TextEditingController(
+        text: offer?['minimum_quantity']?.toString() ?? '');
+    final termsController =
+        TextEditingController(text: offer?['terms_conditions'] ?? '');
+
+    DateTime? validUntil = offer?['valid_until'] != null
+        ? DateTime.tryParse(offer!['valid_until'])
         : null;
-    
+
     final formKey = GlobalKey<FormState>();
 
     showDialog(
@@ -2800,7 +2949,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                                 return 'Required';
                               }
                               final percent = double.tryParse(value);
-                              if (percent == null || percent < 0 || percent > 100) {
+                              if (percent == null ||
+                                  percent < 0 ||
+                                  percent > 100) {
                                 return 'Enter 0-100';
                               }
                               return null;
@@ -2835,9 +2986,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       onTap: () async {
                         final date = await showDatePicker(
                           context: context,
-                          initialDate: validUntil ?? DateTime.now().add(const Duration(days: 7)),
+                          initialDate: validUntil ??
+                              DateTime.now().add(const Duration(days: 7)),
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
                         );
                         if (date != null) {
                           setState(() {
@@ -2846,22 +2999,26 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 16),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.calendar_today, color: Colors.grey),
+                            const Icon(Icons.calendar_today,
+                                color: Colors.grey),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                validUntil != null 
+                                validUntil != null
                                     ? 'Valid until: ${validUntil!.day}/${validUntil!.month}/${validUntil!.year}'
                                     : 'Select valid until date',
                                 style: TextStyle(
-                                  color: validUntil != null ? Colors.black : Colors.grey[600],
+                                  color: validUntil != null
+                                      ? Colors.black
+                                      : Colors.grey[600],
                                 ),
                               ),
                             ),
@@ -2894,17 +3051,19 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   Navigator.of(context).pop();
-                  
+
                   final offerData = {
                     'title': titleController.text.trim(),
                     'description': descriptionController.text.trim(),
-                    'discount_percentage': double.tryParse(discountController.text) ?? 0,
-                    'minimum_quantity': minimumQuantityController.text.trim().isNotEmpty 
-                        ? int.tryParse(minimumQuantityController.text) 
-                        : null,
+                    'discount_percentage':
+                        double.tryParse(discountController.text) ?? 0,
+                    'minimum_quantity':
+                        minimumQuantityController.text.trim().isNotEmpty
+                            ? int.tryParse(minimumQuantityController.text)
+                            : null,
                     'valid_until': validUntil?.toIso8601String(),
-                    'terms_conditions': termsController.text.trim().isNotEmpty 
-                        ? termsController.text.trim() 
+                    'terms_conditions': termsController.text.trim().isNotEmpty
+                        ? termsController.text.trim()
                         : null,
                   };
 
@@ -2963,7 +3122,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     }
   }
 
-  Future<void> _updateOffer(String offerId, Map<String, dynamic> offerData) async {
+  Future<void> _updateOffer(
+      String offerId, Map<String, dynamic> offerData) async {
     try {
       final result = await WholesalerApiService.updateOffer(
         offerId: offerId,
@@ -3041,5 +3201,4 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       ),
     );
   }
-
 }

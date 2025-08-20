@@ -6,9 +6,9 @@ class OrderStatusUpdateScreen extends StatefulWidget {
   final Map<String, dynamic> transaction;
 
   const OrderStatusUpdateScreen({
-    Key? key,
+    super.key,
     required this.transaction,
-  }) : super(key: key);
+  });
 
   @override
   State<OrderStatusUpdateScreen> createState() => _OrderStatusUpdateScreenState();

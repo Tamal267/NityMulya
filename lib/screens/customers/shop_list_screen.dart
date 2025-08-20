@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../models/shop.dart';
+import '../../services/review_service.dart';
 import '../../services/shop_service.dart';
 import '../../widgets/global_bottom_nav.dart';
+import 'reviews_screen.dart';
 import 'shop_items_screen.dart';
 
 class ShopListScreen extends StatefulWidget {
@@ -19,24 +21,24 @@ class _ShopListScreenState extends State<ShopListScreen> {
   String sortBy = "Distance";
   bool isMapView = false;
   bool isSearchingByProduct = false;
-  
+
   final TextEditingController _searchController = TextEditingController();
-  
+
   final List<String> locations = [
     "All Areas",
     "ধানমন্ডি",
-    "গুলশান", 
+    "গুলশান",
     "মিরপুর",
     "নিউমার্কেট",
     "উত্তরা",
     "বাশুন্ধরা",
     "মতিঝিল"
   ];
-  
+
   final List<String> categories = [
     "All Categories",
     "গ্রোসারি",
-    "সুপার শপ", 
+    "সুপার শপ",
     "পাইকারি",
     "খুচরা",
     "চাল",
@@ -44,7 +46,7 @@ class _ShopListScreenState extends State<ShopListScreen> {
     "ডাল",
     "সবজি"
   ];
-  
+
   final List<String> sortOptions = [
     "Distance",
     "Rating",
@@ -66,43 +68,48 @@ class _ShopListScreenState extends State<ShopListScreen> {
   bool isProductSearch(String query) {
     if (query.isEmpty) return false;
     final products = getAllProducts();
-    return products.any((product) => 
-      product.toLowerCase().contains(query.toLowerCase()));
+    return products
+        .any((product) => product.toLowerCase().contains(query.toLowerCase()));
   }
 
   // Get filtered shops
   List<Shop> getFilteredShops() {
     List<Shop> shops = ShopService.getMockShops();
-    
+
     // Filter by search query
     if (searchQuery.isNotEmpty) {
       isSearchingByProduct = isProductSearch(searchQuery);
-      
+
       if (isSearchingByProduct) {
         // Search by product - show shops that have this product
-        shops = shops.where((shop) => 
-          shop.availableProducts.any((product) => 
-            product.toLowerCase().contains(searchQuery.toLowerCase()))).toList();
+        shops = shops
+            .where((shop) => shop.availableProducts.any((product) =>
+                product.toLowerCase().contains(searchQuery.toLowerCase())))
+            .toList();
       } else {
         // Search by shop name
-        shops = shops.where((shop) => 
-          shop.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          shop.address.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+        shops = shops
+            .where((shop) =>
+                shop.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+                shop.address.toLowerCase().contains(searchQuery.toLowerCase()))
+            .toList();
       }
     }
-    
+
     // Filter by location
     if (selectedLocation != "All Areas") {
-      shops = shops.where((shop) => 
-        shop.address.contains(selectedLocation)).toList();
+      shops = shops
+          .where((shop) => shop.address.contains(selectedLocation))
+          .toList();
     }
-    
+
     // Filter by category
     if (selectedCategory != "All Categories") {
-      shops = shops.where((shop) => 
-        shop.category.contains(selectedCategory)).toList();
+      shops = shops
+          .where((shop) => shop.category.contains(selectedCategory))
+          .toList();
     }
-    
+
     // Sort shops
     switch (sortBy) {
       case "Rating":
@@ -117,25 +124,35 @@ class _ShopListScreenState extends State<ShopListScreen> {
         // Keep original order for now (mock distance/price sorting)
         break;
     }
-    
+
     return shops;
   }
 
   // Get highlighted products for a shop (when searching by product)
   List<String> getHighlightedProducts(Shop shop) {
     if (!isSearchingByProduct || searchQuery.isEmpty) return [];
-    
-    return shop.availableProducts.where((product) => 
-      product.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+
+    return shop.availableProducts
+        .where((product) =>
+            product.toLowerCase().contains(searchQuery.toLowerCase()))
+        .toList();
+  }
+
+  // Show quick review dialog for a shop
+  void _showQuickReviewDialog(Shop shop) {
+    showDialog(
+      context: context,
+      builder: (context) => _QuickReviewDialog(shop: shop),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final filteredShops = getFilteredShops();
-    
+
     return Scaffold(
       appBar: AppBar(
-         backgroundColor: const Color(0xFF079b11),
+        backgroundColor: const Color(0xFF079b11),
         foregroundColor: Colors.white,
         title: const Text("Shop List"),
         actions: [
@@ -147,7 +164,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
               });
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(isMapView ? "Map view coming soon!" : "List view active"),
+                  content: Text(
+                      isMapView ? "Map view coming soon!" : "List view active"),
                   duration: const Duration(seconds: 1),
                 ),
               );
@@ -177,7 +195,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: "Search by product or shop name...",
-                    prefixIcon: const Icon(Icons.search, color: Color(0xFF079b11)),
+                    prefixIcon:
+                        const Icon(Icons.search, color: Color(0xFF079b11)),
                     suffixIcon: searchQuery.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear),
@@ -215,7 +234,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
                     children: [
                       _buildFilterChip("Location", selectedLocation, locations),
                       const SizedBox(width: 8),
-                      _buildFilterChip("Category", selectedCategory, categories),
+                      _buildFilterChip(
+                          "Category", selectedCategory, categories),
                       const SizedBox(width: 8),
                       _buildFilterChip("Sort", sortBy, sortOptions),
                     ],
@@ -224,7 +244,7 @@ class _ShopListScreenState extends State<ShopListScreen> {
               ],
             ),
           ),
-          
+
           // Search Results Header
           if (searchQuery.isNotEmpty)
             Container(
@@ -232,7 +252,7 @@ class _ShopListScreenState extends State<ShopListScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               color: Colors.indigo.withValues(alpha: 0.1),
               child: Text(
-                isSearchingByProduct 
+                isSearchingByProduct
                     ? "Shops with \"$searchQuery\" (${filteredShops.length} found)"
                     : "Shops matching \"$searchQuery\" (${filteredShops.length} found)",
                 style: const TextStyle(
@@ -241,7 +261,7 @@ class _ShopListScreenState extends State<ShopListScreen> {
                 ),
               ),
             ),
-          
+
           // Shop List
           Expanded(
             child: filteredShops.isEmpty
@@ -442,9 +462,9 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               // Shop Details Row
               Row(
                 children: [
@@ -510,7 +530,7 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   ),
                 ],
               ),
-              
+
               // Highlighted Products (when searching by product)
               if (highlightedProducts.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -520,7 +540,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   decoration: BoxDecoration(
                     color: Colors.green.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                    border:
+                        Border.all(color: Colors.green.withValues(alpha: 0.3)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -537,26 +558,29 @@ class _ShopListScreenState extends State<ShopListScreen> {
                       Wrap(
                         spacing: 8,
                         runSpacing: 4,
-                        children: highlightedProducts.take(3).map((product) => 
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.green.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              product,
-                              style: const TextStyle(
-                                color: Colors.green,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                        children: highlightedProducts
+                            .take(3)
+                            .map(
+                              (product) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  product,
+                                  style: const TextStyle(
+                                    color: Colors.green,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ).toList(),
+                            )
+                            .toList(),
                       ),
                       if (highlightedProducts.length > 3)
                         Padding(
@@ -574,26 +598,67 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   ),
                 ),
               ],
-              
-              // Shop Category Tag
+
+              // Shop Category Tag and Action Buttons
               const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.indigo.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  shop.category,
-                  style: const TextStyle(
-                    color: Colors.indigo,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.indigo.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      shop.category,
+                      style: const TextStyle(
+                        color: Colors.indigo,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                ),
+                  const Spacer(),
+                  // Quick Review Button
+                  GestureDetector(
+                    onTap: () => _showQuickReviewDialog(shop),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.amber.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                            size: 14,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            "Review",
+                            style: TextStyle(
+                              color: Colors.amber,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -652,6 +717,272 @@ class _ShopListScreenState extends State<ShopListScreen> {
                 backgroundColor: Colors.indigo,
                 foregroundColor: Colors.white,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Quick Review Dialog Widget for Shop List
+class _QuickReviewDialog extends StatefulWidget {
+  final Shop shop;
+
+  const _QuickReviewDialog({required this.shop});
+
+  @override
+  State<_QuickReviewDialog> createState() => _QuickReviewDialogState();
+}
+
+class _QuickReviewDialogState extends State<_QuickReviewDialog> {
+  final TextEditingController _commentController = TextEditingController();
+  int _overallRating = 5;
+  bool _isSubmitting = false;
+
+  @override
+  void dispose() {
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitQuickReview() async {
+    if (_commentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please add a comment for your review'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      await ReviewService.createShopReview(
+        shopId: widget.shop.name.toLowerCase().replaceAll(' ', '_'),
+        shopName: widget.shop.name,
+        customerId: 'customer_current',
+        customerName: 'Current Customer',
+        rating: _overallRating,
+        deliveryRating: _overallRating, // Use overall rating for quick review
+        serviceRating: _overallRating, // Use overall rating for quick review
+        comment: _commentController.text.trim(),
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Quick review submitted for ${widget.shop.name}!'),
+            backgroundColor: Colors.green,
+            action: SnackBarAction(
+              label: 'View All Reviews',
+              textColor: Colors.white,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ReviewsScreen(),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error submitting review: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(Icons.star, color: Colors.amber, size: 24),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Quick Review',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Shop Info
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.indigo.withOpacity(0.2),
+                    child: Text(
+                      widget.shop.name[0],
+                      style: const TextStyle(
+                        color: Colors.indigo,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.shop.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Icon(Icons.location_on,
+                                size: 12, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                widget.shop.address,
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Quick Rating
+            Text(
+              'Rate your experience',
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: List.generate(5, (index) {
+                return GestureDetector(
+                  onTap: () => setState(() => _overallRating = index + 1),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: Icon(
+                      index < _overallRating ? Icons.star : Icons.star_border,
+                      color: Colors.amber,
+                      size: 28,
+                    ),
+                  ),
+                );
+              }),
+            ),
+            const SizedBox(height: 16),
+
+            // Comment Section
+            Text(
+              'Quick feedback (optional)',
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+                color: Colors.grey[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _commentController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText:
+                    'Share your quick thoughts about ${widget.shop.name}...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Colors.amber),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Action Buttons
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed:
+                        _isSubmitting ? null : () => Navigator.pop(context),
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isSubmitting ? null : _submitQuickReview,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.amber,
+                      foregroundColor: Colors.white,
+                    ),
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text('Submit'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),

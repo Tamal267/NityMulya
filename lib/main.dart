@@ -2,14 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:nitymulya/screens/auth/login_screen.dart';
 import 'package:nitymulya/screens/customers/complaint_form_screen.dart';
+import 'package:nitymulya/screens/customers/customer_profile_screen.dart';
+import 'package:nitymulya/screens/customers/enhanced_map_screen.dart';
 import 'package:nitymulya/screens/customers/favorite_products_screen.dart';
 import 'package:nitymulya/screens/customers/home_screen.dart';
+import 'package:nitymulya/screens/customers/map_screen.dart';
+import 'package:nitymulya/screens/customers/my_orders_screen.dart';
 import 'package:nitymulya/screens/customers/price_alert_screen.dart';
-import 'package:nitymulya/screens/customers/review_screen.dart';
+import 'package:nitymulya/screens/customers/reviews_screen.dart';
 import 'package:nitymulya/screens/customers/rewarded_shops_screen.dart';
 import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
 import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
+import 'package:nitymulya/test_map_debug.dart';
+import 'package:nitymulya/test_order_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,19 +38,25 @@ class NitiMulyaApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         //'/': (context) => const AdminPage(),
-       '/': (context) => const WelcomeScreen(),
+        '/': (context) => const WelcomeScreen(),
         //'/WelcomeScreen': (context) => const WelcomeScreen(),
         //nahid
         // '/': (context) => const WholesalerDashboardScreen(),
         '/home': (context) => const HomeScreen(),
         '/login': (context) => const LoginScreen(),
+        '/my-orders': (context) => const MyOrdersScreen(),
         '/favorites': (context) => const FavoriteProductsScreen(),
         '/alerts': (context) => const PriceAlertScreen(),
         '/complaints': (context) => const ComplaintFormScreen(),
-        '/reviews': (context) => const ReviewScreen(),
+        '/reviews': (context) => const ReviewsScreen(),
         '/rewards': (context) => const RewardedShopsScreen(),
-       // '/': (context) => const ShopOwnerDashboard(),
-       '/shop-dashboard': (context) => const ShopOwnerDashboard(),
+        '/map': (context) => const MapScreen(),
+        '/enhanced-map': (context) => const EnhancedMapScreen(),
+        '/customer-profile': (context) => const CustomerProfileScreen(),
+        '/order-test': (context) => const OrderTestWidget(),
+        '/map-debug': (context) => const MapDebugScreen(),
+        // '/': (context) => const ShopOwnerDashboard(),
+        '/shop-dashboard': (context) => const ShopOwnerDashboard(),
         '/wholesaler-dashboard': (context) => const WholesalerDashboardScreen(),
       },
     );
