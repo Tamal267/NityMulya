@@ -5,6 +5,7 @@ import 'package:nitymulya/network/wholesaler_api.dart';
 import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/add_order_screen.dart';
 import 'package:nitymulya/screens/wholesaler/order_status_update_screen.dart';
+import 'package:nitymulya/screens/wholesaler/shop_owner_search_screen.dart';
 import 'package:nitymulya/screens/wholesaler/shop_reviews_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
@@ -44,6 +45,14 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   bool isLoadingOffers = false;
   String? offersError;
 
+  // Chat related state variables
+  List<Map<String, dynamic>> shopOwners = [];
+  List<Map<String, dynamic>> filteredShopOwners = [];
+  final TextEditingController _chatSearchController = TextEditingController();
+  bool isLoadingShopOwners = false;
+  String? shopOwnersError;
+  bool showSearchDropdown = false;
+
   // Stock Monitor state (additional variables)
   List<Map<String, dynamic>> lowStockProductsList = [];
   bool isLoadingLowStock = false;
@@ -82,6 +91,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     _loadLowStockProducts(); // Load low stock products on startup
     _loadProductsFromDatabase(); // Load products for the filter
     _loadOrderHistory(); // Load order history on startup
+    _loadShopOwners(); // Load shop owners for chat search
   }
 
   Future<void> _loadProductsFromDatabase() async {
@@ -288,9 +298,62 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     }
   }
 
+  Future<void> _loadShopOwners() async {
+    setState(() {
+      isLoadingShopOwners = true;
+      shopOwnersError = null;
+    });
+
+    try {
+      final result = await WholesalerApiService.getShopOwners();
+      if (result['success'] == true) {
+        setState(() {
+          shopOwners = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          filteredShopOwners = shopOwners;
+          isLoadingShopOwners = false;
+        });
+      } else {
+        setState(() {
+          shopOwnersError = result['message'] ?? 'Failed to load shop owners';
+          isLoadingShopOwners = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        shopOwnersError = 'Error loading shop owners: $e';
+        isLoadingShopOwners = false;
+      });
+      print('Error loading shop owners: $e');
+    }
+  }
+
+  void _filterShopOwners(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        filteredShopOwners = shopOwners;
+        showSearchDropdown = false;
+      } else {
+        filteredShopOwners = shopOwners.where((shopOwner) {
+          final name = shopOwner['shop_name']?.toString().toLowerCase() ?? '';
+          final fullName = shopOwner['full_name']?.toString().toLowerCase() ?? '';
+          final phone = shopOwner['phone']?.toString().toLowerCase() ?? '';
+          final location = shopOwner['location']?.toString().toLowerCase() ?? '';
+          final searchQuery = query.toLowerCase();
+          
+          return name.contains(searchQuery) ||
+                 fullName.contains(searchQuery) ||
+                 phone.contains(searchQuery) ||
+                 location.contains(searchQuery);
+        }).toList();
+        showSearchDropdown = filteredShopOwners.isNotEmpty && query.isNotEmpty;
+      }
+    });
+  }
+
   @override
   void dispose() {
     _tabController.dispose();
+    _chatSearchController.dispose();
     super.dispose();
   }
 
@@ -911,8 +974,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               context,
               MaterialPageRoute(
                 builder: (context) => WholesalerChatScreen(
-                  shopName: shopName,
-                  shopId: shopName.toLowerCase().replaceAll(' ', '_'),
+                  contactId: shopName.toLowerCase().replaceAll(' ', '_'),
+                  contactType: 'shop_owner',
+                  contactName: shopName,
                 ),
               ),
             ),
@@ -1190,8 +1254,162 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Search Shop Owners Section
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.green[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.green[200]!),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.search, color: Colors.green[600]),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        "Search & Chat with Shop Owners",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                
+                // Search Box with Dropdown
+                Stack(
+                  children: [
+                    TextField(
+                      controller: _chatSearchController,
+                      decoration: InputDecoration(
+                        hintText: "Search shop owners by name, phone, or location...",
+                        prefixIcon: Icon(Icons.search, color: Colors.green[600]),
+                        suffixIcon: _chatSearchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear),
+                                onPressed: () {
+                                  _chatSearchController.clear();
+                                  _filterShopOwners('');
+                                },
+                              )
+                            : null,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.green[300]!),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.green[600]!, width: 2),
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                      ),
+                      onChanged: _filterShopOwners,
+                    ),
+                    
+                    // Dropdown suggestions
+                    if (showSearchDropdown)
+                      Positioned(
+                        top: 60,
+                        left: 0,
+                        right: 0,
+                        child: Material(
+                          elevation: 4,
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            constraints: const BoxConstraints(maxHeight: 200),
+                            child: ListView.builder(
+                              shrinkWrap: true,
+                              itemCount: filteredShopOwners.length,
+                              itemBuilder: (context, index) {
+                                final shopOwner = filteredShopOwners[index];
+                                return ListTile(
+                                  leading: CircleAvatar(
+                                    backgroundColor: Colors.green[100],
+                                    child: Text(
+                                      (shopOwner['shop_name']?.toString() ?? 'S')[0].toUpperCase(),
+                                      style: TextStyle(
+                                        color: Colors.green[600],
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text(
+                                    shopOwner['shop_name']?.toString() ?? 'Unknown Shop',
+                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  subtitle: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (shopOwner['phone'] != null)
+                                        Text('📞 ${shopOwner['phone']}'),
+                                      if (shopOwner['location'] != null)
+                                        Text('📍 ${shopOwner['location']}'),
+                                    ],
+                                  ),
+                                  trailing: Icon(
+                                    Icons.chat,
+                                    color: Colors.green[600],
+                                  ),
+                                  onTap: () {
+                                    _chatSearchController.clear();
+                                    setState(() {
+                                      showSearchDropdown = false;
+                                    });
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => WholesalerChatScreen(
+                                          contactId: shopOwner['id']?.toString() ?? '',
+                                          contactType: 'shop_owner',
+                                          contactName: shopOwner['shop_name']?.toString() ?? 'Unknown Shop',
+                                          contactPhone: shopOwner['phone']?.toString(),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ShopOwnerSearchScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.search),
+                    label: const Text("Advanced Search"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[600],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          
           Text(
-            "Shop Communications",
+            "Recent Conversations",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -2810,8 +3028,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       context,
       MaterialPageRoute(
         builder: (context) => WholesalerChatScreen(
-          shopName: shopName,
-          shopId: shopName.toLowerCase().replaceAll(' ', '_'),
+          contactId: shopName.toLowerCase().replaceAll(' ', '_'),
+          contactType: 'shop_owner',
+          contactName: shopName,
         ),
       ),
     );
@@ -2845,8 +3064,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   context,
                   MaterialPageRoute(
                     builder: (context) => WholesalerChatScreen(
-                      shopName: shopName,
-                      shopId: shopName.toLowerCase().replaceAll(' ', '_'),
+                      contactId: shopName.toLowerCase().replaceAll(' ', '_'),
+                      contactType: 'shop_owner',
+                      contactName: shopName,
                     ),
                   ),
                 );

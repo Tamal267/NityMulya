@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/models/wholesaler_models.dart';
 import 'package:nitymulya/network/wholesaler_api.dart';
+import 'package:nitymulya/screens/wholesaler/shop_owner_search_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
@@ -745,8 +746,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
               context,
               MaterialPageRoute(
                 builder: (context) => WholesalerChatScreen(
-                  shopName: item.shopName ?? "Unknown Shop",
-                  shopId: (item.shopName ?? "unknown").toLowerCase().replaceAll(' ', '_'),
+                  contactId: (item.shopName ?? "unknown").toLowerCase().replaceAll(' ', '_'),
+                  contactType: 'shop_owner',
+                  contactName: item.shopName ?? "Unknown Shop",
                 ),
               ),
             ),
@@ -899,13 +901,37 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            "Shop Communications",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.green[700],
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "Shop Communications",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[700],
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ShopOwnerSearchScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.search, color: Colors.white),
+                label: const Text(
+                  "Search Shop",
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[600],
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           
@@ -913,10 +939,51 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             child: isLoadingChat
               ? const Center(child: CircularProgressIndicator())
               : chatMessages.isEmpty
-                ? const Center(
-                    child: Text(
-                      "No chat messages found",
-                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.chat_bubble_outline,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "No conversations yet",
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "Search for shop owners to start chatting",
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ShopOwnerSearchScreen(),
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green[600],
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          child: const Text(
+                            "Find Shop Owners",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
                   )
                 : ListView.builder(
@@ -1521,8 +1588,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       context,
       MaterialPageRoute(
         builder: (context) => WholesalerChatScreen(
-          shopName: shopName,
-          shopId: shopName.toLowerCase().replaceAll(' ', '_'),
+          contactId: shopName.toLowerCase().replaceAll(' ', '_'),
+          contactType: 'shop_owner',
+          contactName: shopName,
         ),
       ),
     );
@@ -1556,8 +1624,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   context,
                   MaterialPageRoute(
                     builder: (context) => WholesalerChatScreen(
-                      shopName: shopName,
-                      shopId: shopName.toLowerCase().replaceAll(' ', '_'),
+                      contactId: shopName.toLowerCase().replaceAll(' ', '_'),
+                      contactType: 'shop_owner',
+                      contactName: shopName,
                     ),
                   ),
                 );

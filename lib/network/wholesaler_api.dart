@@ -626,4 +626,88 @@ class WholesalerApiService {
       };
     }
   }
+
+  // Send message to shop owner
+  static Future<Map<String, dynamic>> sendMessage({
+    required String senderId,
+    required String senderType,
+    required String receiverId,
+    required String receiverType,
+    required String message,
+  }) async {
+    try {
+      final response = await _networkHelper.postWithToken('/chat/send', {
+        'sender_id': senderId,
+        'sender_type': senderType,
+        'receiver_id': receiverId,
+        'receiver_type': receiverType,
+        'message': message,
+      });
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+            'message': response['message'] ?? 'Message sent successfully',
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to send message',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error sending message: $e',
+      };
+    }
+  }
+
+  // Get conversation messages between wholesaler and shop owner
+  static Future<Map<String, dynamic>> getConversationMessages({
+    required String user1Id,
+    required String user1Type,
+    required String user2Id,
+    required String user2Type,
+  }) async {
+    try {
+      final response = await _networkHelper.getWithToken(
+        '/chat/messages?user1_id=$user1Id&user1_type=$user1Type&user2_id=$user2Id&user2_type=$user2Type'
+      );
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch messages',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching messages: $e',
+      };
+    }
+  }
 }
