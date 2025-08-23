@@ -253,4 +253,170 @@ class ShopOwnerApiService {
       };
     }
   }
+
+  // Search wholesalers for chat
+  static Future<Map<String, dynamic>> searchWholesalers({String? search}) async {
+    try {
+      String endpoint = '/chat/wholesalers';
+      if (search != null && search.isNotEmpty) {
+        endpoint += '?search=${Uri.encodeComponent(search)}';
+      }
+      
+      final response = await _networkHelper.getWithToken(endpoint);
+      
+      if (response is List) {
+        return {
+          'success': true,
+          'data': response,
+        };
+      } else if (response is Map<String, dynamic>) {
+        if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+        return {
+          'success': false,
+          'message': response['message'] ?? 'Failed to fetch wholesalers',
+        };
+      }
+      
+      return {
+        'success': false,
+        'message': 'Failed to fetch wholesalers',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching wholesalers: $e',
+      };
+    }
+  }
+
+  // Send chat message
+  static Future<Map<String, dynamic>> sendMessage({
+    required String senderId,
+    required String senderType,
+    required String receiverId,
+    required String receiverType,
+    required String message,
+    String messageType = 'text',
+  }) async {
+    try {
+      final requestData = {
+        'sender_id': senderId,
+        'sender_type': senderType,
+        'receiver_id': receiverId,
+        'receiver_type': receiverType,
+        'message': message,
+        'message_type': messageType,
+      };
+
+      final response = await _networkHelper.postWithToken('/chat/send', requestData);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Message sent successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to send message',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error sending message: $e',
+      };
+    }
+  }
+
+  // Get chat messages between two users
+  static Future<Map<String, dynamic>> getConversationMessages({
+    required String user1Id,
+    required String user1Type,
+    required String user2Id,
+    required String user2Type,
+  }) async {
+    try {
+      final endpoint = '/chat/messages?user1_id=$user1Id&user1_type=$user1Type&user2_id=$user2Id&user2_type=$user2Type';
+      
+      final response = await _networkHelper.getWithToken(endpoint);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch conversation messages',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching conversation messages: $e',
+      };
+    }
+  }
+
+  // Get chat conversations for current user
+  static Future<Map<String, dynamic>> getChatConversations({
+    required String userId,
+    required String userType,
+  }) async {
+    try {
+      final endpoint = '/chat/conversations?user_id=$userId&user_type=$userType';
+      
+      final response = await _networkHelper.getWithToken(endpoint);
+      
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+      
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch conversations',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching conversations: $e',
+      };
+    }
+  }
 }

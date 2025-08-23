@@ -108,6 +108,20 @@ BEGIN
     END IF;
 END $$;
 
+-- Create chat messages table
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    sender_id UUID NOT NULL,
+    sender_type VARCHAR(20) NOT NULL CHECK (sender_type IN ('shop_owner', 'wholesaler')),
+    receiver_id UUID NOT NULL,
+    receiver_type VARCHAR(20) NOT NULL CHECK (receiver_type IN ('shop_owner', 'wholesaler')),
+    message TEXT NOT NULL,
+    message_type VARCHAR(20) DEFAULT 'text' CHECK (message_type IN ('text', 'image', 'file')),
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_customers_email ON customers(email);
 CREATE INDEX IF NOT EXISTS idx_wholesalers_email ON wholesalers(email);
@@ -116,3 +130,9 @@ CREATE INDEX IF NOT EXISTS idx_shop_owners_email ON shop_owners(email);
 CREATE INDEX IF NOT EXISTS idx_customers_location ON customers(latitude, longitude);
 CREATE INDEX IF NOT EXISTS idx_wholesalers_location ON wholesalers(latitude, longitude);
 CREATE INDEX IF NOT EXISTS idx_shop_owners_location ON shop_owners(latitude, longitude);
+
+-- Chat messages indexes
+CREATE INDEX IF NOT EXISTS idx_chat_messages_sender ON chat_messages(sender_id, sender_type);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_receiver ON chat_messages(receiver_id, receiver_type);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation ON chat_messages(sender_id, receiver_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_unread ON chat_messages(receiver_id, is_read, created_at);

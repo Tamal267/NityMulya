@@ -4,6 +4,7 @@ import 'package:nitymulya/screens/shop_owner/add_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/update_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_chat_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_list_screen.dart';
+import 'package:nitymulya/screens/shop_owner/wholesaler_search_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
 
 class ShopOwnerDashboard extends StatefulWidget {
@@ -1054,6 +1055,63 @@ Widget _buildSummaryCard(
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
+          // Search Wholesalers Section
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.purple[50],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.purple[200]!),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.search, color: Colors.purple[600]),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        "Search & Chat with Wholesalers",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  "Find wholesalers by name, location, or contact details and start chatting instantly.",
+                  style: TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const WholesalerSearchScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.search),
+                    label: const Text("Search Wholesalers"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.purple[600],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+
           Row(
             children: [
               Expanded(

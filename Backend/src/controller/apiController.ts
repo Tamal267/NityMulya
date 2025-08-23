@@ -692,6 +692,28 @@ export const getProductPriceHistory = async (c: any) => {
 // Initialize sample shop inventory data for testing
 export const initializeSampleData = async (c: any) => {
   try {
+    // First create the chat_messages table if it doesn't exist
+    await sql`
+      CREATE TABLE IF NOT EXISTS chat_messages (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        sender_id UUID NOT NULL,
+        sender_type VARCHAR(20) NOT NULL CHECK (sender_type IN ('shop_owner', 'wholesaler')),
+        receiver_id UUID NOT NULL,
+        receiver_type VARCHAR(20) NOT NULL CHECK (receiver_type IN ('shop_owner', 'wholesaler')),
+        message TEXT NOT NULL,
+        message_type VARCHAR(20) DEFAULT 'text' CHECK (message_type IN ('text', 'image', 'file')),
+        is_read BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create chat message indexes
+    await sql`CREATE INDEX IF NOT EXISTS idx_chat_messages_sender ON chat_messages(sender_id, sender_type)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_chat_messages_receiver ON chat_messages(receiver_id, receiver_type)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation ON chat_messages(sender_id, receiver_id, created_at)`;
+    await sql`CREATE INDEX IF NOT EXISTS idx_chat_messages_unread ON chat_messages(receiver_id, is_read, created_at)`;
+
     // First create the shop_inventory table if it doesn't exist
     await sql`
       CREATE TABLE IF NOT EXISTS shop_inventory (
@@ -729,6 +751,18 @@ export const initializeSampleData = async (c: any) => {
       ('করিম স্টোর', 'karim.store@example.com', 'password123', '01812345678', 'গুলশান-১, ঢাকা', 23.7925, 90.4078),
       ('নিউ মার্কেট শপ', 'newmarket.shop@example.com', 'password123', '01913456789', 'নিউমার্কেট, ঢাকা', 23.7275, 90.3854),
       ('ফ্রেশ মার্ট', 'fresh.mart@example.com', 'password123', '01615678901', 'উত্তরা-৭, ঢাকা', 23.8759, 90.3795)
+      ON CONFLICT (email) DO NOTHING
+    `;
+
+    // Add sample wholesalers for chat testing
+    await sql`
+      INSERT INTO wholesalers (full_name, email, password, contact, address, latitude, longitude) VALUES 
+      ('রহমান ট্রেডার্স', 'rahman.traders@example.com', 'password123', '01711123456', 'কাওরান বাজার, ঢাকা', 23.7465, 90.3863),
+      ('করিম এন্টারপ্রাইজ', 'karim.enterprise@example.com', 'password123', '01812345678', 'চকবাজার, ঢাকা', 23.7225, 90.4078),
+      ('আলম ইমপোর্ট', 'alam.import@example.com', 'password123', '01913456789', 'সদরঘাট, ঢাকা', 23.7175, 90.4154),
+      ('নিউ সুন্দরবন', 'new.sundarban@example.com', 'password123', '01615678901', 'বাবুবাজার, ঢাকা', 23.7259, 90.3995),
+      ('বাংলা ট্রেডিং', 'bangla.trading@example.com', 'password123', '01516789012', 'মৌলভীবাজার, ঢাকা', 23.7365, 90.4063),
+      ('ঢাকা হোলসেল', 'dhaka.wholesale@example.com', 'password123', '01717890123', 'গুলিস্তান, ঢাকা', 23.7265, 90.4163)
       ON CONFLICT (email) DO NOTHING
     `;
 
@@ -795,5 +829,202 @@ export const initializeSampleData = async (c: any) => {
   } catch (error) {
     console.error("Error initializing sample data:", error);
     return c.json({ error: "Failed to initialize sample data" }, 500);
+  }
+};
+
+// Chat functionality
+
+// Get all wholesalers for chat search
+export const getWholesalers = async (c: any) => {
+  try {
+    const { search } = c.req.query();
+    
+    let wholesalers;
+    if (search) {
+      wholesalers = await sql`
+        SELECT id, full_name, email, contact, address, created_at
+        FROM wholesalers
+        WHERE full_name ILIKE ${`%${search}%`} 
+           OR email ILIKE ${`%${search}%`}
+           OR contact ILIKE ${`%${search}%`}
+        ORDER BY full_name
+        LIMIT 20
+      `;
+    } else {
+      wholesalers = await sql`
+        SELECT id, full_name, email, contact, address, created_at
+        FROM wholesalers
+        ORDER BY full_name
+        LIMIT 50
+      `;
+    }
+
+    if (wholesalers.length === 0) {
+      return c.json({ message: "No wholesalers found" }, 404);
+    }
+
+    return c.json(wholesalers);
+  } catch (error) {
+    console.error("Error fetching wholesalers:", error);
+    return c.json({ error: "Failed to fetch wholesalers" }, 500);
+  }
+};
+
+// Send a chat message
+export const sendMessage = async (c: any) => {
+  try {
+    const { sender_id, sender_type, receiver_id, receiver_type, message, message_type = 'text' } = await c.req.json();
+
+    if (!sender_id || !sender_type || !receiver_id || !receiver_type || !message) {
+      return c.json({ error: "Missing required fields" }, 400);
+    }
+
+    if (!['shop_owner', 'wholesaler'].includes(sender_type) || 
+        !['shop_owner', 'wholesaler'].includes(receiver_type)) {
+      return c.json({ error: "Invalid sender or receiver type" }, 400);
+    }
+
+    const newMessage = await sql`
+      INSERT INTO chat_messages (sender_id, sender_type, receiver_id, receiver_type, message, message_type)
+      VALUES (${sender_id}, ${sender_type}, ${receiver_id}, ${receiver_type}, ${message}, ${message_type})
+      RETURNING *
+    `;
+
+    return c.json({
+      success: true,
+      message: "Message sent successfully",
+      data: newMessage[0]
+    });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return c.json({ error: "Failed to send message" }, 500);
+  }
+};
+
+// Get chat messages between two users
+export const getChatMessages = async (c: any) => {
+  try {
+    const { user1_id, user1_type, user2_id, user2_type } = c.req.query();
+
+    if (!user1_id || !user1_type || !user2_id || !user2_type) {
+      return c.json({ error: "Missing required parameters" }, 400);
+    }
+
+    const messages = await sql`
+      SELECT 
+        cm.*,
+        CASE 
+          WHEN cm.sender_type = 'shop_owner' THEN so.full_name
+          WHEN cm.sender_type = 'wholesaler' THEN w.full_name
+        END as sender_name,
+        CASE 
+          WHEN cm.receiver_type = 'shop_owner' THEN so2.full_name
+          WHEN cm.receiver_type = 'wholesaler' THEN w2.full_name
+        END as receiver_name
+      FROM chat_messages cm
+      LEFT JOIN shop_owners so ON cm.sender_id = so.id AND cm.sender_type = 'shop_owner'
+      LEFT JOIN wholesalers w ON cm.sender_id = w.id AND cm.sender_type = 'wholesaler'
+      LEFT JOIN shop_owners so2 ON cm.receiver_id = so2.id AND cm.receiver_type = 'shop_owner'
+      LEFT JOIN wholesalers w2 ON cm.receiver_id = w2.id AND cm.receiver_type = 'wholesaler'
+      WHERE 
+        (cm.sender_id = ${user1_id} AND cm.sender_type = ${user1_type} AND 
+         cm.receiver_id = ${user2_id} AND cm.receiver_type = ${user2_type})
+        OR
+        (cm.sender_id = ${user2_id} AND cm.sender_type = ${user2_type} AND 
+         cm.receiver_id = ${user1_id} AND cm.receiver_type = ${user1_type})
+      ORDER BY cm.created_at ASC
+    `;
+
+    // Mark messages as read for the current user
+    await sql`
+      UPDATE chat_messages 
+      SET is_read = true, updated_at = CURRENT_TIMESTAMP
+      WHERE receiver_id = ${user1_id} AND receiver_type = ${user1_type}
+        AND sender_id = ${user2_id} AND sender_type = ${user2_type}
+        AND is_read = false
+    `;
+
+    return c.json({
+      success: true,
+      data: messages
+    });
+  } catch (error) {
+    console.error("Error fetching chat messages:", error);
+    return c.json({ error: "Failed to fetch chat messages" }, 500);
+  }
+};
+
+// Get chat conversations for a user
+export const getChatConversations = async (c: any) => {
+  try {
+    const { user_id, user_type } = c.req.query();
+
+    if (!user_id || !user_type) {
+      return c.json({ error: "Missing required parameters" }, 400);
+    }
+
+    const conversations = await sql`
+      WITH latest_messages AS (
+        SELECT DISTINCT ON (
+          CASE 
+            WHEN sender_id = ${user_id} AND sender_type = ${user_type} THEN receiver_id || '_' || receiver_type
+            ELSE sender_id || '_' || sender_type
+          END
+        )
+        CASE 
+          WHEN sender_id = ${user_id} AND sender_type = ${user_type} THEN receiver_id
+          ELSE sender_id
+        END as contact_id,
+        CASE 
+          WHEN sender_id = ${user_id} AND sender_type = ${user_type} THEN receiver_type
+          ELSE sender_type
+        END as contact_type,
+        message,
+        created_at,
+        sender_id = ${user_id} AND sender_type = ${user_type} as is_from_me
+        FROM chat_messages
+        WHERE (sender_id = ${user_id} AND sender_type = ${user_type})
+           OR (receiver_id = ${user_id} AND receiver_type = ${user_type})
+        ORDER BY 
+          CASE 
+            WHEN sender_id = ${user_id} AND sender_type = ${user_type} THEN receiver_id || '_' || receiver_type
+            ELSE sender_id || '_' || sender_type
+          END,
+          created_at DESC
+      ),
+      unread_counts AS (
+        SELECT 
+          sender_id as contact_id,
+          sender_type as contact_type,
+          COUNT(*) as unread_count
+        FROM chat_messages
+        WHERE receiver_id = ${user_id} AND receiver_type = ${user_type} AND is_read = false
+        GROUP BY sender_id, sender_type
+      )
+      SELECT 
+        lm.*,
+        COALESCE(uc.unread_count, 0) as unread_count,
+        CASE 
+          WHEN lm.contact_type = 'shop_owner' THEN so.full_name
+          WHEN lm.contact_type = 'wholesaler' THEN w.full_name
+        END as contact_name,
+        CASE 
+          WHEN lm.contact_type = 'shop_owner' THEN so.contact
+          WHEN lm.contact_type = 'wholesaler' THEN w.contact
+        END as contact_phone
+      FROM latest_messages lm
+      LEFT JOIN unread_counts uc ON lm.contact_id = uc.contact_id AND lm.contact_type = uc.contact_type
+      LEFT JOIN shop_owners so ON lm.contact_id = so.id AND lm.contact_type = 'shop_owner'
+      LEFT JOIN wholesalers w ON lm.contact_id = w.id AND lm.contact_type = 'wholesaler'
+      ORDER BY lm.created_at DESC
+    `;
+
+    return c.json({
+      success: true,
+      data: conversations
+    });
+  } catch (error) {
+    console.error("Error fetching chat conversations:", error);
+    return c.json({ error: "Failed to fetch chat conversations" }, 500);
   }
 };

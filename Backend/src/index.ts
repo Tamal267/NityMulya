@@ -3,49 +3,53 @@ import { cors } from "hono/cors";
 import type { JwtVariables } from "hono/jwt";
 import { prettyJSON } from "hono/pretty-json";
 import {
-  getCategories,
-  getPrice,
-  getPricesfromDB,
-  getProductPriceHistory,
-  getSheetUrl,
-  getShops,
-  getShopsByProduct,
-  getShopsBySubcategoryId,
-  initializeSampleData,
+    getCategories,
+    getChatConversations,
+    getChatMessages,
+    getPrice,
+    getPricesfromDB,
+    getProductPriceHistory,
+    getSheetUrl,
+    getShops,
+    getShopsByProduct,
+    getShopsBySubcategoryId,
+    getWholesalers,
+    initializeSampleData,
+    sendMessage,
 } from "./controller/apiController";
 import {
-  login,
-  loginCustomer,
-  loginShopOwner,
-  loginWholesaler,
-  signupCustomer,
-  signupShopOwner,
-  signupWholesaler,
+    login,
+    loginCustomer,
+    loginShopOwner,
+    loginWholesaler,
+    signupCustomer,
+    signupShopOwner,
+    signupWholesaler,
 } from "./controller/authController";
 import {
-  addProductToInventory as addShopOwnerProduct,
-  getChatMessages as getShopOwnerChatMessages,
-  getShopOwnerDashboard,
-  getShopOwnerInventory,
-  getLowStockProducts as getShopOwnerLowStockProducts,
-  getShopOrders as getShopOwnerOrders,
-  updateInventoryItem as updateShopOwnerInventoryItem,
+    addProductToInventory as addShopOwnerProduct,
+    getChatMessages as getShopOwnerChatMessages,
+    getShopOwnerDashboard,
+    getShopOwnerInventory,
+    getLowStockProducts as getShopOwnerLowStockProducts,
+    getShopOrders as getShopOwnerOrders,
+    updateInventoryItem as updateShopOwnerInventoryItem,
 } from "./controller/shopOwnerController";
 import {
-  addProductToInventory as addWholesalerProduct,
-  createOffer,
-  createOrder,
-  getShopOwners,
-  getSubcategories,
-  getCategories as getWholesalerCategories,
-  getChatMessages as getWholesalerChatMessages,
-  getWholesalerDashboard,
-  getWholesalerInventory,
-  getLowStockProducts as getWholesalerLowStockProducts,
-  getWholesalerOffers,
-  getShopOrders as getWholesalerShopOrders,
-  updateOrderStatus,
-  updateInventoryItem as updateWholesalerInventoryItem,
+    addProductToInventory as addWholesalerProduct,
+    createOffer,
+    createOrder,
+    getShopOwners,
+    getSubcategories,
+    getCategories as getWholesalerCategories,
+    getChatMessages as getWholesalerChatMessages,
+    getWholesalerDashboard,
+    getWholesalerInventory,
+    getLowStockProducts as getWholesalerLowStockProducts,
+    getWholesalerOffers,
+    getShopOrders as getWholesalerShopOrders,
+    updateOrderStatus,
+    updateInventoryItem as updateWholesalerInventoryItem,
 } from "./controller/wholesalerController";
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
 
@@ -105,6 +109,13 @@ app.put("/shop-owner/inventory", updateShopOwnerInventoryItem);
 app.get("/shop-owner/low-stock", getShopOwnerLowStockProducts);
 app.get("/shop-owner/orders", getShopOwnerOrders);
 app.get("/shop-owner/chat", getShopOwnerChatMessages);
+
+// Chat routes (protected - both wholesaler and shop owner)
+app.use("/chat/*", createAuthMiddleware());
+app.get("/chat/wholesalers", getWholesalers);
+app.post("/chat/send", sendMessage);
+app.get("/chat/messages", getChatMessages);
+app.get("/chat/conversations", getChatConversations);
 
 export default {
   port: process.env.PORT || 5000,
