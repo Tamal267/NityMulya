@@ -316,6 +316,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                             high: _parsePrice(p["max_price"]),
                                             subcatId: p["id"]
                                                 ?.toString(), // Pass the subcategory ID
+                                            userName: widget.userName,
+                                            userEmail: widget.userEmail,
+                                            userRole: widget.userRole,
                                           ),
                                         ),
                                       );
@@ -434,6 +437,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 product["max_price"]),
                                             subcatId: product["id"]
                                                 ?.toString(), // Pass the subcategory ID
+                                            userName: widget.userName,
+                                            userEmail: widget.userEmail,
+                                            userRole: widget.userRole,
                                           ),
                                         ),
                                       );

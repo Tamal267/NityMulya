@@ -352,6 +352,10 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
                                   unit: product["unit"],
                                   low: product["low"],
                                   high: product["high"],
+                                  userName:
+                                      null, // Shop items screen doesn't have user info
+                                  userEmail: null,
+                                  userRole: null,
                                 ),
                               ),
                             );

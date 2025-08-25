@@ -11,6 +11,9 @@ class ProductDetailScreen extends StatefulWidget {
   final int low;
   final int high;
   final String? subcatId; // Add subcategory ID
+  final String? userName; // Add user information
+  final String? userEmail; // Add user email
+  final String? userRole; // Add user role
 
   const ProductDetailScreen({
     super.key,
@@ -19,6 +22,9 @@ class ProductDetailScreen extends StatefulWidget {
     required this.low,
     required this.high,
     this.subcatId, // Optional for backward compatibility
+    this.userName, // Optional user information
+    this.userEmail, // Optional user email
+    this.userRole, // Optional user role
   });
 
   @override
@@ -134,6 +140,34 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         isLoadingReviews = false;
       });
     }
+  }
+
+  // Check if user is logged in and show login dialog if not
+  bool _checkLoginAndShowDialog() {
+    if (widget.userName == null) {
+      showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Login Required"),
+          content: const Text("Please login or sign up to place an order."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, '/login');
+              },
+              child: const Text("Login / Sign Up"),
+            ),
+          ],
+        ),
+      );
+      return false; // Not logged in
+    }
+    return true; // Logged in
   }
 
   @override
@@ -328,18 +362,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   final shopName = shop['name']?.toString() ?? 'Unknown Shop';
                   final shopAddress =
                       shop['address']?.toString() ?? 'Unknown Address';
-                  final shopPhone = shop['phone']?.toString() ?? 'No Phone';
                   final stockQuantity =
                       shop['stock_quantity']?.toString() ?? '0';
-                  final shopDescription =
-                      shop['shop_description']?.toString() ?? '';
                   final lowStockThreshold =
                       shop['low_stock_threshold']?.toString() ?? '10';
 
                   // Determine stock status
                   final stock = int.tryParse(stockQuantity) ?? 0;
                   final threshold = int.tryParse(lowStockThreshold) ?? 10;
-                  final isLowStock = stock <= threshold;
                   final stockStatus = stock > 50
                       ? 'High Stock'
                       : stock > threshold
@@ -351,257 +381,209 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                           ? Colors.orange
                           : Colors.red;
 
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.indigo.withOpacity(0.1),
-                        child: Text(
-                          shopName.isNotEmpty ? shopName[0] : 'S',
-                          style: const TextStyle(
-                            color: Colors.indigo,
-                            fontWeight: FontWeight.bold,
+                  return InkWell(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(shopName),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Address: $shopAddress"),
+                              Text("Stock: $stockQuantity ${widget.unit}"),
+                              Text("Stock Status: $stockStatus"),
+                              Text("Price: ৳$price per ${widget.unit}"),
+                            ],
                           ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Close"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Calling $shopName..."),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text("Contact"),
+                            ),
+                          ],
                         ),
-                      ),
-                      title: Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              shopName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Show verified icon if shop has good rating or stock
-                          if (stock > 50)
-                            const Icon(
-                              Icons.verified,
-                              color: Colors.green,
-                              size: 20,
-                            ),
-                          const SizedBox(width: 4),
-                          // Show stock status chip
-                          Flexible(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: stockColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: stockColor, width: 1),
-                              ),
-                              child: Text(
-                                stockStatus,
-                                style: TextStyle(
-                                  color: stockColor,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  shopAddress,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.phone,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  shopPhone,
-                                  style: const TextStyle(fontSize: 12),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          if (shopDescription.isNotEmpty) ...[
+                      );
+                    },
+                    child: Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Shop header row
                             Row(
                               children: [
-                                const Icon(
-                                  Icons.info_outline,
-                                  size: 16,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(width: 4),
-                                Expanded(
+                                CircleAvatar(
+                                  backgroundColor:
+                                      Colors.indigo.withOpacity(0.1),
                                   child: Text(
-                                    shopDescription,
-                                    style: const TextStyle(fontSize: 12),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                          ],
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.inventory,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                "Stock: $stockQuantity ${widget.unit}",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: stockColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              if (isLowStock) ...[
-                                const SizedBox(width: 4),
-                                Icon(
-                                  Icons.warning,
-                                  size: 12,
-                                  color: Colors.orange[700],
-                                ),
-                              ],
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.indigo.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  "৳$price",
-                                  style: const TextStyle(
-                                    color: Colors.indigo,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      trailing: SizedBox(
-                        width: 70,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _showPurchaseDialog(
-                                context, shop, widget.title, widget.unit);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            minimumSize: const Size(60, 28),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                          ),
-                          child: const Text(
-                            'Buy',
-                            style: TextStyle(fontSize: 12),
-                          ),
-                        ),
-                      ),
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text(shopName),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Address: $shopAddress"),
-                                Text("Phone: $shopPhone"),
-                                if (shopDescription.isNotEmpty)
-                                  Text("Description: $shopDescription"),
-                                Text("Stock: $stockQuantity ${widget.unit}"),
-                                Text("Stock Status: $stockStatus"),
-                                Text("Price: ৳$price per ${widget.unit}"),
-                                if (isLowStock)
-                                  const Text(
-                                    "⚠️ Low stock - order soon!",
-                                    style: TextStyle(
-                                      color: Colors.orange,
+                                    shopName.isNotEmpty ? shopName[0] : 'S',
+                                    style: const TextStyle(
+                                      color: Colors.indigo,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        shopName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                            Icons.location_on,
+                                            size: 14,
+                                            color: Colors.grey,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Expanded(
+                                            child: Text(
+                                              shopAddress,
+                                              style: const TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                // Stock status chip
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: stockColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border:
+                                        Border.all(color: stockColor, width: 1),
+                                  ),
+                                  child: Text(
+                                    stockStatus,
+                                    style: TextStyle(
+                                      color: stockColor,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Close"),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("Calling $shopName..."),
+                            const SizedBox(height: 8),
+                            // Bottom row with stock, price, and buy button
+                            Row(
+                              children: [
+                                Expanded(
+                                  flex: 2,
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.inventory,
+                                        size: 14,
+                                        color: Colors.grey,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          "Stock: $stockQuantity",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: stockColor,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                // Price
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.indigo.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    "৳$price",
+                                    style: const TextStyle(
+                                      color: Colors.indigo,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
                                     ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
+                                  ),
                                 ),
-                                child: const Text("Contact"),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _showPurchaseDialog(
-                                      context, shop, widget.title, widget.unit);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
+                                const SizedBox(width: 8),
+                                // Buy button
+                                SizedBox(
+                                  width: 60,
+                                  height: 32,
+                                  child: ElevatedButton(
+                                    onPressed: () {
+                                      if (!_checkLoginAndShowDialog()) {
+                                        return;
+                                      }
+                                      _showPurchaseDialog(context, shop,
+                                          widget.title, widget.unit);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'Buy',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  ),
                                 ),
-                                child: const Text("Purchase"),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   );
                 },
@@ -889,6 +871,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   child: ElevatedButton.icon(
                     onPressed: availableShops.isNotEmpty
                         ? () {
+                            // Check if user is logged in first
+                            if (!_checkLoginAndShowDialog()) {
+                              return; // User not logged in, dialog shown
+                            }
+
                             // Show shop selection dialog if multiple shops
                             if (availableShops.length > 1) {
                               _showShopSelectionDialog(context);
@@ -994,6 +981,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     ),
                   ),
                   onTap: () {
+                    // Check if user is logged in first
+                    if (!_checkLoginAndShowDialog()) {
+                      Navigator.pop(context); // Close shop selection dialog
+                      return; // User not logged in, login dialog shown
+                    }
+
                     Navigator.pop(context);
                     _showPurchaseDialog(
                         context, shop, widget.title, widget.unit);

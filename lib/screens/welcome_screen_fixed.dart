@@ -35,18 +35,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   late AnimationController _controller;
 
-  // Helper method to safely parse price values
-  int _safeParseInt(dynamic value) {
-    if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) {
-      final parsed = int.tryParse(value);
-      return parsed ?? 0;
-    }
-    return 0;
-  }
-
   List<Map<String, dynamic>> get filteredProducts {
     List<Map<String, dynamic>> result = products;
 
@@ -464,10 +452,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                   'Unknown Product',
                                               unit: p["unit"]?.toString() ??
                                                   'Unknown Unit',
-                                              low:
-                                                  _safeParseInt(p["min_price"]),
-                                              high:
-                                                  _safeParseInt(p["max_price"]),
+                                              low: (p["min_price"] as num?)
+                                                      ?.toInt() ??
+                                                  0,
+                                              high: (p["max_price"] as num?)
+                                                      ?.toInt() ??
+                                                  0,
                                               subcatId: p["id"]?.toString(),
                                               userName: widget.userName,
                                               userEmail: widget.userEmail,
@@ -493,7 +483,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     ),
                     TextButton.icon(
                       onPressed: () {
-                        // Navigate to a simple product list view
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content:
@@ -554,8 +543,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               ),
               // Fixed height container for products to avoid overflow
               Container(
-                height: MediaQuery.of(context).size.height * 1,
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                height: MediaQuery.of(context).size.height * 0.5,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
                 child: isLoading
                     ? const Center(child: CircularProgressIndicator())
                     : errorMessage != null
@@ -609,10 +598,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                 'Unknown Product',
                                             unit: product["unit"]?.toString() ??
                                                 'Unknown Unit',
-                                            low: _safeParseInt(
-                                                product["min_price"]),
-                                            high: _safeParseInt(
-                                                product["max_price"]),
+                                            low: (product["min_price"] as num?)
+                                                    ?.toInt() ??
+                                                0,
+                                            high: (product["max_price"] as num?)
+                                                    ?.toInt() ??
+                                                0,
                                             subcatId: product["id"]?.toString(),
                                             userName: widget.userName,
                                             userEmail: widget.userEmail,
@@ -627,7 +618,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                               CrossAxisAlignment.start,
                                           children: [
                                             Expanded(
-                                              flex: 6,
+                                              flex: 4,
                                               child: Container(
                                                 width: double.infinity,
                                                 decoration: BoxDecoration(
@@ -639,7 +630,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                     _buildProductImage(product),
                                               ),
                                             ),
-                                            const SizedBox(height: 3),
+                                            const SizedBox(height: 2),
                                             Expanded(
                                               flex: 2,
                                               child: Column(

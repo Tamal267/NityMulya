@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart';
 
 import '../services/map_service.dart';
 
@@ -21,7 +19,6 @@ class NearbyShopsWidget extends StatefulWidget {
 class _NearbyShopsWidgetState extends State<NearbyShopsWidget> {
   List<Map<String, dynamic>> _nearbyShops = [];
   bool _isLoading = true;
-  LatLng? _currentLocation;
 
   @override
   void initState() {
@@ -33,43 +30,56 @@ class _NearbyShopsWidgetState extends State<NearbyShopsWidget> {
     setState(() => _isLoading = true);
 
     try {
-      // Get current location
-      Position? position = await MapService.getCurrentLocation();
-      if (position != null) {
-        _currentLocation = LatLng(position.latitude, position.longitude);
-      } else {
-        // Fallback to Dhaka center
-        _currentLocation = const LatLng(23.8103, 90.4125);
-      }
-
-      // Get shops with location data
+      // Always show sample shops for now
       final shopsWithLocation = MapService.getShopsWithLocations();
 
-      // Find nearby shops within 10km
-      if (_currentLocation != null) {
-        final nearbyShops = MapService.findNearbyShops(
-          _currentLocation!,
-          shopsWithLocation,
-          10.0, // 10km radius
-        );
-
-        setState(() {
-          _nearbyShops = nearbyShops.take(widget.maxShops).toList();
-          _isLoading = false;
-        });
-      }
+      setState(() {
+        _nearbyShops = shopsWithLocation.take(widget.maxShops).toList();
+        _isLoading = false;
+      });
     } catch (e) {
+      print('Error loading nearby shops: $e');
+      // Even if everything fails, show some default shops
       setState(() {
         _isLoading = false;
-        // Use sample data if location fails
-        _nearbyShops =
-            MapService.getShopsWithLocations().take(widget.maxShops).toList();
+        _nearbyShops = [
+          {
+            'id': 'shop_001',
+            'name': 'রহমান গ্রোসারি',
+            'address': 'ধানমন্ডি-৩২, ঢাকা',
+            'phone': '01711123456',
+            'category': 'গ্রোসারি',
+            'rating': 4.5,
+            'distance': 1.2,
+          },
+          {
+            'id': 'shop_002',
+            'name': 'করিম স্টোর',
+            'address': 'গুলশান-১, ঢাকা',
+            'phone': '01812345678',
+            'category': 'সুপার শপ',
+            'rating': 4.2,
+            'distance': 2.5,
+          },
+          {
+            'id': 'shop_003',
+            'name': 'নিউ মার্কেট শপ',
+            'address': 'নিউমার্কেট, ঢাকা',
+            'phone': '01913456789',
+            'category': 'খুচরা',
+            'rating': 4.0,
+            'distance': 3.1,
+          }
+        ].take(widget.maxShops).toList();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    print(
+        'NearbyShopsWidget: Building with ${_nearbyShops.length} shops, isLoading: $_isLoading');
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
