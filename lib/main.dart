@@ -5,7 +5,7 @@ import 'package:nitymulya/screens/customers/complaint_form_screen.dart';
 import 'package:nitymulya/screens/customers/customer_profile_screen.dart';
 import 'package:nitymulya/screens/customers/enhanced_map_screen.dart';
 import 'package:nitymulya/screens/customers/favorite_products_screen.dart';
-import 'package:nitymulya/screens/customers/home_screen.dart';
+import 'package:nitymulya/screens/customers/main_customer_screen.dart';
 import 'package:nitymulya/screens/customers/map_screen.dart';
 import 'package:nitymulya/screens/customers/my_orders_screen.dart';
 import 'package:nitymulya/screens/customers/price_alert_screen.dart';
@@ -43,7 +43,8 @@ class NitiMulyaApp extends StatelessWidget {
         //'/WelcomeScreen': (context) => const WelcomeScreen(),
         //nahid
         // '/': (context) => const WholesalerDashboardScreen(),
-        '/home': (context) => const HomeScreen(),
+        '/home': (context) => const MainCustomerScreen(),
+        '/main-customer': (context) => const MainCustomerScreen(),
         '/login': (context) => const LoginScreen(),
         '/my-orders': (context) => const MyOrdersScreen(),
         '/favorites': (context) => const FavoriteProductsScreen(),

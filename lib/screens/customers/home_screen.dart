@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
-import 'package:nitymulya/screens/customers/shop_list_screen.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
 
 import 'product_detail_screen.dart';
@@ -205,13 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: isDarkMode ? Brightness.dark : Brightness.light,
-        primaryColor: const Color(0xFF079b11),
-      ),
-      home: Scaffold(
+    return Scaffold(
         drawer: CustomDrawer(
           userName: widget.userName ?? 'Guest User',
           userEmail: widget.userEmail ?? 'guest@example.com',
@@ -246,9 +239,11 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+        body: Container(
+          color: isDarkMode ? Colors.grey[900] : null,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             Padding(
               padding: const EdgeInsets.all(12),
               child: TextField(
@@ -508,26 +503,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                             ),
             ),
-          ],
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0,
-          selectedItemColor: const Color(0xFF079b11),
-          onTap: (index) {
-            if (index == 1) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const ShopListScreen()),
-              );
-            } else if (index == 2) {
-              Navigator.pushNamed(context, '/favorites');
-            }
-          },
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-            BottomNavigationBarItem(icon: Icon(Icons.shop), label: "Shop"),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite), label: "Favorites"),
           ],
         ),
       ),

@@ -30,6 +30,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   List<Map<String, dynamic>> products = [];
   List<String> categories = ["All"];
+  Map<String, int> shopCounts = {}; // Store shop counts for each product
   bool isLoading = true;
   bool isCategoriesLoading = true;
   String? errorMessage;
@@ -39,12 +40,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   // Helper method to safely parse price values
   int _safeParseInt(dynamic value) {
     if (value == null) return 0;
-    if (value is int) return value;
-    if (value is double) return value.toInt();
-    if (value is String) {
-      final parsed = int.tryParse(value);
-      return parsed ?? 0;
+
+    if (value is num) {
+      return value.toInt();
     }
+
+    if (value is String) {
+      try {
+        return double.parse(value).toInt();
+      } catch (e) {
+        print('Error parsing price: $value, error: $e');
+        return 0;
+      }
+    }
+
     return 0;
   }
 
@@ -102,12 +111,39 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         products = apiProducts;
         isLoading = false;
       });
+
+      // Load shop counts after products are loaded
+      _loadShopCounts();
     } catch (e) {
       setState(() {
         errorMessage = e.toString();
         isLoading = false;
         products = [];
       });
+    }
+  }
+
+  Future<void> _loadShopCounts() async {
+    // Load shop counts for each product in the background
+    for (final product in products) {
+      final subcatId = product["id"]?.toString();
+      if (subcatId != null && subcatId.isNotEmpty) {
+        try {
+          final shops = await fetchShopsBySubcategoryId(subcatId);
+          if (mounted) {
+            setState(() {
+              shopCounts[subcatId] = shops.length;
+            });
+          }
+        } catch (e) {
+          // Silently handle error, just don't show shop count for this product
+          if (mounted) {
+            setState(() {
+              shopCounts[subcatId] = 0;
+            });
+          }
+        }
+      }
     }
   }
 
@@ -294,6 +330,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             title: const Text("Help & Support"),
             onTap: () {},
           ),
+          ListTile(
+            leading: const Icon(Icons.bug_report),
+            title: const Text("Test Main Customer"),
+            onTap: () {
+              Navigator.pushNamed(context, '/main-customer');
+            },
+          ),
         ],
       ),
     );
@@ -326,6 +369,64 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           );
         },
       ),
+    );
+  }
+
+  Widget _buildShopAvailability(Map<String, dynamic> product) {
+    final subcatId = product["id"]?.toString();
+
+    if (subcatId == null || subcatId.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (!shopCounts.containsKey(subcatId)) {
+      // Still loading
+      return Row(
+        children: [
+          Icon(Icons.store_outlined, size: 14, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(
+            "Loading shops...",
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      );
+    }
+
+    final shopCount = shopCounts[subcatId] ?? 0;
+
+    if (shopCount == 0) {
+      return Row(
+        children: [
+          Icon(Icons.store_outlined, size: 14, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(
+            "No shops available",
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        const Icon(Icons.store, size: 14, color: Color(0xFF079b11)),
+        const SizedBox(width: 4),
+        Text(
+          "$shopCount ${shopCount == 1 ? 'shop' : 'shops'} available",
+          style: const TextStyle(
+            fontSize: 11,
+            color: Color(0xFF079b11),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
     );
   }
 
@@ -455,8 +556,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                         title: Text(
                                             p["subcat_name"]?.toString() ??
                                                 'Unknown Product'),
-                                        subtitle: Text(
-                                            '${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                '${p["cat_name"] ?? "Unknown Category"} • ৳${_safeParseInt(p["min_price"])} - ৳${_safeParseInt(p["max_price"])}'),
+                                            const SizedBox(height: 2),
+                                            _buildShopAvailability(p),
+                                          ],
+                                        ),
                                         onTap: () {
                                           setState(() {
                                             searchQuery = "";
@@ -606,8 +715,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                     return Card(
                                       elevation: 2,
                                       shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10)),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
                                       child: InkWell(
                                         borderRadius: BorderRadius.circular(10),
                                         onTap: () => Navigator.push(
@@ -632,73 +741,78 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                             ),
                                           ),
                                         ),
-                                        child: Padding(
-                                          padding: const EdgeInsets.all(4),
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Expanded(
-                                                flex: 6,
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Text(
+                                                product["subcat_name"]
+                                                        ?.toString() ??
+                                                    'Unknown Product',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8.0),
+                                              child: Text(
+                                                product["unit"]?.toString() ??
+                                                    'Unknown Unit',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
                                                 child: Container(
-                                                  width: double.infinity,
                                                   decoration: BoxDecoration(
+                                                    color: Colors.grey[200],
                                                     borderRadius:
                                                         BorderRadius.circular(
                                                             8),
-                                                    color: Colors.grey[100],
                                                   ),
-                                                  child: _buildProductImage(
+                                                  child: Center(
+                                                    child: _buildProductImage(
+                                                        product),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8, left: 8, right: 8),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "৳${_safeParseInt(product["min_price"])} - ৳${_safeParseInt(product["max_price"])}",
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  _buildShopAvailability(
                                                       product),
-                                                ),
+                                                ],
                                               ),
-                                              const SizedBox(height: 3),
-                                              Expanded(
-                                                flex: 2,
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment
-                                                          .spaceBetween,
-                                                  children: [
-                                                    Text(
-                                                      product["subcat_name"]
-                                                              ?.toString() ??
-                                                          'Unknown Product',
-                                                      style: const TextStyle(
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15,
-                                                      ),
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    Text(
-                                                      product["unit"]
-                                                              ?.toString() ??
-                                                          'Unknown Unit',
-                                                      style: const TextStyle(
-                                                        color: Colors.grey,
-                                                        fontSize: 13,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      '৳${product["min_price"] ?? 0} - ৳${product["max_price"] ?? 0}',
-                                                      style: const TextStyle(
-                                                        color:
-                                                            Color(0xFF079b11),
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontSize: 15,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     );

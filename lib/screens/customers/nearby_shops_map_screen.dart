@@ -148,19 +148,49 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
       // Draw routes to first 5 closest shops to avoid clutter
       final closestShops = _shops.take(5).toList();
 
-      for (final shop in closestShops) {
+      for (int i = 0; i < closestShops.length; i++) {
+        final shop = closestShops[i];
         final distanceData = await _getRealDistance(shop);
 
-        if (distanceData.containsKey('coordinates')) {
+        if (distanceData.containsKey('coordinates') && distanceData['coordinates'] is List) {
           final coordinates = distanceData['coordinates'] as List;
-          final points =
-              coordinates.map((coord) => LatLng(coord[1], coord[0])).toList();
+          
+          if (coordinates.isNotEmpty) {
+            final points = coordinates
+                .map((coord) => LatLng(coord[1] as double, coord[0] as double))
+                .toList();
 
-          allRoutes.add(Polyline(
-            points: points,
-            color: Colors.blue.withOpacity(0.6),
-            strokeWidth: 2.0,
-          ));
+            // Use different colors for different routes
+            final colors = [
+              Colors.blue,
+              Colors.green,
+              Colors.orange,
+              Colors.purple,
+              Colors.teal,
+            ];
+
+            allRoutes.add(Polyline(
+              points: points,
+              color: colors[i % colors.length].withOpacity(0.7),
+              strokeWidth: 3.0,
+            ));
+          }
+        } else {
+          // Fallback to straight line if no route coordinates available
+          final shopLat = ShopApi.parseDouble(shop['latitude']);
+          final shopLon = ShopApi.parseDouble(shop['longitude']);
+
+          if (shopLat != null && shopLon != null) {
+            allRoutes.add(Polyline(
+              points: [
+                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+                LatLng(shopLat, shopLon),
+              ],
+              color: Colors.grey.withOpacity(0.5),
+              strokeWidth: 2.0,
+              pattern: StrokePattern.dashed(segments: [8, 4]),
+            ));
+          }
         }
       }
 
@@ -174,7 +204,7 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
     }
   }
 
-  // Get real distance and duration using OpenRouteService (free alternative to Google Maps)
+  // Get real distance and duration using OSRM (free routing service)
   Future<Map<String, dynamic>> _getRealDistance(
       Map<String, dynamic> shop) async {
     if (_currentPosition == null) {
@@ -198,47 +228,99 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
     }
 
     try {
-      // Using OpenRouteService (free alternative)
-      final url = 'https://api.openrouteservice.org/v2/directions/driving-car';
-      final response = await http.post(
+      // Using OSRM (free routing service) - no API key required
+      final url = 'https://router.project-osrm.org/route/v1/driving/${_currentPosition!.longitude},${_currentPosition!.latitude};$shopLon,$shopLat?overview=full&geometries=geojson';
+      
+      final response = await http.get(
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'YOUR_API_KEY_HERE', // Replace with your API key
         },
-        body: json.encode({
-          'coordinates': [
-            [_currentPosition!.longitude, _currentPosition!.latitude],
-            [shopLon, shopLat],
-          ],
-          'format': 'json',
-        }),
-      );
+      ).timeout(const Duration(seconds: 10));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final route = data['routes'][0];
-        final summary = route['summary'];
+        
+        if (data['routes'] != null && data['routes'].isNotEmpty) {
+          final route = data['routes'][0];
+          
+          final distanceMeters = route['distance'] as num;
+          final durationSeconds = route['duration'] as num;
+          
+          final distanceKm = (distanceMeters / 1000).toStringAsFixed(1);
+          final durationMin = (durationSeconds / 60).toStringAsFixed(0);
 
-        final distanceKm = (summary['distance'] / 1000).toStringAsFixed(1);
-        final durationMin = (summary['duration'] / 60).toStringAsFixed(0);
+          // Extract route coordinates for drawing
+          List<dynamic> coordinates = [];
+          if (route['geometry'] != null && route['geometry']['coordinates'] != null) {
+            coordinates = route['geometry']['coordinates'] as List;
+          }
 
-        final result = {
-          'distance': '${distanceKm} km',
-          'duration': '${durationMin} min',
-          'coordinates': route['geometry']['coordinates'],
-        };
+          final result = {
+            'distance': '${distanceKm} km',
+            'duration': '${durationMin} min',
+            'coordinates': coordinates,
+            'real_distance_meters': distanceMeters,
+            'duration_seconds': durationSeconds,
+          };
 
-        // Cache the result
-        _realDistanceCache[key] = result;
+          // Cache the result
+          _realDistanceCache[key] = result;
 
-        return result;
+          return result;
+        }
       }
     } catch (e) {
-      print('Error getting real distance: $e');
+      print('Error getting real distance from OSRM: $e');
+      
+      // Try alternative with MapBox (also free tier available)
+      try {
+        // Note: Replace with your MapBox access token for production
+        final mapboxUrl = 'https://api.mapbox.com/directions/v5/mapbox/driving/${_currentPosition!.longitude},${_currentPosition!.latitude};$shopLon,$shopLat?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw&geometries=geojson';
+        
+        final mapboxResponse = await http.get(
+          Uri.parse(mapboxUrl),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ).timeout(const Duration(seconds: 8));
+
+        if (mapboxResponse.statusCode == 200) {
+          final mapboxData = json.decode(mapboxResponse.body);
+          
+          if (mapboxData['routes'] != null && mapboxData['routes'].isNotEmpty) {
+            final route = mapboxData['routes'][0];
+            
+            final distanceMeters = route['distance'] as num;
+            final durationSeconds = route['duration'] as num;
+            
+            final distanceKm = (distanceMeters / 1000).toStringAsFixed(1);
+            final durationMin = (durationSeconds / 60).toStringAsFixed(0);
+
+            // Extract route coordinates
+            List<dynamic> coordinates = [];
+            if (route['geometry'] != null && route['geometry']['coordinates'] != null) {
+              coordinates = route['geometry']['coordinates'] as List;
+            }
+
+            final result = {
+              'distance': '${distanceKm} km',
+              'duration': '${durationMin} min',
+              'coordinates': coordinates,
+              'real_distance_meters': distanceMeters,
+              'duration_seconds': durationSeconds,
+            };
+
+            _realDistanceCache[key] = result;
+            return result;
+          }
+        }
+      } catch (mapboxError) {
+        print('Error getting distance from MapBox: $mapboxError');
+      }
     }
 
-    // Fallback to straight line distance
+    // Fallback to straight line distance with estimated time
     final straightDistance = ShopApi.calculateDistance(
       _currentPosition!.latitude,
       _currentPosition!.longitude,
@@ -246,9 +328,14 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
       shopLon,
     );
 
+    // Estimate time based on average speed (assume 30 km/h in city)
+    final estimatedTimeMinutes = ((straightDistance * 1000) / (30000 / 60)).round();
+
     final fallback = {
       'distance': '~${straightDistance.toStringAsFixed(1)} km',
-      'duration': 'Unknown',
+      'duration': '~${estimatedTimeMinutes} min',
+      'real_distance_meters': straightDistance * 1000,
+      'duration_seconds': estimatedTimeMinutes * 60,
     };
 
     _realDistanceCache[key] = fallback;
@@ -301,9 +388,8 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
         markers.add(
           Marker(
             point: LatLng(latitude, longitude),
-            width: 40, // Increased width to accommodate distance text
-            height:
-                60, // Increased height to accommodate both icon and distance
+            width: 80, // Increased width to prevent overflow
+            height: 100, // Increased height to accommodate both icon and distance
             child: GestureDetector(
               onTap: () => _showShopDetails(shop, distance),
               child: Column(
@@ -311,43 +397,71 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Distance label - positioned above the marker
+                  // Distance and time label - positioned above the marker
                   if (distance != null)
-                    Container(
-                      constraints:
-                          const BoxConstraints(maxWidth: 50, minHeight: 16),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        border:
-                            Border.all(color: Colors.grey.shade300, width: 1),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
+                    FutureBuilder<Map<String, dynamic>>(
+                      future: _getRealDistance(shop),
+                      builder: (context, snapshot) {
+                        return Container(
+                          constraints: const BoxConstraints(
+                            maxWidth: 75, 
+                            minHeight: 20,
                           ),
-                        ],
-                      ),
-                      child: Text(
-                        '${distance.toStringAsFixed(1)} km',
-                        style: const TextStyle(
-                          fontSize: 9, // Smaller font size
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: Colors.grey.shade300, width: 1),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 3,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                snapshot.hasData 
+                                    ? snapshot.data!['distance'] ?? '${distance?.toStringAsFixed(1) ?? '0'} km'
+                                    : '${distance?.toStringAsFixed(1) ?? '0'} km',
+                                style: const TextStyle(
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              if (snapshot.hasData && snapshot.data!['duration'] != 'Unknown') ...[
+                                const SizedBox(height: 1),
+                                Text(
+                                  snapshot.data!['duration'] ?? '',
+                                  style: const TextStyle(
+                                    fontSize: 7,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.blue,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                  if (distance != null) const SizedBox(height: 2),
+                  if (distance != null) const SizedBox(height: 4),
                   // Shop icon
                   Container(
-                    width: 28,
-                    height: 28,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
@@ -355,15 +469,15 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.25),
-                          blurRadius: 3,
-                          offset: const Offset(0, 1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
                     child: const Icon(
                       Icons.store,
                       color: Colors.white,
-                      size: 16,
+                      size: 18,
                     ),
                   ),
                 ],
@@ -379,16 +493,22 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
 
   // Build route polyline between user and shop
   List<Polyline> _buildRoutePolylines() {
+    List<Polyline> polylines = [];
+    
+    // Add bulk routes if showing routes to multiple shops
+    polylines.addAll(_routePolylines);
+    
     if (_currentPosition == null || _selectedShop == null || !_showRoute) {
-      return [];
+      return polylines;
     }
 
     final shopLat = ShopApi.parseDouble(_selectedShop!['latitude']);
     final shopLon = ShopApi.parseDouble(_selectedShop!['longitude']);
 
-    if (shopLat == null || shopLon == null) return [];
+    if (shopLat == null || shopLon == null) return polylines;
 
-    return [
+    // Add the selected shop route (this will be a straight line for now)
+    polylines.add(
       Polyline(
         points: [
           LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
@@ -398,7 +518,10 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
         color: Colors.blue,
         pattern: StrokePattern.dashed(segments: [10, 5]),
       ),
-    ];
+    );
+    
+    return polylines;
+  }
   }
 
   void _showShopDetails(Map<String, dynamic> shop, double? distance) {
