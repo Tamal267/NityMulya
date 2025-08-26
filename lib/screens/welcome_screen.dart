@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
 import 'package:nitymulya/screens/customers/product_detail_screen.dart';
+import 'package:nitymulya/widgets/nearby_shops_widget.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String? userName;
@@ -186,11 +187,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ElevatedButton(
               onPressed: () {
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Please login to continue"),
-                  ),
-                );
+                Navigator.pushNamed(context, '/login');
               },
               child: const Text("Login / Sign Up"),
             ),
@@ -241,11 +238,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         minimumSize: const Size(150, 40),
                       ),
                       onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Please login to continue"),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/login');
                       },
                       child: const Text(
                         "Login / Sign Up",
@@ -378,6 +371,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     }
 
     return Scaffold(
+      backgroundColor: isDarkMode ? Colors.grey[900] : null,
       drawer: buildDrawer(),
       appBar: AppBar(
         backgroundColor: const Color(0xFF079b11),
@@ -393,7 +387,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 ),
                 IconButton(
                   icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
-                  onPressed: () => setState(() => isDarkMode = !isDarkMode),
+                  onPressed: () {
+                    setState(() => isDarkMode = !isDarkMode);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(isDarkMode
+                            ? 'Dark mode enabled'
+                            : 'Light mode enabled'),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -401,297 +405,308 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(6),
-                child: TextField(
-                  onChanged: (value) => setState(() => searchQuery = value),
-                  decoration: InputDecoration(
-                    hintText: selectedCategory == "All"
-                        ? "Search all products"
-                        : "Search in $selectedCategory",
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () => setState(() => searchQuery = ""),
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+        child: Container(
+          color: isDarkMode ? Colors.grey[900] : null,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: TextField(
+                    onChanged: (value) => setState(() => searchQuery = value),
+                    decoration: InputDecoration(
+                      hintText: selectedCategory == "All"
+                          ? "Search all products"
+                          : "Search in $selectedCategory",
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () => setState(() => searchQuery = ""),
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              if (searchQuery.isNotEmpty)
-                Container(
-                  constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.3),
-                  margin: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Card(
-                    child: searchSuggestions.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Text(
-                              selectedCategory == "All"
-                                  ? 'No products found matching "$searchQuery"'
-                                  : 'No products found in "$selectedCategory" matching "$searchQuery"',
-                              style: const TextStyle(color: Colors.grey),
+                if (searchQuery.isNotEmpty)
+                  Container(
+                    constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.3),
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Card(
+                      child: searchSuggestions.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(
+                                selectedCategory == "All"
+                                    ? 'No products found matching "$searchQuery"'
+                                    : 'No products found in "$selectedCategory" matching "$searchQuery"',
+                                style: const TextStyle(color: Colors.grey),
+                              ),
+                            )
+                          : ListView(
+                              shrinkWrap: true,
+                              children: searchSuggestions
+                                  .map((p) => ListTile(
+                                        title: Text(
+                                            p["subcat_name"]?.toString() ??
+                                                'Unknown Product'),
+                                        subtitle: Text(
+                                            '${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
+                                        onTap: () {
+                                          setState(() {
+                                            searchQuery = "";
+                                          });
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  ProductDetailScreen(
+                                                title: p["subcat_name"]
+                                                        ?.toString() ??
+                                                    'Unknown Product',
+                                                unit: p["unit"]?.toString() ??
+                                                    'Unknown Unit',
+                                                low: _safeParseInt(
+                                                    p["min_price"]),
+                                                high: _safeParseInt(
+                                                    p["max_price"]),
+                                                subcatId: p["id"]?.toString(),
+                                                userName: widget.userName,
+                                                userEmail: widget.userEmail,
+                                                userRole: widget.userRole,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ))
+                                  .toList(),
                             ),
-                          )
-                        : ListView(
-                            shrinkWrap: true,
-                            children: searchSuggestions
-                                .map((p) => ListTile(
-                                      title: Text(
-                                          p["subcat_name"]?.toString() ??
-                                              'Unknown Product'),
-                                      subtitle: Text(
-                                          '${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
-                                      onTap: () {
-                                        setState(() {
-                                          searchQuery = "";
-                                        });
-                                        Navigator.push(
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isBangla ? "দৈনিক মূল্য আপডেট" : "Daily Price Update",
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton.icon(
+                        onPressed: () {
+                          // Navigate to a simple product list view
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  "See all products feature - coming soon!"),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.arrow_forward_ios,
+                          size: 16,
+                          color: Color(0xFF079b11),
+                        ),
+                        label: Text(
+                          "See All",
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF079b11),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text("Last Updated: 2 hours ago",
+                      style: TextStyle(color: Colors.grey[600])),
+                ),
+                Container(
+                  height: 40,
+                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  child: isCategoriesLoading
+                      ? const Center(
+                          child: SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: categories.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: ChoiceChip(
+                                label: Text(categories[index]),
+                                selected: selectedCategory == categories[index],
+                                onSelected: (_) => setState(() {
+                                  selectedCategory = categories[index];
+                                  searchQuery = "";
+                                }),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+                // Fixed height container for products to avoid overflow
+                Container(
+                  height: MediaQuery.of(context).size.height * 1,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : errorMessage != null
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline,
+                                      size: 64, color: Colors.red),
+                                  const SizedBox(height: 16),
+                                  const Text('Error loading products'),
+                                  const SizedBox(height: 8),
+                                  Text(errorMessage!,
+                                      style:
+                                          const TextStyle(color: Colors.grey)),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: loadProducts,
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : filteredProducts.isEmpty
+                              ? const Center(
+                                  child: Text('No products found'),
+                                )
+                              : GridView.builder(
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 6,
+                                    mainAxisSpacing: 6,
+                                    childAspectRatio: 0.7,
+                                  ),
+                                  itemCount: filteredProducts.length,
+                                  itemBuilder: (context, index) {
+                                    final product = filteredProducts[index];
+                                    return Card(
+                                      elevation: 2,
+                                      shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadius.circular(10)),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(10),
+                                        onTap: () => Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (_) => ProductDetailScreen(
-                                              title: p["subcat_name"]
+                                              title: product["subcat_name"]
                                                       ?.toString() ??
                                                   'Unknown Product',
-                                              unit: p["unit"]?.toString() ??
-                                                  'Unknown Unit',
-                                              low:
-                                                  _safeParseInt(p["min_price"]),
-                                              high:
-                                                  _safeParseInt(p["max_price"]),
-                                              subcatId: p["id"]?.toString(),
+                                              unit:
+                                                  product["unit"]?.toString() ??
+                                                      'Unknown Unit',
+                                              low: _safeParseInt(
+                                                  product["min_price"]),
+                                              high: _safeParseInt(
+                                                  product["max_price"]),
+                                              subcatId:
+                                                  product["id"]?.toString(),
                                               userName: widget.userName,
                                               userEmail: widget.userEmail,
                                               userRole: widget.userRole,
                                             ),
                                           ),
-                                        );
-                                      },
-                                    ))
-                                .toList(),
-                          ),
-                  ),
-                ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      isBangla ? "দৈনিক মূল্য আপডেট" : "Daily Price Update",
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    TextButton.icon(
-                      onPressed: () {
-                        // Navigate to a simple product list view
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text("See all products feature - coming soon!"),
-                          ),
-                        );
-                      },
-                      icon: const Icon(
-                        Icons.arrow_forward_ios,
-                        size: 16,
-                        color: Color(0xFF079b11),
-                      ),
-                      label: Text(
-                        "See All",
-                        style: GoogleFonts.lato(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF079b11),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text("Last Updated: 2 hours ago",
-                    style: TextStyle(color: Colors.grey[600])),
-              ),
-              Container(
-                height: 40,
-                margin: const EdgeInsets.symmetric(vertical: 2),
-                child: isCategoriesLoading
-                    ? const Center(
-                        child: SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: categories.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: ChoiceChip(
-                              label: Text(categories[index]),
-                              selected: selectedCategory == categories[index],
-                              onSelected: (_) => setState(() {
-                                selectedCategory = categories[index];
-                                searchQuery = "";
-                              }),
-                            ),
-                          );
-                        },
-                      ),
-              ),
-              // Fixed height container for products to avoid overflow
-              Container(
-                height: MediaQuery.of(context).size.height * 1,
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : errorMessage != null
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.error_outline,
-                                    size: 64, color: Colors.red),
-                                const SizedBox(height: 16),
-                                const Text('Error loading products'),
-                                const SizedBox(height: 8),
-                                Text(errorMessage!,
-                                    style: const TextStyle(color: Colors.grey)),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: loadProducts,
-                                  child: const Text('Retry'),
-                                ),
-                              ],
-                            ),
-                          )
-                        : filteredProducts.isEmpty
-                            ? const Center(
-                                child: Text('No products found'),
-                              )
-                            : GridView.builder(
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 6,
-                                  mainAxisSpacing: 6,
-                                  childAspectRatio: 0.7,
-                                ),
-                                itemCount: filteredProducts.length,
-                                itemBuilder: (context, index) {
-                                  final product = filteredProducts[index];
-                                  return Card(
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(10),
-                                      onTap: () => Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => ProductDetailScreen(
-                                            title: product["subcat_name"]
-                                                    ?.toString() ??
-                                                'Unknown Product',
-                                            unit: product["unit"]?.toString() ??
-                                                'Unknown Unit',
-                                            low: _safeParseInt(
-                                                product["min_price"]),
-                                            high: _safeParseInt(
-                                                product["max_price"]),
-                                            subcatId: product["id"]?.toString(),
-                                            userName: widget.userName,
-                                            userEmail: widget.userEmail,
-                                            userRole: widget.userRole,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(4),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                flex: 6,
+                                                child: Container(
+                                                  width: double.infinity,
+                                                  decoration: BoxDecoration(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                    color: Colors.grey[100],
+                                                  ),
+                                                  child: _buildProductImage(
+                                                      product),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  children: [
+                                                    Text(
+                                                      product["subcat_name"]
+                                                              ?.toString() ??
+                                                          'Unknown Product',
+                                                      style: const TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15,
+                                                      ),
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    Text(
+                                                      product["unit"]
+                                                              ?.toString() ??
+                                                          'Unknown Unit',
+                                                      style: const TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 13,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      '৳${product["min_price"] ?? 0} - ৳${product["max_price"] ?? 0}',
+                                                      style: const TextStyle(
+                                                        color:
+                                                            Color(0xFF079b11),
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 15,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ),
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(4),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Expanded(
-                                              flex: 6,
-                                              child: Container(
-                                                width: double.infinity,
-                                                decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
-                                                  color: Colors.grey[100],
-                                                ),
-                                                child:
-                                                    _buildProductImage(product),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 3),
-                                            Expanded(
-                                              flex: 2,
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    product["subcat_name"]
-                                                            ?.toString() ??
-                                                        'Unknown Product',
-                                                    style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 15,
-                                                    ),
-                                                    maxLines: 2,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                  Text(
-                                                    product["unit"]
-                                                            ?.toString() ??
-                                                        'Unknown Unit',
-                                                    style: const TextStyle(
-                                                      color: Colors.grey,
-                                                      fontSize: 13,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    '৳${product["min_price"] ?? 0} - ৳${product["max_price"] ?? 0}',
-                                                    style: const TextStyle(
-                                                      color: Color(0xFF079b11),
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 15,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-              ),
-            ],
+                                    );
+                                  },
+                                ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -704,8 +719,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(
               icon: Icon(Icons.shopping_bag), label: 'Orders'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-          BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shops'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.store_mall_directory), label: 'Nearby Shops'),
           BottomNavigationBarItem(
               icon: Icon(Icons.favorite), label: 'Favorites'),
         ],
@@ -713,12 +728,18 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           if (index == 1) {
             _handleRestrictedAction('orders'); // Orders - require login
           } else if (index == 2) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Map - Coming Soon!")),
-            ); // Map - show message
+            // Navigate to Map Screen showing nearby shops
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => NearbyShopsMapScreen(
+                  userName: widget.userName,
+                  userEmail: widget.userEmail,
+                  userRole: widget.userRole,
+                ),
+              ),
+            );
           } else if (index == 3) {
-            _handleRestrictedAction('shops'); // Shops - require login
-          } else if (index == 4) {
             _handleRestrictedAction('favorites'); // Favorites - require login
           }
         },

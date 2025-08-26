@@ -178,14 +178,14 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
   Future<Map<String, dynamic>> _getRealDistance(
       Map<String, dynamic> shop) async {
     if (_currentPosition == null) {
-      return {'distance': 'No location', 'duration': ''};
+      return {'distance': 'Unknown', 'duration': 'Unknown'};
     }
 
     final shopLat = ShopApi.parseDouble(shop['latitude']);
     final shopLon = ShopApi.parseDouble(shop['longitude']);
 
     if (shopLat == null || shopLon == null) {
-      return {'distance': 'Location unavailable', 'duration': ''};
+      return {'distance': 'Unknown', 'duration': 'Unknown'};
     }
 
     // Create a unique key for caching
@@ -246,20 +246,9 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
       shopLon,
     );
 
-    // Estimate duration based on distance (assuming 30 km/h average speed)
-    final estimatedMinutes = (straightDistance / 30 * 60).round();
-    String durationText = '~${estimatedMinutes}min';
-    
-    // Use more realistic duration estimates
-    if (estimatedMinutes > 60) {
-      final hours = (estimatedMinutes / 60).floor();
-      final minutes = estimatedMinutes % 60;
-      durationText = '~${hours}h ${minutes}min';
-    }
-
     final fallback = {
       'distance': '~${straightDistance.toStringAsFixed(1)} km',
-      'duration': durationText,
+      'duration': 'Unknown',
     };
 
     _realDistanceCache[key] = fallback;
@@ -312,8 +301,9 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
         markers.add(
           Marker(
             point: LatLng(latitude, longitude),
-            width: 120, // Increased width to accommodate shop name and distance
-            height: 80, // Increased height for all elements
+            width: 40, // Increased width to accommodate distance text
+            height:
+                60, // Increased height to accommodate both icon and distance
             child: GestureDetector(
               onTap: () => _showShopDetails(shop, distance),
               child: Column(
@@ -321,45 +311,18 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Shop name - positioned at top
-                  if (shop['name'] != null && shop['name'].toString().trim().isNotEmpty)
-                    Container(
-                      constraints: const BoxConstraints(maxWidth: 120, minHeight: 18),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.blue.shade200, width: 1),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 2,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Text(
-                        shop['name'].toString(),
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue.shade800,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  const SizedBox(height: 2),
-                  // Distance label - positioned middle
+                  // Distance label - positioned above the marker
                   if (distance != null)
                     Container(
-                      constraints: const BoxConstraints(maxWidth: 80, minHeight: 16),
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      constraints:
+                          const BoxConstraints(maxWidth: 50, minHeight: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300, width: 1),
+                        border:
+                            Border.all(color: Colors.grey.shade300, width: 1),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.15),
@@ -371,7 +334,7 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
                       child: Text(
                         '${distance.toStringAsFixed(1)} km',
                         style: const TextStyle(
-                          fontSize: 9,
+                          fontSize: 9, // Smaller font size
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
@@ -380,11 +343,11 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  const SizedBox(height: 2),
-                  // Shop icon - positioned at bottom
+                  if (distance != null) const SizedBox(height: 2),
+                  // Shop icon
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       color: Colors.red,
                       shape: BoxShape.circle,
@@ -400,7 +363,7 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
                     child: const Icon(
                       Icons.store,
                       color: Colors.white,
-                      size: 18,
+                      size: 16,
                     ),
                   ),
                 ],
@@ -451,20 +414,12 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
           children: [
             const Icon(Icons.store, color: Colors.red),
             const SizedBox(width: 8),
-            if (shop['name'] != null && shop['name'].toString().trim().isNotEmpty)
-              Expanded(
-                child: Text(
-                  shop['name'].toString(),
-                  style: const TextStyle(fontSize: 18),
-                ),
-              )
-            else
-              const Expanded(
-                child: Text(
-                  'Shop Details',
-                  style: TextStyle(fontSize: 18),
-                ),
+            Expanded(
+              child: Text(
+                shop['name'] ?? 'Unknown Shop',
+                style: const TextStyle(fontSize: 18),
               ),
+            ),
           ],
         ),
         content: Column(
@@ -867,43 +822,50 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.directions_rounded,
-                                  color: Colors.blue.shade700, size: 16),
-                              const SizedBox(width: 6),
+                              Icon(Icons.store,
+                                  color: Colors.blue.shade700, size: 14),
+                              const SizedBox(width: 4),
                               Expanded(
-                                child: FutureBuilder<Map<String, dynamic>>(
-                                  future: _getRealDistance(_selectedShop!),
-                                  builder: (context, snapshot) {
-                                    if (snapshot.hasData) {
-                                      final distance = snapshot.data!['distance'];
-                                      final duration = snapshot.data!['duration'];
-                                      
-                                      // Create display text
-                                      String displayText = 'Route: $distance';
-                                      if (duration != 'Unknown' && duration.toString().isNotEmpty) {
-                                        displayText += ' • $duration';
-                                      }
-                                      
-                                      return Text(
-                                        displayText,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.blue.shade700,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      );
-                                    }
-                                    return Text(
-                                      'Calculating route...',
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      _selectedShop!['name'] ?? 'Unknown Shop',
                                       style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.blue.shade600,
                                         fontWeight: FontWeight.bold,
+                                        color: Colors.blue.shade700,
+                                        fontSize: 12,
                                       ),
-                                    );
-                                  },
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    FutureBuilder<Map<String, dynamic>>(
+                                      future: _getRealDistance(_selectedShop!),
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasData) {
+                                          return Text(
+                                            '${snapshot.data!['distance']} • ${snapshot.data!['duration']}',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              color: Colors.blue.shade600,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          );
+                                        }
+                                        return Text(
+                                          'Calculating...',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.blue.shade600,
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ),
                               SizedBox(
