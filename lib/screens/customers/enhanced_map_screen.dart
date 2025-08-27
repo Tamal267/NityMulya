@@ -55,12 +55,15 @@ class _EnhancedMapScreenState extends State<EnhancedMapScreen> {
         _currentLocation = widget.initialLocation;
       } else {
         _currentLocation = await LocationService.getCurrentLocation();
-        _currentLocation ??= UserLocation(
+        if (_currentLocation == null) {
+          // Fallback to Dhaka center if location not available
+          _currentLocation = UserLocation(
             latitude: 23.8103,
             longitude: 90.4125,
             address: 'Dhaka, Bangladesh',
             type: 'fallback',
           );
+        }
       }
 
       // Load data based on user type

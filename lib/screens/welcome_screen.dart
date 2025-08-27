@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
-import 'package:nitymulya/screens/auth/login_screen.dart';
 import 'package:nitymulya/screens/customers/product_detail_screen.dart';
+import 'package:nitymulya/screens/customers/nearby_shops_map_screen.dart';
 import 'package:nitymulya/widgets/nearby_shops_widget.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -30,23 +30,41 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   bool showSplash = true;
 
   List<Map<String, dynamic>> products = [];
-  List<String> categories = ["All"]; // Start with "All", will load from API
+  List<String> categories = ["All"];
+  Map<String, int> shopCounts = {}; // Store shop counts for each product
   bool isLoading = true;
   bool isCategoriesLoading = true;
   String? errorMessage;
 
   late AnimationController _controller;
-  late Animation<double> _fadeIn;
+
+  // Helper method to safely parse price values
+  int _safeParseInt(dynamic value) {
+    if (value == null) return 0;
+
+    if (value is num) {
+      return value.toInt();
+    }
+
+    if (value is String) {
+      try {
+        return double.parse(value).toInt();
+      } catch (e) {
+        print('Error parsing price: $value, error: $e');
+        return 0;
+      }
+    }
+
+    return 0;
+  }
 
   List<Map<String, dynamic>> get filteredProducts {
     List<Map<String, dynamic>> result = products;
 
-    // First filter by category
     if (selectedCategory != "All") {
       result = result.where((p) => p["cat_name"] == selectedCategory).toList();
     }
 
-    // Then filter by search query if present
     if (searchQuery.isNotEmpty) {
       result = result
           .where((p) =>
@@ -61,13 +79,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     return result;
   }
 
-  // Get search suggestions that respect current category filter
   List<Map<String, dynamic>> get searchSuggestions {
     if (searchQuery.isEmpty) return [];
-
     List<Map<String, dynamic>> searchBase = products;
 
-    // Respect category filter for search suggestions
     if (selectedCategory != "All") {
       searchBase =
           searchBase.where((p) => p["cat_name"] == selectedCategory).toList();
@@ -80,11 +95,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 .toLowerCase()
                 .contains(searchQuery.toLowerCase()) ??
             false)
-        .take(5) // Limit suggestions to 5
+        .take(5)
         .toList();
   }
 
-  // Load products from API
   Future<void> loadProducts() async {
     try {
       setState(() {
@@ -98,17 +112,42 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         products = apiProducts;
         isLoading = false;
       });
+
+      // Load shop counts after products are loaded
+      _loadShopCounts();
     } catch (e) {
       setState(() {
         errorMessage = e.toString();
         isLoading = false;
-        // Use empty list as fallback
         products = [];
       });
     }
   }
 
-  // Load categories from API
+  Future<void> _loadShopCounts() async {
+    // Load shop counts for each product in the background
+    for (final product in products) {
+      final subcatId = product["id"]?.toString();
+      if (subcatId != null && subcatId.isNotEmpty) {
+        try {
+          final shops = await fetchShopsBySubcategoryId(subcatId);
+          if (mounted) {
+            setState(() {
+              shopCounts[subcatId] = shops.length;
+            });
+          }
+        } catch (e) {
+          // Silently handle error, just don't show shop count for this product
+          if (mounted) {
+            setState(() {
+              shopCounts[subcatId] = 0;
+            });
+          }
+        }
+      }
+    }
+  }
+
   Future<void> loadCategories() async {
     try {
       setState(() {
@@ -116,8 +155,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       });
 
       final apiCategories = await fetchCategories();
-
-      // Extract cat_name from API response and create list with "All" first
       final categoryNames = ["All"];
       for (final category in apiCategories) {
         final catName = category["cat_name"]?.toString();
@@ -132,7 +169,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       });
     } catch (e) {
       setState(() {
-        // Keep fallback categories if API fails
         categories = [
           "All",
           "চাল",
@@ -148,18 +184,16 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     }
   }
 
-//-----------------------------------Mithila --------------------//
   @override
   void initState() {
     super.initState();
-    loadCategories(); // Load categories from API
-    loadProducts(); // Load products from API
+    loadCategories();
+    loadProducts();
 
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    _fadeIn = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
     _controller.forward();
 
     Future.delayed(const Duration(seconds: 2), () {
@@ -175,7 +209,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     super.dispose();
   }
 
-  void _handleRestrictedAction() {
+  void _handleRestrictedAction([String? feature]) {
     if (widget.userName == null) {
       showDialog(
         context: context,
@@ -198,22 +232,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         ),
       );
     } else {
-      // TODO: Add actual action if logged in
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text("Accessing feature..."),
+      // Handle navigation for logged-in users
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text("Accessing ${feature ?? 'feature'}..."),
       ));
     }
   }
 
-//---------Mithila----------
-
   Widget buildDrawer() {
     return Drawer(
       child: ListView(
-        padding: EdgeInsets.zero, // Remove default padding
+        padding: EdgeInsets.zero,
         children: [
           SizedBox(
-            height: 220, // Fixed height instead of DrawerHeader
+            height: 220,
             child: Container(
               decoration: const BoxDecoration(color: Color(0xFF079b11)),
               padding: const EdgeInsets.all(20),
@@ -240,10 +272,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor: Colors.green,
-                        minimumSize:
-                            const Size(150, 40), // Constrained button size
+                        minimumSize: const Size(150, 40),
                       ),
-                      onPressed: () => Navigator.pushNamed(context, '/login'),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/login');
+                      },
                       child: const Text(
                         "Login / Sign Up",
                         style: TextStyle(fontSize: 14),
@@ -256,7 +289,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           widget.userName!,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16, // Slightly smaller
+                            fontSize: 16,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -264,7 +297,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           widget.userEmail ?? '',
                           style: const TextStyle(
                             color: Colors.white70,
-                            fontSize: 12, // Smaller email text
+                            fontSize: 12,
                           ),
                         ),
                       ],
@@ -276,19 +309,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           ListTile(
             leading: const Icon(Icons.store),
             title: const Text("Shop"),
-            onTap: _handleRestrictedAction,
+            onTap: () => _handleRestrictedAction('shop'),
           ),
           ListTile(
             leading: const Icon(Icons.shopping_bag),
             title: const Text("My Orders"),
-            onTap: () {
-              Navigator.pushNamed(context, '/my-orders');
-            },
+            onTap: () => _handleRestrictedAction('orders'),
           ),
           ListTile(
             leading: const Icon(Icons.favorite),
             title: const Text("Favorites"),
-            onTap: _handleRestrictedAction,
+            onTap: () => _handleRestrictedAction('favorites'),
           ),
           ListTile(
             leading: const Icon(Icons.info),
@@ -300,6 +331,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             title: const Text("Help & Support"),
             onTap: () {},
           ),
+          ListTile(
+            leading: const Icon(Icons.bug_report),
+            title: const Text("Test Main Customer"),
+            onTap: () {
+              Navigator.pushNamed(context, '/main-customer');
+            },
+          ),
         ],
       ),
     );
@@ -308,12 +346,10 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   Widget _buildProductImage(Map<String, dynamic> product) {
     final imageUrl = product["subcat_img"]?.toString();
 
-    // If image URL is null or empty, show the inventory icon
     if (imageUrl == null || imageUrl.trim().isEmpty) {
       return const Icon(Icons.inventory_2, size: 60, color: Colors.grey);
     }
 
-    // Try to load the image, with fallback to inventory icon on error
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Image.network(
@@ -337,6 +373,64 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     );
   }
 
+  Widget _buildShopAvailability(Map<String, dynamic> product) {
+    final subcatId = product["id"]?.toString();
+
+    if (subcatId == null || subcatId.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (!shopCounts.containsKey(subcatId)) {
+      // Still loading
+      return Row(
+        children: [
+          Icon(Icons.store_outlined, size: 14, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(
+            "Loading shops...",
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      );
+    }
+
+    final shopCount = shopCounts[subcatId] ?? 0;
+
+    if (shopCount == 0) {
+      return Row(
+        children: [
+          Icon(Icons.store_outlined, size: 14, color: Colors.grey[600]),
+          const SizedBox(width: 4),
+          Text(
+            "No shops available",
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        const Icon(Icons.store, size: 14, color: Color(0xFF079b11)),
+        const SizedBox(width: 4),
+        Text(
+          "$shopCount ${shopCount == 1 ? 'shop' : 'shops'} available",
+          style: const TextStyle(
+            fontSize: 11,
+            color: Color(0xFF079b11),
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (showSplash) {
@@ -346,25 +440,24 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Circular image with border
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: Colors.green.shade800, // Border color
-                    width: 3.0, // Border width
+                    color: Colors.green.shade800,
+                    width: 3.0,
                   ),
                 ),
                 child: ClipOval(
                   child: Image.asset(
                     'assets/image/logo.jpeg',
-                    height: 150, // Adjust size as needed
+                    height: 150,
                     width: 150,
-                    fit: BoxFit.cover, // Ensures the image fills the circle
+                    fit: BoxFit.cover,
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Text(
                 "Welcome to NityMulya App!",
                 style: TextStyle(
@@ -378,82 +471,71 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         ),
       );
     }
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        brightness: isDarkMode ? Brightness.dark : Brightness.light,
-        primaryColor: const Color(0xFF079b11),
-      ),
-      routes: {
-        '/login': (context) => const LoginScreen(),
-      },
-      home: Scaffold(
-        drawer: buildDrawer(),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF079b11),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("NityMulya"),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.language),
-                    onPressed: () => setState(() => isBangla = !isBangla),
-                  ),
-                  IconButton(
-                    icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
-                    onPressed: () => setState(() => isDarkMode = !isDarkMode),
-                  ),
-                ],
-              ),
-            ],
-          ),
+
+    return Scaffold(
+      backgroundColor: isDarkMode ? Colors.grey[900] : null,
+      drawer: buildDrawer(),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF079b11),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("NityMulya"),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.language),
+                  onPressed: () => setState(() => isBangla = !isBangla),
+                ),
+                IconButton(
+                  icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+                  onPressed: () {
+                    setState(() => isDarkMode = !isDarkMode);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(isDarkMode
+                            ? 'Dark mode enabled'
+                            : 'Light mode enabled'),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              FadeTransition(
-                opacity: _fadeIn,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
-                  child: Text(
-                    isBangla
-                        ? "Welcome to NityMulya!"
-                        : "Welcome to NityMulya!",
-                    style: GoogleFonts.lato(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green.shade800,
+      ),
+      body: SafeArea(
+        child: Container(
+          color: isDarkMode ? Colors.grey[900] : null,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: TextField(
+                    onChanged: (value) => setState(() => searchQuery = value),
+                    decoration: InputDecoration(
+                      hintText: selectedCategory == "All"
+                          ? "Search all products"
+                          : "Search in $selectedCategory",
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () => setState(() => searchQuery = ""),
+                            )
+                          : null,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: TextField(
-                  onChanged: (value) => setState(() => searchQuery = value),
-                  decoration: InputDecoration(
-                    hintText: selectedCategory == "All"
-                        ? "Search all products"
-                        : "Search in $selectedCategory",
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: searchQuery.isNotEmpty
-                        ? IconButton(
-                            icon: const Icon(Icons.clear),
-                            onPressed: () => setState(() => searchQuery = ""),
-                          )
-                        : null,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                ),
-              ),
-              if (searchQuery.isNotEmpty)
-                Flexible(
-                  child: Container(
+                if (searchQuery.isNotEmpty)
+                  Container(
                     constraints: BoxConstraints(
                         maxHeight: MediaQuery.of(context).size.height * 0.3),
                     margin: const EdgeInsets.symmetric(horizontal: 12),
@@ -475,10 +557,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                         title: Text(
                                             p["subcat_name"]?.toString() ??
                                                 'Unknown Product'),
-                                        subtitle: Text(
-                                            '${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                '${p["cat_name"] ?? "Unknown Category"} • ৳${_safeParseInt(p["min_price"])} - ৳${_safeParseInt(p["max_price"])}'),
+                                            const SizedBox(height: 2),
+                                            _buildShopAvailability(p),
+                                          ],
+                                        ),
                                         onTap: () {
-                                          // Clear search and navigate to product
                                           setState(() {
                                             searchQuery = "";
                                           });
@@ -492,14 +581,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                     'Unknown Product',
                                                 unit: p["unit"]?.toString() ??
                                                     'Unknown Unit',
-                                                low: (p["min_price"] as num?)
-                                                        ?.toInt() ??
-                                                    0,
-                                                high: (p["max_price"] as num?)
-                                                        ?.toInt() ??
-                                                    0,
-                                                subcatId: p["id"]
-                                                    ?.toString(), // Pass the subcategory ID
+                                                low: _safeParseInt(
+                                                    p["min_price"]),
+                                                high: _safeParseInt(
+                                                    p["max_price"]),
+                                                subcatId: p["id"]?.toString(),
                                               ),
                                             ),
                                           );
@@ -509,115 +595,129 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                             ),
                     ),
                   ),
-                ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text(
-                  isBangla ? "দৈনিক মূল্য আপডেট" : "Daily Price Update",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                child: Text("Last Updated: 2 hours ago",
-                    style: TextStyle(color: Colors.grey[600])),
-              ),
-              Container(
-                height: 40,
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                child: isCategoriesLoading
-                    ? const Center(
-                        child: SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      )
-                    : ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: categories.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: ChoiceChip(
-                              label: Text(categories[index]),
-                              selected: selectedCategory == categories[index],
-                              onSelected: (_) => setState(() {
-                                selectedCategory = categories[index];
-                                searchQuery =
-                                    ""; // Clear search when changing category
-                              }),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        isBangla ? "দৈনিক মূল্য আপডেট" : "Daily Price Update",
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      TextButton.icon(
+                        onPressed: () {
+                          // Navigate to a simple product list view
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  "See all products feature - coming soon!"),
                             ),
                           );
                         },
+                        icon: const Icon(
+                          Icons.arrow_forward_ios,
+                          size: 16,
+                          color: Color(0xFF079b11),
+                        ),
+                        label: Text(
+                          "See All",
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: const Color(0xFF079b11),
+                          ),
+                        ),
                       ),
-              ),
-
-              // Nearby Shops Section - Increased height for better visibility
-              Container(
-                height:
-                    180, // Increased from 120 to show all shops without scrolling
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: NearbyShopsWidget(maxShops: 3),
-              ),
-
-              // Products Grid Section with calculated height
-              SizedBox(
-                height: filteredProducts.isEmpty
-                    ? 200 // Fixed height for loading/error/empty states
-                    : ((filteredProducts.length / 2).ceil() * 280.0) +
-                        24, // Dynamic height based on products
-                child: isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : errorMessage != null
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.error_outline,
-                                    size: 64, color: Colors.red),
-                                SizedBox(height: 16),
-                                Text('Error loading products'),
-                                SizedBox(height: 8),
-                                Text(errorMessage!,
-                                    style: TextStyle(color: Colors.grey)),
-                                SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: loadProducts,
-                                  child: Text('Retry'),
-                                ),
-                              ],
-                            ),
-                          )
-                        : filteredProducts.isEmpty
-                            ? const Center(
-                                child: Text('No products found'),
-                              )
-                            : GridView.builder(
-                                padding: const EdgeInsets.all(12),
-                                physics:
-                                    const NeverScrollableScrollPhysics(), // Disable grid scrolling
-                                gridDelegate:
-                                    const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                  childAspectRatio: 0.7,
-                                ),
-                                itemCount: filteredProducts.length,
-                                itemBuilder: (context, index) {
-                                  final product = filteredProducts[index];
-                                  return Card(
-                                    elevation: 2,
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(10)),
-                                    child: InkWell(
-                                      borderRadius: BorderRadius.circular(10),
-                                      onTap: () {
-                                        Navigator.push(
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text("Last Updated: 2 hours ago",
+                      style: TextStyle(color: Colors.grey[600])),
+                ),
+                Container(
+                  height: 40,
+                  margin: const EdgeInsets.symmetric(vertical: 2),
+                  child: isCategoriesLoading
+                      ? const Center(
+                          child: SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: categories.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: ChoiceChip(
+                                label: Text(categories[index]),
+                                selected: selectedCategory == categories[index],
+                                onSelected: (_) => setState(() {
+                                  selectedCategory = categories[index];
+                                  searchQuery = "";
+                                }),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+                // Fixed height container for products to avoid overflow
+                Container(
+                  height: MediaQuery.of(context).size.height * 1,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                  child: isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : errorMessage != null
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline,
+                                      size: 64, color: Colors.red),
+                                  const SizedBox(height: 16),
+                                  const Text('Error loading products'),
+                                  const SizedBox(height: 8),
+                                  Text(errorMessage!,
+                                      style:
+                                          const TextStyle(color: Colors.grey)),
+                                  const SizedBox(height: 16),
+                                  ElevatedButton(
+                                    onPressed: loadProducts,
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : filteredProducts.isEmpty
+                              ? const Center(
+                                  child: Text('No products found'),
+                                )
+                              : GridView.builder(
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 6,
+                                    mainAxisSpacing: 6,
+                                    childAspectRatio: 0.7,
+                                  ),
+                                  itemCount: filteredProducts.length,
+                                  itemBuilder: (context, index) {
+                                    final product = filteredProducts[index];
+                                    return Card(
+                                      elevation: 2,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: InkWell(
+                                        borderRadius: BorderRadius.circular(10),
+                                        onTap: () => Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (_) => ProductDetailScreen(
@@ -627,119 +727,131 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                               unit:
                                                   product["unit"]?.toString() ??
                                                       'Unknown Unit',
-                                              low:
-                                                  (product["min_price"] as num?)
-                                                          ?.toInt() ??
-                                                      0,
-                                              high:
-                                                  (product["max_price"] as num?)
-                                                          ?.toInt() ??
-                                                      0,
-                                              subcatId: product["id"]
-                                                  ?.toString(), // Pass the subcategory ID
+                                              low: _safeParseInt(
+                                                  product["min_price"]),
+                                              high: _safeParseInt(
+                                                  product["max_price"]),
+                                              subcatId:
+                                                  product["id"]?.toString(),
                                             ),
                                           ),
-                                        );
-                                      },
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Text(
-                                              product["subcat_name"]
-                                                      ?.toString() ??
-                                                  'Unknown Product',
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              maxLines: 2,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 8.0),
-                                            child: Text(
-                                              product["unit"]?.toString() ??
-                                                  'Unknown Unit',
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.grey),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            child: Padding(
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            Padding(
                                               padding:
                                                   const EdgeInsets.all(8.0),
-                                              child: Container(
-                                                decoration: BoxDecoration(
-                                                  color: Colors.grey[200],
-                                                  borderRadius:
-                                                      BorderRadius.circular(8),
+                                              child: Text(
+                                                product["subcat_name"]
+                                                        ?.toString() ??
+                                                    'Unknown Product',
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
                                                 ),
-                                                child: Center(
-                                                  child: _buildProductImage(
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 8.0),
+                                              child: Text(
+                                                product["unit"]?.toString() ??
+                                                    'Unknown Unit',
+                                                style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(8.0),
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.grey[200],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            8),
+                                                  ),
+                                                  child: Center(
+                                                    child: _buildProductImage(
+                                                        product),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                  bottom: 8, left: 8, right: 8),
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    "৳${_safeParseInt(product["min_price"])} - ৳${_safeParseInt(product["max_price"])}",
+                                                    style: const TextStyle(
+                                                      fontSize: 16,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 4),
+                                                  _buildShopAvailability(
                                                       product),
-                                                ),
+                                                ],
                                               ),
                                             ),
-                                          ),
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 8, left: 8, right: 8),
-                                            child: Text(
-                                              "৳${product["min_price"] ?? 0} - ৳${product["max_price"] ?? 0}",
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                },
-                              ),
-              ),
-            ],
-          ), // End of Column
-        ), // End of SingleChildScrollView and body
-
-        //  bottomNavigationBar: const GlobalBottomNav(currentIndex: 0),
-        //----------Mithila---------//
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: 0, // Current selected index
-          selectedItemColor:
-              const Color(0xFF079b11), // Green color for selected tab
-          unselectedItemColor: Colors.grey, // Grey for unselected tabs
-          type: BottomNavigationBarType.fixed, // Show all tabs
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.shopping_bag), label: 'Orders'),
-            BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Map'),
-            BottomNavigationBarItem(icon: Icon(Icons.store), label: 'Shops'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.favorite), label: 'Favorites'),
-          ],
-          onTap: (index) {
-            if (index == 1) {
-              // My Orders tab
-              Navigator.pushNamed(context, '/my-orders');
-            } else if (index == 2) {
-              // Map tab
-              Navigator.pushNamed(context, '/enhanced-map');
-            } else if (index == 3 || index == 4) {
-              // Shops and Favorites tabs
-              _handleRestrictedAction();
-            }
-            // Home tab (index 0) does nothing since we're already there
-          },
+                                    );
+                                  },
+                                ),
+                ),
+              ],
+            ),
+          ),
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: 0,
+        selectedItemColor: const Color(0xFF079b11),
+        unselectedItemColor: Colors.grey,
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.shopping_bag), label: 'Orders'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.store_mall_directory), label: 'Nearby Shops'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite), label: 'Favorites'),
+        ],
+        onTap: (index) {
+          if (index == 1) {
+            _handleRestrictedAction('orders'); // Orders - require login
+          } else if (index == 2) {
+            // Navigate to Map Screen showing nearby shops
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => NearbyShopsMapScreen(
+                  userName: widget.userName,
+                  userEmail: widget.userEmail,
+                  userRole: widget.userRole,
+                ),
+              ),
+            );
+          } else if (index == 3) {
+            _handleRestrictedAction('favorites'); // Favorites - require login
+          }
+        },
       ),
     );
   }
