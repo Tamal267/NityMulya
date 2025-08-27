@@ -756,7 +756,7 @@ class _QuickReviewDialogState extends State<_QuickReviewDialog> {
     setState(() => _isSubmitting = true);
 
     try {
-      ReviewService.createShopReview(
+      await ReviewService.createShopReview(
         shopId: widget.shop.name.toLowerCase().replaceAll(' ', '_'),
         shopName: widget.shop.name,
         customerId: 'customer_current',
