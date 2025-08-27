@@ -49,48 +49,28 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
 
     // Initialize FAB position to bottom-right corner
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final screenSize = MediaQuery.of(context).size;
-      setState(() {
-        _fabX = screenSize.width - 72; // 56 + 16 margin
-        _fabY = screenSize.height - 200; // Account for bottom panels
-      });
+      if (mounted) {
+        setState(() {
+          _fabX = MediaQuery.of(context).size.width - 72; // 56 (FAB size) + 16 (margin)
+          _fabY = MediaQuery.of(context).size.height - 200; // From bottom with some margin
+        });
+      }
     });
   }
 
   Future<void> _initializeMap() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
     try {
-      // Get current location
-      await _getCurrentLocation();
-
-      // Fetch shops from database
-      await _fetchShops();
-    } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load map: $e';
-        _isLoading = false;
+        _isLoading = true;
+        _errorMessage = null;
       });
-    }
-  }
 
-  Future<void> _getCurrentLocation() async {
-    try {
-      // Check if location services are enabled
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        throw Exception('Location services are disabled.');
-      }
-
-      // Check location permissions
+      // Check location permission
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          throw Exception('Location permissions are denied');
+          throw Exception('Location permission denied');
         }
       }
 
@@ -100,554 +80,173 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
 
       // Get current position
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: Duration(seconds: 10),
+        ),
       );
 
       setState(() {
         _currentPosition = position;
         _mapCenter = LatLng(position.latitude, position.longitude);
       });
+
+      // Move map to current location
+      _mapController.move(_mapCenter, 14.0);
+
+      // Fetch nearby shops
+      await _fetchShops();
+
     } catch (e) {
-      print('Error getting location: $e');
-      // Use default location (Dhaka) if location access fails
+      print('Error initializing map: $e');
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
     }
   }
 
   Future<void> _fetchShops() async {
-    try {
-      final shops = await ShopApi.fetchShops();
-
-      // Filter shops by distance if user location is available
-      List<Map<String, dynamic>> filteredShops = shops;
-      if (_currentPosition != null) {
-        filteredShops = ShopApi.filterShopsByDistance(
-          shops,
-          _currentPosition!.latitude,
-          _currentPosition!.longitude,
-          _searchRadius,
-        );
-      }
-
-      setState(() {
-        _shops = filteredShops;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _errorMessage = 'Failed to load shops: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _drawRoutes() async {
-    // Draw routes to all visible shops if enabled
-    if (_showRoutes && _currentPosition != null) {
-      List<Polyline> allRoutes = [];
-
-      // Draw routes to first 5 closest shops to avoid clutter
-      final closestShops = _shops.take(5).toList();
-
-      for (int i = 0; i < closestShops.length; i++) {
-        final shop = closestShops[i];
-        final distanceData = await _getRealDistance(shop);
-
-        if (distanceData.containsKey('coordinates') && distanceData['coordinates'] is List) {
-          final coordinates = distanceData['coordinates'] as List;
-          
-          if (coordinates.isNotEmpty) {
-            final points = coordinates
-                .map((coord) => LatLng(coord[1] as double, coord[0] as double))
-                .toList();
-
-            // Use different colors for different routes
-            final colors = [
-              Colors.blue,
-              Colors.green,
-              Colors.orange,
-              Colors.purple,
-              Colors.teal,
-            ];
-
-            allRoutes.add(Polyline(
-              points: points,
-              color: colors[i % colors.length].withOpacity(0.7),
-              strokeWidth: 3.0,
-            ));
-          }
-        } else {
-          // Fallback to straight line if no route coordinates available
-          final shopLat = ShopApi.parseDouble(shop['latitude']);
-          final shopLon = ShopApi.parseDouble(shop['longitude']);
-
-          if (shopLat != null && shopLon != null) {
-            allRoutes.add(Polyline(
-              points: [
-                LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-                LatLng(shopLat, shopLon),
-              ],
-              color: Colors.grey.withOpacity(0.5),
-              strokeWidth: 2.0,
-              pattern: StrokePattern.dashed(segments: [8, 4]),
-            ));
-          }
-        }
-      }
-
-      setState(() {
-        _routePolylines = allRoutes;
-      });
-    } else {
-      setState(() {
-        _routePolylines = [];
-      });
-    }
-  }
-
-  // Get real distance and duration using OSRM (free routing service)
-  Future<Map<String, dynamic>> _getRealDistance(
-      Map<String, dynamic> shop) async {
-    if (_currentPosition == null) {
-      return {'distance': 'Unknown', 'duration': 'Unknown'};
-    }
-
-    final shopLat = ShopApi.parseDouble(shop['latitude']);
-    final shopLon = ShopApi.parseDouble(shop['longitude']);
-
-    if (shopLat == null || shopLon == null) {
-      return {'distance': 'Unknown', 'duration': 'Unknown'};
-    }
-
-    // Create a unique key for caching
-    final key =
-        '${_currentPosition!.latitude},${_currentPosition!.longitude}-$shopLat,$shopLon';
-
-    // Check cache first
-    if (_realDistanceCache.containsKey(key)) {
-      return _realDistanceCache[key]!;
-    }
+    if (_currentPosition == null) return;
 
     try {
-      // Using OSRM (free routing service) - no API key required
-      final url = 'https://router.project-osrm.org/route/v1/driving/${_currentPosition!.longitude},${_currentPosition!.latitude};$shopLon,$shopLat?overview=full&geometries=geojson';
-      
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      ).timeout(const Duration(seconds: 10));
+      setState(() {
+        _isLoading = true;
+      });
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        
-        if (data['routes'] != null && data['routes'].isNotEmpty) {
-          final route = data['routes'][0];
-          
-          final distanceMeters = route['distance'] as num;
-          final durationSeconds = route['duration'] as num;
-          
-          final distanceKm = (distanceMeters / 1000).toStringAsFixed(1);
-          final durationMin = (durationSeconds / 60).toStringAsFixed(0);
-
-          // Extract route coordinates for drawing
-          List<dynamic> coordinates = [];
-          if (route['geometry'] != null && route['geometry']['coordinates'] != null) {
-            coordinates = route['geometry']['coordinates'] as List;
-          }
-
-          final result = {
-            'distance': '${distanceKm} km',
-            'duration': '${durationMin} min',
-            'coordinates': coordinates,
-            'real_distance_meters': distanceMeters,
-            'duration_seconds': durationSeconds,
-          };
-
-          // Cache the result
-          _realDistanceCache[key] = result;
-
-          return result;
-        }
-      }
-    } catch (e) {
-      print('Error getting real distance from OSRM: $e');
-    }
-
-    // Fallback to straight line distance with estimated time
-    final straightDistance = ShopApi.calculateDistance(
-      _currentPosition!.latitude,
-      _currentPosition!.longitude,
-      shopLat,
-      shopLon,
-    );
-
-    // Estimate time based on average speed (assume 30 km/h in city)
-    final estimatedTimeMinutes = ((straightDistance * 1000) / (30000 / 60)).round();
-
-    final fallback = {
-      'distance': '~${straightDistance.toStringAsFixed(1)} km',
-      'duration': '~${estimatedTimeMinutes} min',
-      'real_distance_meters': straightDistance * 1000,
-      'duration_seconds': estimatedTimeMinutes * 60,
-    };
-
-    _realDistanceCache[key] = fallback;
-    return fallback;
-  }
-
-  List<Marker> _buildShopMarkers() {
-    List<Marker> markers = [];
-
-    // Add user location marker if available
-    if (_currentPosition != null) {
-      markers.add(
-        Marker(
-          point:
-              LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-          child: Container(
-            width: 24,
-            height: 24,
-            decoration: BoxDecoration(
-              color: Colors.blue,
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: const Icon(
-              Icons.my_location,
-              color: Colors.white,
-              size: 16,
-            ),
-          ),
-        ),
+      final shops = await ShopApi.getNearbyShops(
+        latitude: _currentPosition!.latitude,
+        longitude: _currentPosition!.longitude,
+        radius: _searchRadius,
       );
+
+      setState(() {
+        _shops = shops;
+        _isLoading = false;
+      });
+
+    } catch (e) {
+      print('Error fetching shops: $e');
+      setState(() {
+        _errorMessage = 'Failed to fetch nearby shops: $e';
+        _isLoading = false;
+      });
     }
-
-    // Add shop markers with distance labels
-    for (final shop in _shops) {
-      final latitude = ShopApi.parseDouble(shop['latitude']);
-      final longitude = ShopApi.parseDouble(shop['longitude']);
-
-      if (latitude != null && longitude != null) {
-        double? distance;
-        if (_currentPosition != null) {
-          distance = ShopApi.calculateDistance(
-            _currentPosition!.latitude,
-            _currentPosition!.longitude,
-            latitude,
-            longitude,
-          );
-        }
-
-        markers.add(
-          Marker(
-            point: LatLng(latitude, longitude),
-            width: 80, // Increased width to prevent overflow
-            height: 100, // Increased height to accommodate both icon and distance
-            child: GestureDetector(
-              onTap: () => _showShopDetails(shop, distance),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Distance and time label - positioned above the marker
-                  if (distance != null)
-                    FutureBuilder<Map<String, dynamic>>(
-                      future: _getRealDistance(shop),
-                      builder: (context, snapshot) {
-                        return Container(
-                          constraints: const BoxConstraints(
-                            maxWidth: 75, 
-                            minHeight: 20,
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color: Colors.grey.shade300, width: 1),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.15),
-                                blurRadius: 3,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                snapshot.hasData 
-                                    ? snapshot.data!['distance'] ?? '${distance?.toStringAsFixed(1) ?? '0'} km'
-                                    : '${distance?.toStringAsFixed(1) ?? '0'} km',
-                                style: const TextStyle(
-                                  fontSize: 8,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
-                                textAlign: TextAlign.center,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              if (snapshot.hasData && snapshot.data!['duration'] != 'Unknown') ...[
-                                const SizedBox(height: 1),
-                                Text(
-                                  snapshot.data!['duration'] ?? '',
-                                  style: const TextStyle(
-                                    fontSize: 7,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.blue,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                  if (distance != null) const SizedBox(height: 4),
-                  // Shop icon
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.25),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: const Icon(
-                      Icons.store,
-                      color: Colors.white,
-                      size: 18,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      }
-    }
-
-    return markers;
   }
 
-  // Build route polylines
-  List<Polyline> _buildRoutePolylines() {
-    List<Polyline> polylines = [];
-    
-    // Add bulk routes if showing routes to multiple shops
-    polylines.addAll(_routePolylines);
-    
-    if (_currentPosition == null || _selectedShop == null || !_showRoute) {
-      return polylines;
-    }
-
-    final shopLat = ShopApi.parseDouble(_selectedShop!['latitude']);
-    final shopLon = ShopApi.parseDouble(_selectedShop!['longitude']);
-
-    if (shopLat == null || shopLon == null) return polylines;
-
-    // Add the selected shop route (this will be a straight line for now)
-    polylines.add(
-      Polyline(
-        points: [
-          LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
-          LatLng(shopLat, shopLon),
-        ],
-        strokeWidth: 4.0,
-        color: Colors.blue,
-        pattern: StrokePattern.dashed(segments: [10, 5]),
-      ),
-    );
-    
-    return polylines;
-  }
-
-  void _showShopDetails(Map<String, dynamic> shop, double? distance) {
+  void _onShopTap(Map<String, dynamic> shop) {
     setState(() {
       _selectedShop = shop;
       _showRoute = true;
     });
 
+    _showShopDialog(
+      context: context,
+      shop: shop,
+    );
+  }
+
+  Future<Map<String, dynamic>> _getRealDistance(Map<String, dynamic> shop) async {
+    if (_currentPosition == null) {
+      return {'distance': 'Unknown', 'duration': 'Unknown'};
+    }
+
+    final shopId = shop['id'].toString();
+    
+    // Check cache first
+    if (_realDistanceCache.containsKey(shopId)) {
+      return _realDistanceCache[shopId]!;
+    }
+
+    try {
+      final shopLat = double.parse(shop['latitude'].toString());
+      final shopLon = double.parse(shop['longitude'].toString());
+      
+      // For now, use straight-line distance (you can integrate with routing APIs later)
+      final distance = Geolocator.distanceBetween(
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+        shopLat,
+        shopLon,
+      );
+
+      final distanceKm = distance / 1000;
+      final durationMinutes = (distanceKm / 5) * 60; // Assuming 5 km/h walking speed
+
+      final result = {
+        'distance': '${distanceKm.toStringAsFixed(1)} km',
+        'duration': '${durationMinutes.toInt()} min walking',
+      };
+
+      // Cache the result
+      _realDistanceCache[shopId] = result;
+      
+      return result;
+
+    } catch (e) {
+      print('Error calculating distance: $e');
+      return {'distance': 'Unknown', 'duration': 'Unknown'};
+    }
+  }
+
+  void _showShopDialog({
+    required BuildContext context,
+    required Map<String, dynamic> shop,
+  }) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.store, color: Colors.red),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                shop['name'] ?? 'Unknown Shop',
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (shop['address'] != null) ...[
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.location_on, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      'Address: ${shop['address']}',
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                  ),
-                ],
-              ),
+        title: Text(shop['name'] ?? 'Unknown Shop'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Address: ${shop['address'] ?? 'Unknown'}'),
+              Text('Phone: ${shop['phone'] ?? 'No phone'}'),
+              if (shop['description'] != null && shop['description'].toString().isNotEmpty)
+                Text('Description: ${shop['description']}'),
               const SizedBox(height: 8),
-            ],
-            if (shop['phone'] != null) ...[
-              Row(
-                children: [
-                  const Icon(Icons.phone, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Phone: ${shop['phone']}',
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-            ],
-            // Enhanced distance and time info
-            FutureBuilder<Map<String, dynamic>>(
-              future: _getRealDistance(shop),
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.directions,
-                                size: 16, color: Colors.blue.shade700),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Route Information',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade700,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Row(
-                          children: [
-                            Icon(Icons.straighten,
-                                size: 14, color: Colors.blue.shade600),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Distance: ${snapshot.data!['distance']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.access_time,
-                                size: 14, color: Colors.blue.shade600),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Time: ${snapshot.data!['duration']}',
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+              FutureBuilder<Map<String, dynamic>>(
+                future: _getRealDistance(shop),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Text('Calculating distance...');
+                  }
+                  if (snapshot.hasError) {
+                    return const Text('Distance: Unknown');
+                  }
+                  final data = snapshot.data!;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Distance: ${data['distance']}'),
+                      Text('Duration: ${data['duration']}'),
+                    ],
                   );
-                } else {
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey.shade300),
-                    ),
-                    child: const Row(
-                      children: [
-                        SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                        SizedBox(width: 8),
-                        Text('Calculating route...'),
-                      ],
-                    ),
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Route is shown on the map with blue dashed line',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-                fontStyle: FontStyle.italic,
+                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () {
-              setState(() {
-                _showRoute = false;
-                _selectedShop = null;
-              });
               Navigator.pop(context);
+              setState(() {
+                _selectedShop = null;
+                _showRoute = false;
+              });
             },
             child: const Text('Close'),
           ),
-          if (_currentPosition != null &&
-              shop['latitude'] != null &&
-              shop['longitude'] != null)
-            ElevatedButton.icon(
-              onPressed: () {
-                _centerMapOnRoute(shop);
-                Navigator.pop(context);
-              },
-              icon: const Icon(Icons.center_focus_strong),
-              label: const Text('Center on Route'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF079b11),
-                foregroundColor: Colors.white,
-              ),
-            ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _centerMapOnRoute(shop);
+            },
+            child: const Text('Show Route'),
+          ),
         ],
       ),
     );
@@ -656,39 +255,161 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
   void _centerMapOnRoute(Map<String, dynamic> shop) {
     if (_currentPosition == null) return;
 
-    final shopLat = ShopApi.parseDouble(shop['latitude']);
-    final shopLon = ShopApi.parseDouble(shop['longitude']);
+    try {
+      final shopLat = double.parse(shop['latitude'].toString());
+      final shopLon = double.parse(shop['longitude'].toString());
 
-    if (shopLat == null || shopLon == null) return;
+      // Calculate center point between current location and shop
+      final centerLat = (_currentPosition!.latitude + shopLat) / 2;
+      final centerLon = (_currentPosition!.longitude + shopLon) / 2;
 
-    // Calculate the center point between user and shop
-    final centerLat = (_currentPosition!.latitude + shopLat) / 2;
-    final centerLon = (_currentPosition!.longitude + shopLon) / 2;
+      // Calculate zoom level based on distance
+      final distance = Geolocator.distanceBetween(
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+        shopLat,
+        shopLon,
+      );
 
-    // Calculate appropriate zoom level based on distance
-    final distance = ShopApi.calculateDistance(
-      _currentPosition!.latitude,
-      _currentPosition!.longitude,
-      shopLat,
-      shopLon,
-    );
+      double zoom = 15.0;
+      if (distance > 5000) zoom = 12.0;
+      else if (distance > 2000) zoom = 13.0;
+      else if (distance > 1000) zoom = 14.0;
 
-    double zoom = 15.0;
-    if (distance > 10) zoom = 12.0;
-    if (distance > 25) zoom = 11.0;
-    if (distance > 50) zoom = 10.0;
+      _mapController.move(LatLng(centerLat, centerLon), zoom);
 
-    _mapController.move(LatLng(centerLat, centerLon), zoom);
+    } catch (e) {
+      print('Error centering map: $e');
+    }
+  }
+
+  List<Marker> _buildShopMarkers() {
+    final markers = <Marker>[];
+
+    // Add current position marker
+    if (_currentPosition != null) {
+      markers.add(
+        Marker(
+          point: LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+          width: 40,
+          height: 40,
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 3),
+            ),
+            child: const Icon(
+              Icons.my_location,
+              color: Colors.white,
+              size: 20,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Add shop markers
+    for (final shop in _shops) {
+      try {
+        final lat = double.parse(shop['latitude'].toString());
+        final lng = double.parse(shop['longitude'].toString());
+        
+        markers.add(
+          Marker(
+            point: LatLng(lat, lng),
+            width: 40,
+            height: 40,
+            child: GestureDetector(
+              onTap: () => _onShopTap(shop),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: _selectedShop != null && _selectedShop!['id'] == shop['id']
+                      ? Colors.red
+                      : Colors.green,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                ),
+                child: const Icon(
+                  Icons.store,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        );
+      } catch (e) {
+        print('Error parsing shop coordinates: $e');
+      }
+    }
+
+    return markers;
+  }
+
+  List<Polyline> _buildRoutePolylines() {
+    if (!_showRoute || _selectedShop == null || _currentPosition == null) {
+      return [];
+    }
+
+    try {
+      final shopLat = double.parse(_selectedShop!['latitude'].toString());
+      final shopLon = double.parse(_selectedShop!['longitude'].toString());
+
+      return [
+        Polyline(
+          points: [
+            LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+            LatLng(shopLat, shopLon),
+          ],
+          color: Colors.red,
+          strokeWidth: 4.0,
+        ),
+      ];
+    } catch (e) {
+      print('Error building route polylines: $e');
+      return [];
+    }
+  }
+
+  void _drawRoutes() {
+    if (_currentPosition == null || _shops.isEmpty) return;
+
+    final polylines = <Polyline>[];
+
+    for (final shop in _shops) {
+      try {
+        final shopLat = double.parse(shop['latitude'].toString());
+        final shopLon = double.parse(shop['longitude'].toString());
+
+        polylines.add(
+          Polyline(
+            points: [
+              LatLng(_currentPosition!.latitude, _currentPosition!.longitude),
+              LatLng(shopLat, shopLon),
+            ],
+            color: Colors.blue.withOpacity(0.6),
+            strokeWidth: 2.0,
+          ),
+        );
+      } catch (e) {
+        print('Error drawing route to shop: $e');
+      }
+    }
+
+    setState(() {
+      _routePolylines = polylines;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFF079b11),
-        title: const Text('Nearby Shops - Enhanced'),
+        title: const Text('Nearby Shops Map'),
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
         actions: [
-          // Toggle route visibility
           IconButton(
             icon: Icon(
               _showRoute ? Icons.route : Icons.route_outlined,
@@ -717,7 +438,7 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                 children: [
                   CircularProgressIndicator(),
                   SizedBox(height: 16),
-                  Text('Loading nearby shops...'),
+                  Text('Loading map and nearby shops...'),
                 ],
               ),
             )
@@ -726,7 +447,7 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error, size: 64, color: Colors.red),
+                      Icon(Icons.error, size: 64, color: Colors.red[300]),
                       const SizedBox(height: 16),
                       Text(_errorMessage!),
                       const SizedBox(height: 16),
@@ -744,22 +465,43 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                       options: MapOptions(
                         initialCenter: _mapCenter,
                         initialZoom: 14.0,
+                        minZoom: 5.0,
                         maxZoom: 18.0,
-                        minZoom: 10.0,
                       ),
                       children: [
                         TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.nitymulya.app',
+                          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.nitymulya',
                         ),
                         PolylineLayer(polylines: _buildRoutePolylines()),
+                        PolylineLayer(polylines: _routePolylines),
                         MarkerLayer(markers: _buildShopMarkers()),
                       ],
                     ),
-                    // Shop count and legend overlay
+
+                    // Shop count indicator
                     Positioned(
                       top: 16,
+                      left: 16,
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${_shops.length} shops found',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // Controls panel
+                    Positioned(
+                      top: 70,
                       left: 16,
                       child: Container(
                         padding: const EdgeInsets.all(12),
@@ -775,93 +517,41 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                           ],
                         ),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              '${_shops.length} shops found',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // Legend
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.blue,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.my_location,
-                                    color: Colors.white,
-                                    size: 12,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text('You',
-                                    style: TextStyle(fontSize: 12)),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 16,
-                                  height: 16,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.store,
-                                    color: Colors.white,
-                                    size: 12,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text('Shops',
-                                    style: TextStyle(fontSize: 12)),
-                              ],
-                            ),
+                            // Route info
                             if (_showRoute && _selectedShop != null) ...[
-                              const SizedBox(height: 10),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Container(
-                                    width: 20,
-                                    height: 10,
-                                    decoration: BoxDecoration(
-                                      color: Colors.blue,
-                                      borderRadius: BorderRadius.circular(1),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  const Text('Route',
-                                      style: TextStyle(fontSize: 12)),
-                                ],
+                              FutureBuilder<Map<String, dynamic>>(
+                                future: _getRealDistance(_selectedShop!),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const Text('Calculating...');
+                                  }
+                                  if (snapshot.hasError || !snapshot.hasData) {
+                                    return const Text('Distance: Unknown');
+                                  }
+                                  final data = snapshot.data!;
+                                  return Column(
+                                    children: [
+                                      Text('${data['distance']}'),
+                                      Text('${data['duration']}'),
+                                    ],
+                                  );
+                                },
                               ),
+                              const SizedBox(height: 8),
                             ],
                           ],
                         ),
                       ),
                     ),
-                    // Search radius control with enhanced features
+
+                    // Radius control
                     Positioned(
                       bottom: _selectedShop != null ? 90 : 20,
                       left: 16,
-                      right: 16,
                       child: Container(
-                        constraints: const BoxConstraints(maxHeight: 60),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 8),
+                        padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
@@ -876,241 +566,146 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: Text(
-                                    'Radius: ${_searchRadius.toInt()} km',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                                Expanded(
-                                  flex: 3,
-                                  child: SizedBox(
-                                    height: 20,
-                                    child: Slider(
-                                      value: _searchRadius,
-                                      min: 1.0,
-                                      max: 50.0,
-                                      divisions: 49,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _searchRadius = value;
-                                        });
-                                        _fetchShops();
-                                      },
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 80,
-                                  height: 28,
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        _showRoutes = !_showRoutes;
-                                      });
-                                      if (_showRoutes) _drawRoutes();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4, vertical: 2),
-                                      minimumSize: const Size(0, 28),
-                                      textStyle: const TextStyle(fontSize: 10),
-                                      backgroundColor: _showRoutes 
-                                          ? const Color(0xFF079b11) 
-                                          : Colors.grey.shade300,
-                                    ),
-                                    child: Text(
-                                      _showRoutes ? 'Hide Routes' : 'Show Routes',
-                                      style: TextStyle(
-                                        fontSize: 9,
-                                        color: _showRoutes ? Colors.white : Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'Radius: ${_searchRadius.toInt()} km',
+                              style: const TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            SizedBox(
+                              width: 200,
+                              child: Slider(
+                                value: _searchRadius,
+                                min: 1.0,
+                                max: 50.0,
+                                divisions: 49,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _searchRadius = value;
+                                  });
+                                  _fetchShops();
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {
+                                  _showRoutes = !_showRoutes;
+                                });
+                                if (_showRoutes) _drawRoutes();
+                              },
+                              child: Text(
+                                _showRoutes ? 'Hide' : 'Routes',
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ),
-                    // Selected shop info with enhanced details
+
+                    // Selected shop info
                     if (_selectedShop != null && _currentPosition != null)
                       Positioned(
                         bottom: 20,
                         left: 16,
                         right: 16,
                         child: Container(
-                          constraints: const BoxConstraints(maxHeight: 50),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 6),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.blue.shade200),
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.2),
-                                blurRadius: 4,
-                                offset: const Offset(0, 2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          child: Row(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.store,
-                                  color: Colors.blue.shade700, size: 16),
-                              const SizedBox(width: 6),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
                                       _selectedShop!['name'] ?? 'Unknown Shop',
-                                      style: TextStyle(
+                                      style: const TextStyle(
+                                        fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: Colors.blue.shade700,
-                                        fontSize: 13,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    FutureBuilder<Map<String, dynamic>>(
-                                      future: _getRealDistance(_selectedShop!),
-                                      builder: (context, snapshot) {
-                                        if (snapshot.hasData) {
-                                          return Text(
-                                            '${snapshot.data!['distance']} • ${snapshot.data!['duration']} • Tap to see route',
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: Colors.blue.shade600,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          );
-                                        }
-                                        return Text(
-                                          'Calculating route...',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            color: Colors.blue.shade600,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.close),
+                                    onPressed: () {
+                                      setState(() {
+                                        _selectedShop = null;
+                                        _showRoute = false;
+                                      });
+                                    },
+                                  ),
+                                ],
                               ),
-                              SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _selectedShop = null;
-                                      _showRoute = false;
-                                    });
-                                  },
-                                  icon: Icon(Icons.close,
-                                      color: Colors.blue.shade700, size: 14),
-                                  padding: EdgeInsets.zero,
-                                ),
+                              const SizedBox(height: 8),
+                              FutureBuilder<Map<String, dynamic>>(
+                                future: _getRealDistance(_selectedShop!),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return const Text('Calculating distance...');
+                                  }
+                                  if (snapshot.hasError || !snapshot.hasData) {
+                                    return const Text('Distance: Unknown');
+                                  }
+                                  final data = snapshot.data!;
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Distance: ${data['distance']}'),
+                                      Text('Duration: ${data['duration']}'),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),
                         ),
                       ),
+
                     // Draggable My Location FAB
                     if (_currentPosition != null)
                       Positioned(
                         left: _fabX,
                         top: _fabY,
                         child: Draggable(
-                          feedback: Container(
-                            width: 56,
-                            height: 56,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF079b11),
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black26,
-                                  blurRadius: 8,
-                                  offset: Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(
-                              Icons.my_location,
-                              color: Colors.white,
-                              size: 24,
-                            ),
+                          feedback: FloatingActionButton(
+                            onPressed: null,
+                            backgroundColor: Colors.blue.withOpacity(0.8),
+                            child: const Icon(Icons.my_location, color: Colors.white),
                           ),
-                          childWhenDragging: Container(
-                            width: 56,
-                            height: 56,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF079b11).withOpacity(0.5),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.my_location,
-                              color: Colors.white.withOpacity(0.7),
-                              size: 24,
-                            ),
-                          ),
+                          childWhenDragging: Container(),
                           onDragEnd: (details) {
                             setState(() {
-                              // Get screen size
-                              final screenSize = MediaQuery.of(context).size;
-
-                              // Calculate new position within screen bounds
                               _fabX = (details.offset.dx - 28)
-                                  .clamp(0, screenSize.width - 56);
+                                  .clamp(0, MediaQuery.of(context).size.width - 56);
                               _fabY = (details.offset.dy - 28 - kToolbarHeight)
-                                  .clamp(
-                                      0,
-                                      screenSize.height -
-                                          156); // Account for app bar and bottom padding
+                                  .clamp(0, MediaQuery.of(context).size.height - 56 - kToolbarHeight);
                             });
                           },
-                          child: GestureDetector(
-                            onTap: () {
-                              _mapController.move(
-                                LatLng(_currentPosition!.latitude,
-                                    _currentPosition!.longitude),
-                                15.0,
-                              );
+                          child: FloatingActionButton(
+                            heroTag: "myLocationFab",
+                            onPressed: () {
+                              if (_currentPosition != null) {
+                                _mapController.move(
+                                  LatLng(_currentPosition!.latitude,
+                                      _currentPosition!.longitude),
+                                  16.0,
+                                );
+                              }
                             },
-                            child: Container(
-                              width: 56,
-                              height: 56,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF079b11),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 8,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.my_location,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
+                            backgroundColor: Colors.blue,
+                            child: const Icon(Icons.my_location, color: Colors.white),
                           ),
                         ),
                       ),
