@@ -1,22 +1,39 @@
-import sql from './src/db';
+import sql from "./src/db";
 
-async function checkSchema() {
-    try {
-        console.log('=== Subcategories Schema ===');
-        const schema = await sql`
-            SELECT column_name, data_type 
-            FROM information_schema.columns 
-            WHERE table_name = 'subcategories'
-        `;
-        console.log(JSON.stringify(schema, null, 2));
-        
-        console.log('\n=== Sample Subcategory Record ===');
-        const sample = await sql`SELECT * FROM subcategories LIMIT 1`;
-        console.log(JSON.stringify(sample[0], null, 2));
-    } catch (error) {
-        console.error('Error:', error);
-    }
+async function checkShopOwnersSchema() {
+  try {
+    console.log("Checking shop_owners table schema...");
+
+    // Check table structure
+    const columns = await sql`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'shop_owners' 
+      AND table_schema = 'public'
+      ORDER BY ordinal_position;
+    `;
+
+    console.log("📋 shop_owners table columns:");
+    columns.forEach((col) => {
+      console.log(`  - ${col.column_name}: ${col.data_type}`);
+    });
+
+    // Check if we have any shop_owners data
+    const shopOwners = await sql`
+      SELECT id, name, contact
+      FROM shop_owners 
+      LIMIT 3;
+    `;
+
+    console.log("📊 Sample shop_owners data:");
+    shopOwners.forEach((shop) => {
+      console.log(`  - ${shop.name}: ${shop.contact}`);
+    });
+  } catch (error) {
+    console.error("❌ Error:", error.message);
+  } finally {
     process.exit(0);
+  }
 }
 
-checkSchema();
+checkShopOwnersSchema();

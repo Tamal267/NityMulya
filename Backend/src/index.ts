@@ -3,53 +3,61 @@ import { cors } from "hono/cors";
 import type { JwtVariables } from "hono/jwt";
 import { prettyJSON } from "hono/pretty-json";
 import {
-    getCategories,
-    getChatConversations,
-    getChatMessages,
-    getPrice,
-    getPricesfromDB,
-    getProductPriceHistory,
-    getSheetUrl,
-    getShops,
-    getShopsByProduct,
-    getShopsBySubcategoryId,
-    getWholesalers,
-    initializeSampleData,
-    sendMessage,
+  getCategories,
+  getChatConversations,
+  getChatMessages,
+  getPrice,
+  getPricesfromDB,
+  getProductPriceHistory,
+  getSheetUrl,
+  getShops,
+  getShopsByProduct,
+  getShopsBySubcategoryId,
+  getWholesalers,
+  initializeSampleData,
+  sendMessage,
 } from "./controller/apiController";
 import {
-    login,
-    loginCustomer,
-    loginShopOwner,
-    loginWholesaler,
-    signupCustomer,
-    signupShopOwner,
-    signupWholesaler,
+  login,
+  loginCustomer,
+  loginShopOwner,
+  loginWholesaler,
+  signupCustomer,
+  signupShopOwner,
+  signupWholesaler,
 } from "./controller/authController";
 import {
-    addProductToInventory as addShopOwnerProduct,
-    getChatMessages as getShopOwnerChatMessages,
-    getShopOwnerDashboard,
-    getShopOwnerInventory,
-    getLowStockProducts as getShopOwnerLowStockProducts,
-    getShopOrders as getShopOwnerOrders,
-    updateInventoryItem as updateShopOwnerInventoryItem,
+  cancelCustomerOrder,
+  createCustomerOrder,
+  getCustomerOrder,
+  getCustomerOrders,
+  getShopOwnerCustomerOrders,
+  updateCustomerOrderStatus,
+} from "./controller/customerOrderController";
+import {
+  addProductToInventory as addShopOwnerProduct,
+  getChatMessages as getShopOwnerChatMessages,
+  getShopOwnerDashboard,
+  getShopOwnerInventory,
+  getLowStockProducts as getShopOwnerLowStockProducts,
+  getShopOrders as getShopOwnerOrders,
+  updateInventoryItem as updateShopOwnerInventoryItem,
 } from "./controller/shopOwnerController";
 import {
-    addProductToInventory as addWholesalerProduct,
-    createOffer,
-    createOrder,
-    getShopOwners,
-    getSubcategories,
-    getCategories as getWholesalerCategories,
-    getChatMessages as getWholesalerChatMessages,
-    getWholesalerDashboard,
-    getWholesalerInventory,
-    getLowStockProducts as getWholesalerLowStockProducts,
-    getWholesalerOffers,
-    getShopOrders as getWholesalerShopOrders,
-    updateOrderStatus,
-    updateInventoryItem as updateWholesalerInventoryItem,
+  addProductToInventory as addWholesalerProduct,
+  createOffer,
+  createOrder,
+  getShopOwners,
+  getSubcategories,
+  getCategories as getWholesalerCategories,
+  getChatMessages as getWholesalerChatMessages,
+  getWholesalerDashboard,
+  getWholesalerInventory,
+  getLowStockProducts as getWholesalerLowStockProducts,
+  getWholesalerOffers,
+  getShopOrders as getWholesalerShopOrders,
+  updateOrderStatus,
+  updateInventoryItem as updateWholesalerInventoryItem,
 } from "./controller/wholesalerController";
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
 
@@ -84,21 +92,21 @@ app.post("/login_wholesaler", loginWholesaler);
 app.post("/login_shop_owner", loginShopOwner);
 
 // Wholesaler routes - protected with authentication
-app.use('/wholesaler/*', createAuthMiddleware(), requireRole('wholesaler'))
-app.get('/wholesaler/dashboard', getWholesalerDashboard)
-app.get('/wholesaler/inventory', getWholesalerInventory)
-app.post('/wholesaler/inventory', addWholesalerProduct)
-app.put('/wholesaler/inventory', updateWholesalerInventoryItem)
-app.get('/wholesaler/low-stock', getWholesalerLowStockProducts)
-app.get('/wholesaler/orders', getWholesalerShopOrders)
-app.post('/wholesaler/orders', createOrder)
-app.put('/wholesaler/orders/status', updateOrderStatus)
-app.get('/wholesaler/offers', getWholesalerOffers)
-app.post('/wholesaler/offers', createOffer)
-app.get('/wholesaler/chat', getWholesalerChatMessages)
-app.get('/wholesaler/shop-owners', getShopOwners)
-app.get('/wholesaler/categories', getWholesalerCategories)
-app.get('/wholesaler/subcategories', getSubcategories)
+app.use("/wholesaler/*", createAuthMiddleware(), requireRole("wholesaler"));
+app.get("/wholesaler/dashboard", getWholesalerDashboard);
+app.get("/wholesaler/inventory", getWholesalerInventory);
+app.post("/wholesaler/inventory", addWholesalerProduct);
+app.put("/wholesaler/inventory", updateWholesalerInventoryItem);
+app.get("/wholesaler/low-stock", getWholesalerLowStockProducts);
+app.get("/wholesaler/orders", getWholesalerShopOrders);
+app.post("/wholesaler/orders", createOrder);
+app.put("/wholesaler/orders/status", updateOrderStatus);
+app.get("/wholesaler/offers", getWholesalerOffers);
+app.post("/wholesaler/offers", createOffer);
+app.get("/wholesaler/chat", getWholesalerChatMessages);
+app.get("/wholesaler/shop-owners", getShopOwners);
+app.get("/wholesaler/categories", getWholesalerCategories);
+app.get("/wholesaler/subcategories", getSubcategories);
 
 // Shop Owner routes (protected)
 app.use("/shop-owner/*", createAuthMiddleware(), requireRole("shop_owner"));
@@ -109,6 +117,15 @@ app.put("/shop-owner/inventory", updateShopOwnerInventoryItem);
 app.get("/shop-owner/low-stock", getShopOwnerLowStockProducts);
 app.get("/shop-owner/orders", getShopOwnerOrders);
 app.get("/shop-owner/chat", getShopOwnerChatMessages);
+app.get("/shop-owner/customer-orders", getShopOwnerCustomerOrders);
+app.put("/shop-owner/customer-orders/status", updateCustomerOrderStatus);
+
+// Customer routes (protected)
+app.use("/customer/*", createAuthMiddleware(), requireRole("customer"));
+app.post("/customer/orders", createCustomerOrder);
+app.get("/customer/orders", getCustomerOrders);
+app.get("/customer/orders/:orderId", getCustomerOrder);
+app.post("/customer/orders/cancel", cancelCustomerOrder);
 
 // Chat routes (protected - both wholesaler and shop owner)
 app.use("/chat/*", createAuthMiddleware());
@@ -118,7 +135,7 @@ app.get("/chat/messages", getChatMessages);
 app.get("/chat/conversations", getChatConversations);
 
 export default {
-  port: process.env.PORT || 5000,
+  port: process.env.PORT || 5001,
   fetch: app.fetch,
   idleTimeout: 255,
 };

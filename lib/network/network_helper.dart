@@ -4,9 +4,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-
 // Your base server URL
-final String serverUrl = dotenv.env['SERVER_URL'] ?? 'http://localhost:5000';
+final String serverUrl = dotenv.env['SERVER_URL'] ?? 'http://localhost:5001';
 
 // A simple utility class to handle all API requests.
 class NetworkHelper {
@@ -92,14 +91,17 @@ class NetworkHelper {
 
     final fullUrl = Uri.parse('$serverUrl$url');
     try {
-      final response = await http.post(
-        fullUrl,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode(data),
-      );
+      final response = await http
+          .post(
+            fullUrl,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: json.encode(data),
+          )
+          .timeout(
+              const Duration(seconds: 3)); // Fast 3 second timeout for orders
 
       return _handleResponse(response);
     } catch (e) {

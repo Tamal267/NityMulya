@@ -54,7 +54,7 @@ void main() async {
     // Test 4: Rating calculations
     print('\n4️⃣ Testing Rating Calculations...');
     final ratings = await reviewService.getShopAverageRatings('test_shop_123');
-    print('✅ Shop ratings calculated: ${ratings}');
+    print('✅ Shop ratings calculated: $ratings');
 
     print('\n🎉 All tests passed! Review system is working correctly.');
   } catch (e) {

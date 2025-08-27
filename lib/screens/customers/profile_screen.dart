@@ -74,36 +74,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadOrderStats() async {
     try {
       final orders = await OrderService().getOrders();
-      if (orders.isEmpty) {
-        // Use sample data if no real orders exist
-        final sampleOrders = OrderService().getSampleOrders();
-        setState(() {
-          totalOrders = sampleOrders.length;
-          pendingOrders = sampleOrders
-              .where((order) =>
-                  order['status'] == 'pending' ||
-                  order['status'] == 'confirmed')
-              .length;
-        });
-      } else {
-        setState(() {
-          totalOrders = orders.length;
-          pendingOrders = orders
-              .where((order) =>
-                  order['status'] == 'pending' ||
-                  order['status'] == 'confirmed')
-              .length;
-        });
-      }
-    } catch (e) {
-      // Fallback to sample data
-      final sampleOrders = OrderService().getSampleOrders();
       setState(() {
-        totalOrders = sampleOrders.length;
-        pendingOrders = sampleOrders
+        totalOrders = orders.length;
+        pendingOrders = orders
             .where((order) =>
                 order['status'] == 'pending' || order['status'] == 'confirmed')
             .length;
+      });
+    } catch (e) {
+      // Set to zero if loading fails
+      setState(() {
+        totalOrders = 0;
+        pendingOrders = 0;
       });
     }
   }

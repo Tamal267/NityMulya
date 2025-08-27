@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
 
-import '../../services/order_service.dart';
+import '../../network/customer_api.dart';
 import '../../services/review_service.dart';
 import 'reviews_screen.dart';
+import 'order_confirmation_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String title;
@@ -478,12 +479,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 color: Colors.grey,
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                "Stock: $stockQuantity ${widget.unit}",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: stockColor,
-                                  fontWeight: FontWeight.w500,
+                              Flexible(
+                                child: Text(
+                                  "Stock: $stockQuantity ${widget.unit}",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: stockColor,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               if (isLowStock) ...[
@@ -494,7 +498,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                   color: Colors.orange[700],
                                 ),
                               ],
-                              const Spacer(),
+                              const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 8,
@@ -722,7 +726,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   _buildStarRating(averageRating, 16),
                   const SizedBox(width: 8),
                   Text(
-                    '${averageRating.toStringAsFixed(1)}',
+                    averageRating.toStringAsFixed(1),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.indigo,
@@ -1150,108 +1154,186 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   void _processPurchase(Map<String, dynamic> shop, String productTitle,
       int quantity, double totalPrice, String unit) async {
-    // Create and save the order
-    final order = OrderService.createOrder(
-      productName: productTitle,
-      shopName: shop['name'] ?? 'Unknown Shop',
-      shopPhone: shop['phone'] ?? 'No Phone',
-      shopAddress: shop['address'] ?? 'No Address',
-      quantity: quantity,
-      unit: unit,
-      unitPrice: totalPrice / quantity,
-      totalPrice: totalPrice,
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const AlertDialog(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            SizedBox(width: 16),
+            Text('Placing order...'),
+          ],
+        ),
+      ),
     );
 
     try {
-      await OrderService().saveOrder(order);
-    } catch (e) {
-      // If saving fails, show error but continue with confirmation
-      print('Error saving order: $e');
-    }
+      // Validate required data
+      final shopOwnerId = shop['id']?.toString();
+      final subcatId = widget.subcatId;
 
-    // Show order confirmation
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 28),
-            SizedBox(width: 8),
-            Text('Order Placed!'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Your order has been successfully placed.',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            const Text('Order Details:',
-                style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Text('Product: $productTitle'),
-            Text('Quantity: $quantity $unit'),
-            Text('Shop: ${shop['name'] ?? 'Unknown Shop'}'),
-            Text('Total: ৳${totalPrice.toStringAsFixed(2)}'),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Next Steps:',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 4),
-                  Text(
-                      '• Contact shop at ${shop['phone'] ?? 'No Phone'} for delivery'),
-                  const Text('• Payment can be made on delivery'),
-                  const Text('• You will receive a call confirmation soon'),
-                ],
-              ),
+      if (shopOwnerId == null || shopOwnerId.isEmpty) {
+        // Close loading dialog before throwing exception
+        if (Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+        }
+        throw Exception('Shop ID is missing');
+      }
+
+      if (subcatId == null || subcatId.isEmpty) {
+        // Close loading dialog before throwing exception
+        if (Navigator.canPop(context)) {
+          Navigator.of(context).pop();
+        }
+        throw Exception('Product ID is missing');
+      }
+
+      // Call the backend API to create order in database
+      final result = await CustomerApi.createOrder(
+        shopOwnerId: shopOwnerId,
+        subcatId: subcatId,
+        quantityOrdered: quantity,
+        deliveryAddress: 'House #12, Road #5, Dhanmondi, Dhaka',
+        deliveryPhone: '01900000000',
+        notes: 'Order placed through mobile app',
+      );
+
+      // Close loading dialog safely
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+
+      // Check if widget is still mounted before navigation
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        // Small delay to ensure loading dialog is fully dismissed
+        await Future.delayed(const Duration(milliseconds: 100));
+        
+        // Check if still mounted after delay
+        if (!mounted) return;
+        
+        // Navigate to order confirmation screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrderConfirmationScreen(
+              orderData: result['order'] ?? {},
+              shopData: shop,
+              productTitle: productTitle,
+              quantity: quantity,
+              unit: unit,
+              totalPrice: totalPrice,
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, '/my-orders');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('View Orders'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Simulate calling the shop
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Calling ${shop['name']}...'),
-                  backgroundColor: Colors.green,
+        );
+
+        // Refresh the available shops to update stock quantities
+        _loadAvailableShops();
+      } else {
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.error, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Order Failed',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
+                const SizedBox(height: 4),
+                Text(result['error'] ??
+                    result['message'] ??
+                    'Unknown error occurred'),
+                const Text('Please try again or contact support'),
+              ],
             ),
-            child: const Text('Call Shop'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () {
+                // Retry the purchase
+                _processPurchase(
+                    shop, productTitle, quantity, totalPrice, unit);
+              },
+            ),
           ),
-        ],
-      ),
-    );
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open safely
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
+
+      // Show error message for network or other errors
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.warning, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Connection Error',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text('Error: $e'),
+                const Text('Check your internet connection and try again'),
+              ],
+            ),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+            margin: const EdgeInsets.all(16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            action: SnackBarAction(
+              label: 'Retry',
+              textColor: Colors.white,
+              onPressed: () {
+                // Retry the purchase
+                _processPurchase(shop, productTitle, quantity, totalPrice, unit);
+              },
+            ),
+          ),
+        );
+      }
+    }
   }
 
   // Helper methods for review UI components

@@ -410,281 +410,304 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             ],
           ),
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FadeTransition(
-              opacity: _fadeIn,
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
-                child: Text(
-                  isBangla ? "Welcome to NityMulya!" : "Welcome to NityMulya!",
-                  style: GoogleFonts.lato(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green.shade800,
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(12),
-              child: TextField(
-                onChanged: (value) => setState(() => searchQuery = value),
-                decoration: InputDecoration(
-                  hintText: selectedCategory == "All"
-                      ? "Search all products"
-                      : "Search in $selectedCategory",
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: searchQuery.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear),
-                          onPressed: () => setState(() => searchQuery = ""),
-                        )
-                      : null,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-            if (searchQuery.isNotEmpty)
-              Container(
-                constraints: BoxConstraints(
-                    maxHeight: MediaQuery.of(context).size.height * 0.3),
-                margin: const EdgeInsets.symmetric(horizontal: 12),
-                child: Card(
-                  child: searchSuggestions.isEmpty
-                      ? Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Text(
-                            selectedCategory == "All"
-                                ? 'No products found matching "$searchQuery"'
-                                : 'No products found in "$selectedCategory" matching "$searchQuery"',
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        )
-                      : ListView(
-                          shrinkWrap: true,
-                          children: searchSuggestions
-                              .map((p) => ListTile(
-                                    title: Text(p["subcat_name"]?.toString() ??
-                                        'Unknown Product'),
-                                    subtitle: Text(
-                                        '${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
-                                    onTap: () {
-                                      // Clear search and navigate to product
-                                      setState(() {
-                                        searchQuery = "";
-                                      });
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => ProductDetailScreen(
-                                            title:
-                                                p["subcat_name"]?.toString() ??
-                                                    'Unknown Product',
-                                            unit: p["unit"]?.toString() ??
-                                                'Unknown Unit',
-                                            low: (p["min_price"] as num?)
-                                                    ?.toInt() ??
-                                                0,
-                                            high: (p["max_price"] as num?)
-                                                    ?.toInt() ??
-                                                0,
-                                            subcatId: p["id"]
-                                                ?.toString(), // Pass the subcategory ID
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ))
-                              .toList(),
-                        ),
-                ),
-              ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                isBangla ? "দৈনিক মূল্য আপডেট" : "Daily Price Update",
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Text("Last Updated: 2 hours ago",
-                  style: TextStyle(color: Colors.grey[600])),
-            ),
-            Container(
-              height: 40,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              child: isCategoriesLoading
-                  ? const Center(
-                      child: SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: categories.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: ChoiceChip(
-                            label: Text(categories[index]),
-                            selected: selectedCategory == categories[index],
-                            onSelected: (_) => setState(() {
-                              selectedCategory = categories[index];
-                              searchQuery =
-                                  ""; // Clear search when changing category
-                            }),
-                          ),
-                        );
-                      },
+        body: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FadeTransition(
+                opacity: _fadeIn,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 20, left: 20, right: 20),
+                  child: Text(
+                    isBangla
+                        ? "Welcome to NityMulya!"
+                        : "Welcome to NityMulya!",
+                    style: GoogleFonts.lato(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade800,
                     ),
-            ),
-
-            // Nearby Shops Section
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: NearbyShopsWidget(maxShops: 3),
-            ),
-
-            Expanded(
-              child: isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : errorMessage != null
-                      ? Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.error_outline,
-                                  size: 64, color: Colors.red),
-                              SizedBox(height: 16),
-                              Text('Error loading products'),
-                              SizedBox(height: 8),
-                              Text(errorMessage!,
-                                  style: TextStyle(color: Colors.grey)),
-                              SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: loadProducts,
-                                child: Text('Retry'),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: TextField(
+                  onChanged: (value) => setState(() => searchQuery = value),
+                  decoration: InputDecoration(
+                    hintText: selectedCategory == "All"
+                        ? "Search all products"
+                        : "Search in $selectedCategory",
+                    prefixIcon: const Icon(Icons.search),
+                    suffixIcon: searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () => setState(() => searchQuery = ""),
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ),
+              if (searchQuery.isNotEmpty)
+                Flexible(
+                  child: Container(
+                    constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.3),
+                    margin: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Card(
+                      child: searchSuggestions.isEmpty
+                          ? Padding(
+                              padding: const EdgeInsets.all(16.0),
+                              child: Text(
+                                selectedCategory == "All"
+                                    ? 'No products found matching "$searchQuery"'
+                                    : 'No products found in "$selectedCategory" matching "$searchQuery"',
+                                style: const TextStyle(color: Colors.grey),
                               ),
-                            ],
-                          ),
-                        )
-                      : filteredProducts.isEmpty
-                          ? const Center(
-                              child: Text('No products found'),
                             )
-                          : GridView.builder(
-                              padding: const EdgeInsets.all(12),
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 8,
-                                mainAxisSpacing: 8,
-                                childAspectRatio: 0.7,
-                              ),
-                              itemCount: filteredProducts.length,
-                              itemBuilder: (context, index) {
-                                final product = filteredProducts[index];
-                                return Card(
-                                  elevation: 2,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10)),
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(10),
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => ProductDetailScreen(
-                                            title: product["subcat_name"]
-                                                    ?.toString() ??
-                                                'Unknown Product',
-                                            unit: product["unit"]?.toString() ??
-                                                'Unknown Unit',
-                                            low: (product["min_price"] as num?)
-                                                    ?.toInt() ??
-                                                0,
-                                            high: (product["max_price"] as num?)
-                                                    ?.toInt() ??
-                                                0,
-                                            subcatId: product["id"]
-                                                ?.toString(), // Pass the subcategory ID
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        Padding(
-                                          padding: const EdgeInsets.all(8.0),
-                                          child: Text(
-                                            product["subcat_name"]
-                                                    ?.toString() ??
-                                                'Unknown Product',
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 8.0),
-                                          child: Text(
-                                            product["unit"]?.toString() ??
-                                                'Unknown Unit',
-                                            style: const TextStyle(
-                                                fontSize: 12,
-                                                color: Colors.grey),
-                                          ),
-                                        ),
-                                        Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(8.0),
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.grey[200],
-                                                borderRadius:
-                                                    BorderRadius.circular(8),
-                                              ),
-                                              child: Center(
-                                                child:
-                                                    _buildProductImage(product),
+                          : ListView(
+                              shrinkWrap: true,
+                              children: searchSuggestions
+                                  .map((p) => ListTile(
+                                        title: Text(
+                                            p["subcat_name"]?.toString() ??
+                                                'Unknown Product'),
+                                        subtitle: Text(
+                                            '${p["cat_name"] ?? "Unknown Category"} • ৳${p["min_price"] ?? 0} - ৳${p["max_price"] ?? 0}'),
+                                        onTap: () {
+                                          // Clear search and navigate to product
+                                          setState(() {
+                                            searchQuery = "";
+                                          });
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  ProductDetailScreen(
+                                                title: p["subcat_name"]
+                                                        ?.toString() ??
+                                                    'Unknown Product',
+                                                unit: p["unit"]?.toString() ??
+                                                    'Unknown Unit',
+                                                low: (p["min_price"] as num?)
+                                                        ?.toInt() ??
+                                                    0,
+                                                high: (p["max_price"] as num?)
+                                                        ?.toInt() ??
+                                                    0,
+                                                subcatId: p["id"]
+                                                    ?.toString(), // Pass the subcategory ID
                                               ),
                                             ),
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 8, left: 8, right: 8),
-                                          child: Text(
-                                            "৳${product["min_price"] ?? 0} - ৳${product["max_price"] ?? 0}",
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
+                                          );
+                                        },
+                                      ))
+                                  .toList(),
                             ),
-            ),
-          ],
-        ),
+                    ),
+                  ),
+                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  isBangla ? "দৈনিক মূল্য আপডেট" : "Daily Price Update",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: Text("Last Updated: 2 hours ago",
+                    style: TextStyle(color: Colors.grey[600])),
+              ),
+              Container(
+                height: 40,
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: isCategoriesLoading
+                    ? const Center(
+                        child: SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      )
+                    : ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categories.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: ChoiceChip(
+                              label: Text(categories[index]),
+                              selected: selectedCategory == categories[index],
+                              onSelected: (_) => setState(() {
+                                selectedCategory = categories[index];
+                                searchQuery =
+                                    ""; // Clear search when changing category
+                              }),
+                            ),
+                          );
+                        },
+                      ),
+              ),
+
+              // Nearby Shops Section - Increased height for better visibility
+              Container(
+                height:
+                    180, // Increased from 120 to show all shops without scrolling
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: NearbyShopsWidget(maxShops: 3),
+              ),
+
+              // Products Grid Section with calculated height
+              SizedBox(
+                height: filteredProducts.isEmpty
+                    ? 200 // Fixed height for loading/error/empty states
+                    : ((filteredProducts.length / 2).ceil() * 280.0) +
+                        24, // Dynamic height based on products
+                child: isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : errorMessage != null
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.error_outline,
+                                    size: 64, color: Colors.red),
+                                SizedBox(height: 16),
+                                Text('Error loading products'),
+                                SizedBox(height: 8),
+                                Text(errorMessage!,
+                                    style: TextStyle(color: Colors.grey)),
+                                SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: loadProducts,
+                                  child: Text('Retry'),
+                                ),
+                              ],
+                            ),
+                          )
+                        : filteredProducts.isEmpty
+                            ? const Center(
+                                child: Text('No products found'),
+                              )
+                            : GridView.builder(
+                                padding: const EdgeInsets.all(12),
+                                physics:
+                                    const NeverScrollableScrollPhysics(), // Disable grid scrolling
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 8,
+                                  mainAxisSpacing: 8,
+                                  childAspectRatio: 0.7,
+                                ),
+                                itemCount: filteredProducts.length,
+                                itemBuilder: (context, index) {
+                                  final product = filteredProducts[index];
+                                  return Card(
+                                    elevation: 2,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(10)),
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(10),
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => ProductDetailScreen(
+                                              title: product["subcat_name"]
+                                                      ?.toString() ??
+                                                  'Unknown Product',
+                                              unit:
+                                                  product["unit"]?.toString() ??
+                                                      'Unknown Unit',
+                                              low:
+                                                  (product["min_price"] as num?)
+                                                          ?.toInt() ??
+                                                      0,
+                                              high:
+                                                  (product["max_price"] as num?)
+                                                          ?.toInt() ??
+                                                      0,
+                                              subcatId: product["id"]
+                                                  ?.toString(), // Pass the subcategory ID
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(
+                                              product["subcat_name"]
+                                                      ?.toString() ??
+                                                  'Unknown Product',
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8.0),
+                                            child: Text(
+                                              product["unit"]?.toString() ??
+                                                  'Unknown Unit',
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.grey),
+                                            ),
+                                          ),
+                                          Expanded(
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.all(8.0),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  color: Colors.grey[200],
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                                child: Center(
+                                                  child: _buildProductImage(
+                                                      product),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                bottom: 8, left: 8, right: 8),
+                                            child: Text(
+                                              "৳${product["min_price"] ?? 0} - ৳${product["max_price"] ?? 0}",
+                                              style: const TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+              ),
+            ],
+          ), // End of Column
+        ), // End of SingleChildScrollView and body
 
         //  bottomNavigationBar: const GlobalBottomNav(currentIndex: 0),
         //----------Mithila---------//

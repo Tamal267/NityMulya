@@ -440,8 +440,8 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
             heroTag: "review_shop",
             onPressed: () => _showShopReviewDialog(),
             backgroundColor: Colors.indigo,
-            child: const Icon(Icons.star, color: Colors.white),
             tooltip: "Review Shop",
+            child: const Icon(Icons.star, color: Colors.white),
           ),
           const SizedBox(height: 16),
           // Call Shop Button
@@ -479,8 +479,8 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
               );
             },
             backgroundColor: const Color(0xFF079b11),
-            child: const Icon(Icons.phone, color: Colors.white),
             tooltip: "Call Shop",
+            child: const Icon(Icons.phone, color: Colors.white),
           ),
         ],
       ),
@@ -525,7 +525,7 @@ class _ShopReviewDialogState extends State<_ShopReviewDialog> {
     setState(() => _isSubmitting = true);
 
     try {
-      await ReviewService.createShopReview(
+      ReviewService.createShopReview(
         shopId: widget.shop.name.toLowerCase().replaceAll(' ', '_'),
         shopName: widget.shop.name,
         customerId: 'customer_current', // Replace with actual customer ID
