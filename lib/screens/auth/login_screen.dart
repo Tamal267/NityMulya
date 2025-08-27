@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nitymulya/network/auth.dart';
 import 'package:nitymulya/screens/auth/forgot_password_screen.dart';
 import 'package:nitymulya/screens/auth/signup_screen.dart';
-import 'package:nitymulya/screens/customers/home_screen.dart';
+import 'package:nitymulya/screens/customers/main_customer_screen.dart';
 import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
 import 'package:nitymulya/utils/user_session.dart';
@@ -74,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => HomeScreen(
+              builder: (context) => MainCustomerScreen(
                 userName: userName,
                 userEmail: email,
                 userRole: 'Customer',

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../widgets/global_bottom_nav.dart';
-
 class FavoriteProductsScreen extends StatelessWidget {
   const FavoriteProductsScreen({super.key});
 
@@ -10,7 +8,7 @@ class FavoriteProductsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("My Favorites"),
-        backgroundColor: Colors.indigo,
+        backgroundColor: const Color(0xFF079b11),
         foregroundColor: Colors.white,
       ),
       body: const Center(
@@ -18,9 +16,6 @@ class FavoriteProductsScreen extends StatelessWidget {
           "Favorite products list",
           style: TextStyle(fontSize: 18),
         ),
-      ),
-      bottomNavigationBar: const GlobalBottomNav(
-        currentIndex: 2,
       ),
     );
   }

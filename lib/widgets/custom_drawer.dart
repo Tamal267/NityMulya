@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/customers/complaint_form_screen.dart';
 import '../screens/customers/favorite_products_screen.dart';
+import '../screens/customers/nearby_shops_map_screen_enhanced.dart';
 import '../screens/customers/price_alert_screen.dart';
 import '../screens/customers/profile_screen.dart';
 import '../screens/customers/reviews_screen.dart';
@@ -140,13 +141,22 @@ class CustomDrawer extends StatelessWidget {
             },
           ),
 
-          // Map
+          // Nearby Shops Map
           ListTile(
-            leading: const Icon(Icons.map, color: Colors.blue),
-            title: const Text('Shop Map'),
+            leading: const Icon(Icons.store_mall_directory, color: Colors.blue),
+            title: const Text('Nearby Shops'),
             onTap: () {
               Navigator.pop(context);
-              Navigator.pushNamed(context, '/map');
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NearbyShopsMapScreenEnhanced(
+                    userName: userName,
+                    userEmail: userEmail,
+                    userRole: userRole,
+                  ),
+                ),
+              );
             },
           ),
 
