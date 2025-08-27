@@ -95,6 +95,21 @@ class ShopApi {
     }).toList();
   }
 
+  // Get nearby shops within radius from user location
+  static Future<List<Map<String, dynamic>>> getNearbyShops(
+    double userLat,
+    double userLon,
+    double radiusKm,
+  ) async {
+    try {
+      final allShops = await fetchShops();
+      return filterShopsByDistance(allShops, userLat, userLon, radiusKm);
+    } catch (e) {
+      print('Error fetching nearby shops: $e');
+      throw Exception('Failed to load nearby shops: $e');
+    }
+  }
+
   // Helper method to safely parse double values
   static double? parseDouble(dynamic value) {
     if (value == null) return null;

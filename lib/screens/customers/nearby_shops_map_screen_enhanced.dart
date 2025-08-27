@@ -80,10 +80,7 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
 
       // Get current position
       Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
-        ),
+        desiredAccuracy: LocationAccuracy.high,
       );
 
       setState(() {
@@ -115,9 +112,9 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
       });
 
       final shops = await ShopApi.getNearbyShops(
-        latitude: _currentPosition!.latitude,
-        longitude: _currentPosition!.longitude,
-        radius: _searchRadius,
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+        _searchRadius,
       );
 
       setState(() {
