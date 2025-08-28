@@ -205,45 +205,45 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        drawer: CustomDrawer(
-          userName: widget.userName ?? 'Guest User',
-          userEmail: widget.userEmail ?? 'guest@example.com',
-          userRole: widget.userRole ?? 'Customer',
+      drawer: CustomDrawer(
+        userName: widget.userName ?? 'Guest User',
+        userEmail: widget.userEmail ?? 'guest@example.com',
+        userRole: widget.userRole ?? 'Customer',
+      ),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF079b11),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text("NitiMulya"),
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.language),
+                  onPressed: () {
+                    setState(() {
+                      isBangla = !isBangla;
+                    });
+                  },
+                ),
+                IconButton(
+                  icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+                  onPressed: () {
+                    setState(() {
+                      isDarkMode = !isDarkMode;
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
         ),
-        appBar: AppBar(
-          backgroundColor: const Color(0xFF079b11),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("NitiMulya"),
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.language),
-                    onPressed: () {
-                      setState(() {
-                        isBangla = !isBangla;
-                      });
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
-                    onPressed: () {
-                      setState(() {
-                        isDarkMode = !isDarkMode;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        body: Container(
-          color: isDarkMode ? Colors.grey[900] : null,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+      ),
+      body: Container(
+        color: isDarkMode ? Colors.grey[900] : null,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
             Padding(
               padding: const EdgeInsets.all(12),
               child: TextField(

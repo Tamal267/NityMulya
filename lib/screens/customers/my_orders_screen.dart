@@ -109,7 +109,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       Map<String, dynamic> dbOrder) {
     return {
       'id': dbOrder['order_number'] ?? dbOrder['id']?.toString() ?? 'Unknown',
-      'productName': dbOrder['subcat_name'] ?? 'Unknown Product',
+      'productName': dbOrder['product_name'] ?? 'Unknown Product',
+      'productImage': dbOrder['product_image'], // Add product image
       'shopName': dbOrder['shop_name'] ?? 'Unknown Shop',
       'shopPhone': dbOrder['shop_phone'] ?? 'No Phone',
       'shopAddress': dbOrder['shop_address'] ?? 'No Address',
@@ -201,6 +202,49 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Product Image Section
+              if (order['productImage'] != null &&
+                  order['productImage'].toString().isNotEmpty)
+                Center(
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        order['productImage'],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.indigo.withOpacity(0.1),
+                            child: const Icon(
+                              Icons.shopping_bag,
+                              color: Colors.indigo,
+                              size: 48,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               _buildInfoRow('Product', order['productName']),
               _buildInfoRow('Shop', order['shopName']),
               _buildInfoRow('Shop Phone', order['shopPhone']),
@@ -561,16 +605,61 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                               Row(
                                 children: [
                                   Container(
-                                    width: 50,
-                                    height: 50,
+                                    width: 60,
+                                    height: 60,
                                     decoration: BoxDecoration(
-                                      color: Colors.indigo.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
                                     ),
-                                    child: const Icon(
-                                      Icons.shopping_bag,
-                                      color: Colors.indigo,
-                                      size: 24,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(7),
+                                      child: order['productImage'] != null &&
+                                              order['productImage']
+                                                  .toString()
+                                                  .isNotEmpty
+                                          ? Image.network(
+                                              order['productImage'],
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                return Container(
+                                                  color: Colors.indigo
+                                                      .withOpacity(0.1),
+                                                  child: const Icon(
+                                                    Icons.shopping_bag,
+                                                    color: Colors.indigo,
+                                                    size: 24,
+                                                  ),
+                                                );
+                                              },
+                                              loadingBuilder: (context, child,
+                                                  loadingProgress) {
+                                                if (loadingProgress == null) {
+                                                  return child;
+                                                }
+                                                return Container(
+                                                  color: Colors.grey.shade200,
+                                                  child: const Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : Container(
+                                              color: Colors.indigo
+                                                  .withOpacity(0.1),
+                                              child: const Icon(
+                                                Icons.shopping_bag,
+                                                color: Colors.indigo,
+                                                size: 24,
+                                              ),
+                                            ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),

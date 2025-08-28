@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
-import 'package:nitymulya/screens/customers/product_detail_screen.dart';
 import 'package:nitymulya/screens/customers/nearby_shops_map_screen_enhanced.dart';
-import 'package:nitymulya/widgets/nearby_shops_widget.dart';
+import 'package:nitymulya/screens/customers/product_detail_screen.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String? userName;

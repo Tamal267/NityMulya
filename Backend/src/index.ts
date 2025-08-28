@@ -31,6 +31,7 @@ import {
   createCustomerOrder,
   getCustomerOrder,
   getCustomerOrders,
+  getCustomerOrderStats,
   getShopOwnerCustomerOrders,
   updateCustomerOrderStatus,
 } from "./controller/customerOrderController";
@@ -123,6 +124,7 @@ app.put("/shop-owner/customer-orders/status", updateCustomerOrderStatus);
 // Customer routes (protected)
 app.use("/customer/*", createAuthMiddleware(), requireRole("customer"));
 app.post("/customer/orders", createCustomerOrder);
+app.get("/customer/orders/stats", getCustomerOrderStats);
 app.get("/customer/orders", getCustomerOrders);
 app.get("/customer/orders/:orderId", getCustomerOrder);
 app.post("/customer/orders/cancel", cancelCustomerOrder);

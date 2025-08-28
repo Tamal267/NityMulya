@@ -151,6 +151,39 @@ class CustomerApi {
     }
   }
 
+  // Get order statistics for customer profile
+  static Future<Map<String, dynamic>> getOrderStats() async {
+    try {
+      final response =
+          await _networkHelper.getWithToken('/customer/orders/stats');
+
+      if (response['error'] != null) {
+        return {
+          'success': false,
+          'error': response['error'],
+          'totalOrders': 0,
+          'pendingOrders': 0,
+        };
+      }
+
+      return {
+        'success': response['success'] ?? true,
+        'totalOrders': response['totalOrders'] ?? 0,
+        'pendingOrders': response['pendingOrders'] ?? 0,
+        'confirmedOrders': response['confirmedOrders'] ?? 0,
+        'deliveredOrders': response['deliveredOrders'] ?? 0,
+        'cancelledOrders': response['cancelledOrders'] ?? 0,
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Failed to fetch order stats: $e',
+        'totalOrders': 0,
+        'pendingOrders': 0,
+      };
+    }
+  }
+
   // Helper method to get user token
   static Future<String?> getAuthToken() async {
     try {

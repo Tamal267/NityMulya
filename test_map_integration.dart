@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import 'lib/screens/customers/map_screen.dart';
 import 'lib/services/map_service.dart';
-import 'lib/widgets/nearby_shops_widget.dart';
 
 void main() {
   runApp(const MapTestApp());

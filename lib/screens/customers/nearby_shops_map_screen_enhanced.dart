@@ -1,9 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:latlong2/latlong.dart';
+
 import '../../network/shop_api.dart';
 
 class NearbyShopsMapScreenEnhanced extends StatefulWidget {
@@ -19,10 +21,12 @@ class NearbyShopsMapScreenEnhanced extends StatefulWidget {
   });
 
   @override
-  State<NearbyShopsMapScreenEnhanced> createState() => _NearbyShopsMapScreenEnhancedState();
+  State<NearbyShopsMapScreenEnhanced> createState() =>
+      _NearbyShopsMapScreenEnhancedState();
 }
 
-class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhanced> {
+class _NearbyShopsMapScreenEnhancedState
+    extends State<NearbyShopsMapScreenEnhanced> {
   final MapController _mapController = MapController();
   List<Map<String, dynamic>> _shops = [];
   Position? _currentPosition;
@@ -33,7 +37,7 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
   bool _showRoute = false;
   bool _showRoutes = false;
   List<Polyline> _routePolylines = [];
-  Map<String, Map<String, dynamic>> _realDistanceCache = {};
+  final Map<String, Map<String, dynamic>> _realDistanceCache = {};
 
   // Draggable FAB position
   double _fabX = 300.0;
@@ -152,9 +156,10 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
         final shop = closestShops[i];
         final distanceData = await _getRealDistance(shop);
 
-        if (distanceData.containsKey('coordinates') && distanceData['coordinates'] is List) {
+        if (distanceData.containsKey('coordinates') &&
+            distanceData['coordinates'] is List) {
           final coordinates = distanceData['coordinates'] as List;
-          
+
           if (coordinates.isNotEmpty) {
             final points = coordinates
                 .map((coord) => LatLng(coord[1] as double, coord[0] as double))
@@ -229,8 +234,9 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
 
     try {
       // Using OSRM (free routing service) - no API key required
-      final url = 'https://router.project-osrm.org/route/v1/driving/${_currentPosition!.longitude},${_currentPosition!.latitude};$shopLon,$shopLat?overview=full&geometries=geojson';
-      
+      final url =
+          'https://router.project-osrm.org/route/v1/driving/${_currentPosition!.longitude},${_currentPosition!.latitude};$shopLon,$shopLat?overview=full&geometries=geojson';
+
       final response = await http.get(
         Uri.parse(url),
         headers: {
@@ -240,25 +246,26 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        
+
         if (data['routes'] != null && data['routes'].isNotEmpty) {
           final route = data['routes'][0];
-          
+
           final distanceMeters = route['distance'] as num;
           final durationSeconds = route['duration'] as num;
-          
+
           final distanceKm = (distanceMeters / 1000).toStringAsFixed(1);
           final durationMin = (durationSeconds / 60).toStringAsFixed(0);
 
           // Extract route coordinates for drawing
           List<dynamic> coordinates = [];
-          if (route['geometry'] != null && route['geometry']['coordinates'] != null) {
+          if (route['geometry'] != null &&
+              route['geometry']['coordinates'] != null) {
             coordinates = route['geometry']['coordinates'] as List;
           }
 
           final result = {
-            'distance': '${distanceKm} km',
-            'duration': '${durationMin} min',
+            'distance': '$distanceKm km',
+            'duration': '$durationMin min',
             'coordinates': coordinates,
             'real_distance_meters': distanceMeters,
             'duration_seconds': durationSeconds,
@@ -283,11 +290,12 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
     );
 
     // Estimate time based on average speed (assume 30 km/h in city)
-    final estimatedTimeMinutes = ((straightDistance * 1000) / (30000 / 60)).round();
+    final estimatedTimeMinutes =
+        ((straightDistance * 1000) / (30000 / 60)).round();
 
     final fallback = {
       'distance': '~${straightDistance.toStringAsFixed(1)} km',
-      'duration': '~${estimatedTimeMinutes} min',
+      'duration': '~$estimatedTimeMinutes min',
       'real_distance_meters': straightDistance * 1000,
       'duration_seconds': estimatedTimeMinutes * 60,
     };
@@ -343,7 +351,8 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
           Marker(
             point: LatLng(latitude, longitude),
             width: 80, // Increased width to prevent overflow
-            height: 100, // Increased height to accommodate both icon and distance
+            height:
+                100, // Increased height to accommodate both icon and distance
             child: GestureDetector(
               onTap: () => _showShopDetails(shop, distance),
               child: Column(
@@ -358,7 +367,7 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                       builder: (context, snapshot) {
                         return Container(
                           constraints: const BoxConstraints(
-                            maxWidth: 75, 
+                            maxWidth: 75,
                             minHeight: 20,
                           ),
                           padding: const EdgeInsets.symmetric(
@@ -380,8 +389,9 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                snapshot.hasData 
-                                    ? snapshot.data!['distance'] ?? '${distance?.toStringAsFixed(1) ?? '0'} km'
+                                snapshot.hasData
+                                    ? snapshot.data!['distance'] ??
+                                        '${distance?.toStringAsFixed(1) ?? '0'} km'
                                     : '${distance?.toStringAsFixed(1) ?? '0'} km',
                                 style: const TextStyle(
                                   fontSize: 8,
@@ -392,7 +402,8 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              if (snapshot.hasData && snapshot.data!['duration'] != 'Unknown') ...[
+                              if (snapshot.hasData &&
+                                  snapshot.data!['duration'] != 'Unknown') ...[
                                 const SizedBox(height: 1),
                                 Text(
                                   snapshot.data!['duration'] ?? '',
@@ -448,10 +459,10 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
   // Build route polylines
   List<Polyline> _buildRoutePolylines() {
     List<Polyline> polylines = [];
-    
+
     // Add bulk routes if showing routes to multiple shops
     polylines.addAll(_routePolylines);
-    
+
     if (_currentPosition == null || _selectedShop == null || !_showRoute) {
       return polylines;
     }
@@ -473,7 +484,7 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
         pattern: StrokePattern.dashed(segments: [10, 5]),
       ),
     );
-    
+
     return polylines;
   }
 
@@ -921,15 +932,19 @@ class _NearbyShopsMapScreenEnhancedState extends State<NearbyShopsMapScreenEnhan
                                           horizontal: 4, vertical: 2),
                                       minimumSize: const Size(0, 28),
                                       textStyle: const TextStyle(fontSize: 10),
-                                      backgroundColor: _showRoutes 
-                                          ? const Color(0xFF079b11) 
+                                      backgroundColor: _showRoutes
+                                          ? const Color(0xFF079b11)
                                           : Colors.grey.shade300,
                                     ),
                                     child: Text(
-                                      _showRoutes ? 'Hide Routes' : 'Show Routes',
+                                      _showRoutes
+                                          ? 'Hide Routes'
+                                          : 'Show Routes',
                                       style: TextStyle(
                                         fontSize: 9,
-                                        color: _showRoutes ? Colors.white : Colors.black87,
+                                        color: _showRoutes
+                                            ? Colors.white
+                                            : Colors.black87,
                                       ),
                                     ),
                                   ),

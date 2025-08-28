@@ -352,7 +352,8 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
                                   unit: product["unit"],
                                   low: product["low"],
                                   high: product["high"],
-                                  subcatId: product["subcat_id"], // Pass subcategory ID if available
+                                  subcatId: product[
+                                      "subcat_id"], // Pass subcategory ID if available
                                 ),
                               ),
                             );

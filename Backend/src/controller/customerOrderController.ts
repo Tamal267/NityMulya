@@ -40,6 +40,7 @@ export const createCustomerOrder = async (c: any) => {
                 si.stock_quantity,
                 sc.subcat_name,
                 sc.unit,
+                sc.subcat_img,
                 so.name as shop_name,
                 so.contact as shop_phone,
                 so.address as shop_address
@@ -80,7 +81,8 @@ export const createCustomerOrder = async (c: any) => {
     estimatedDelivery.setDate(estimatedDelivery.getDate() + 3); // 3 days from now
 
     // Generate order number
-    const orderNumberResult = await sql`SELECT generate_order_number() as order_number`;
+    const orderNumberResult =
+      await sql`SELECT generate_order_number() as order_number`;
     const orderNumber = orderNumberResult[0].order_number;
 
     // Create the order (triggers will handle inventory updates)
@@ -122,6 +124,7 @@ export const createCustomerOrder = async (c: any) => {
         order: {
           ...order,
           product_name: inventory.subcat_name,
+          product_image: inventory.subcat_img,
           unit: inventory.unit,
           shop_name: inventory.shop_name,
           shop_phone: inventory.shop_phone,
@@ -154,6 +157,7 @@ export const getCustomerOrders = async (c: any) => {
                 co.*,
                 sc.subcat_name as product_name,
                 sc.unit,
+                sc.subcat_img as product_image,
                 so.name as shop_name,
                 so.contact as shop_phone,
                 so.address as shop_address,
@@ -172,6 +176,7 @@ export const getCustomerOrders = async (c: any) => {
                     co.*,
                     sc.subcat_name as product_name,
                     sc.unit,
+                    sc.subcat_img as product_image,
                     so.name as shop_name,
                     so.contact as shop_phone,
                     so.address as shop_address,
@@ -218,6 +223,7 @@ export const getCustomerOrder = async (c: any) => {
                 co.*,
                 sc.subcat_name as product_name,
                 sc.unit,
+                sc.subcat_img as product_image,
                 so.name as shop_name,
                 so.contact as shop_phone,
                 so.address as shop_address,
@@ -362,6 +368,7 @@ export const getShopOwnerCustomerOrders = async (c: any) => {
                 co.*,
                 sc.subcat_name as product_name,
                 sc.unit,
+                sc.subcat_img as product_image,
                 so.name as shop_name,
                 so.contact as shop_phone,
                 so.address as shop_address,
@@ -380,6 +387,7 @@ export const getShopOwnerCustomerOrders = async (c: any) => {
                     co.*,
                     sc.subcat_name as product_name,
                     sc.unit,
+                    sc.subcat_img as product_image,
                     so.name as shop_name,
                     so.contact as shop_phone,
                     so.address as shop_address,
@@ -404,6 +412,68 @@ export const getShopOwnerCustomerOrders = async (c: any) => {
     });
   } catch (error: any) {
     console.error("Error fetching shop orders:", error);
+    return c.json(
+      {
+        success: false,
+        message: "Internal server error",
+      },
+      500
+    );
+  }
+};
+
+// Get order statistics for customer profile
+export const getCustomerOrderStats = async (c: any) => {
+  try {
+    const user = c.get("user");
+    const customerId = user.userId;
+
+    // Get order counts by status
+    const statsResult = await sql`
+            SELECT 
+                COUNT(*) as total_orders,
+                COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders,
+                COUNT(CASE WHEN status = 'confirmed' THEN 1 END) as confirmed_orders,
+                COUNT(CASE WHEN status = 'preparing' THEN 1 END) as preparing_orders,
+                COUNT(CASE WHEN status = 'ready' THEN 1 END) as ready_orders,
+                COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered_orders,
+                COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_orders,
+                SUM(CASE WHEN status NOT IN ('cancelled') THEN total_amount ELSE 0 END) as total_spent,
+                AVG(CASE WHEN status = 'delivered' THEN total_amount END) as avg_order_value
+            FROM customer_orders
+            WHERE customer_id = ${customerId}
+        `;
+
+    const stats = statsResult[0];
+
+    // Get recent order activity (last 30 days)
+    const recentActivityResult = await sql`
+            SELECT 
+                COUNT(*) as recent_orders,
+                COUNT(CASE WHEN status = 'delivered' THEN 1 END) as recent_delivered
+            FROM customer_orders
+            WHERE customer_id = ${customerId}
+            AND created_at >= CURRENT_DATE - INTERVAL '30 days'
+        `;
+
+    const recentActivity = recentActivityResult[0];
+
+    return c.json({
+      success: true,
+      totalOrders: parseInt(stats.total_orders) || 0,
+      pendingOrders: parseInt(stats.pending_orders) || 0,
+      confirmedOrders: parseInt(stats.confirmed_orders) || 0,
+      preparingOrders: parseInt(stats.preparing_orders) || 0,
+      readyOrders: parseInt(stats.ready_orders) || 0,
+      deliveredOrders: parseInt(stats.delivered_orders) || 0,
+      cancelledOrders: parseInt(stats.cancelled_orders) || 0,
+      totalSpent: parseFloat(stats.total_spent) || 0,
+      averageOrderValue: parseFloat(stats.avg_order_value) || 0,
+      recentOrders: parseInt(recentActivity.recent_orders) || 0,
+      recentDelivered: parseInt(recentActivity.recent_delivered) || 0,
+    });
+  } catch (error: any) {
+    console.error("Error fetching order stats:", error);
     return c.json(
       {
         success: false,

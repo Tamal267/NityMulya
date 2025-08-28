@@ -3,8 +3,8 @@ import 'package:nitymulya/network/pricelist_api.dart';
 
 import '../../network/customer_api.dart';
 import '../../services/review_service.dart';
-import 'reviews_screen.dart';
 import 'order_confirmation_screen.dart';
+import 'reviews_screen.dart';
 
 class ProductDetailScreen extends StatefulWidget {
   final String title;
@@ -1215,10 +1215,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       if (result['success'] == true) {
         // Small delay to ensure loading dialog is fully dismissed
         await Future.delayed(const Duration(milliseconds: 100));
-        
+
         // Check if still mounted after delay
         if (!mounted) return;
-        
+
         // Navigate to order confirmation screen
         Navigator.push(
           context,
@@ -1327,7 +1327,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               textColor: Colors.white,
               onPressed: () {
                 // Retry the purchase
-                _processPurchase(shop, productTitle, quantity, totalPrice, unit);
+                _processPurchase(
+                    shop, productTitle, quantity, totalPrice, unit);
               },
             ),
           ),
