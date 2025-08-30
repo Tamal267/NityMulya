@@ -1,299 +1,716 @@
-import 'api_service.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ReviewService {
   static const String baseUrl = 'http://localhost:3001';
 
-  // Singleton pattern
-  static final ReviewService _instance = ReviewService._internal();
-  factory ReviewService() => _instance;
-  ReviewService._internal();
+  // ====================================
+  // PRODUCT REVIEW METHODS
+  // ====================================
 
   // Create a new product review
-  static Map<String, dynamic> createProductReview({
+  static Future<Map<String, dynamic>> createProductReview({
+    required String customerId,
+    required String customerName,
+    required String customerEmail,
+    required String subcatId,
     required String productName,
+    required String shopOwnerId,
     required String shopName,
-    required String shopId,
-    required String customerId,
-    required String customerName,
     required int rating,
-    required String comment,
+    String? comment,
     String? orderId,
-  }) {
-    final reviewId = 'REV-${DateTime.now().millisecondsSinceEpoch}';
-
-    return {
-      'id': reviewId,
-      'productName': productName,
-      'shopName': shopName,
-      'shopId': shopId,
-      'customerId': customerId,
-      'customerName': customerName,
-      'rating': rating,
-      'comment': comment,
-      'orderId': orderId,
-      'reviewDate': DateTime.now().toIso8601String(),
-      'helpful': 0,
-      'isVerifiedPurchase': orderId != null,
-    };
-  }
-
-  // Create a new shop review
-  static Map<String, dynamic> createShopReview({
-    required String shopName,
-    required String shopId,
-    required String customerId,
-    required String customerName,
-    required int rating,
-    required String comment,
-    required int deliveryRating,
-    required int serviceRating,
-    String? orderId,
-  }) {
-    final reviewId = 'SHOP-REV-${DateTime.now().millisecondsSinceEpoch}';
-
-    return {
-      'id': reviewId,
-      'shopName': shopName,
-      'shopId': shopId,
-      'customerId': customerId,
-      'customerName': customerName,
-      'rating': rating,
-      'deliveryRating': deliveryRating,
-      'serviceRating': serviceRating,
-      'comment': comment,
-      'orderId': orderId,
-      'reviewDate': DateTime.now().toIso8601String(),
-      'helpful': 0,
-      'isVerifiedPurchase': orderId != null,
-    };
-  }
-
-  // Save product review to database
-  Future<void> saveProductReview(Map<String, dynamic> review) async {
+    bool isVerifiedPurchase = false,
+  }) async {
     try {
-      await ApiService.post('/reviews/create', review);
-    } catch (e) {
-      throw Exception('Failed to save product review: $e');
-    }
-  }
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/reviews/product'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'customer_id': customerId,
+          'customer_name': customerName,
+          'customer_email': customerEmail,
+          'subcat_id': subcatId,
+          'product_name': productName,
+          'shop_owner_id': shopOwnerId,
+          'shop_name': shopName,
+          'rating': rating,
+          'comment': comment ?? '',
+          'order_id': orderId,
+          'is_verified_purchase': isVerifiedPurchase,
+        }),
+      );
 
-  // Save shop review to database
-  Future<void> saveShopReview(Map<String, dynamic> review) async {
-    try {
-      await ApiService.post('/reviews/create', review);
-    } catch (e) {
-      throw Exception('Failed to save shop review: $e');
-    }
-  }
-
-  // Get product reviews from database
-  Future<List<Map<String, dynamic>>> getProductReviews(String productName) async {
-    try {
-      print('Fetching reviews for product: $productName');
-      final response = await ApiService.get('/reviews/product/$productName');
-      print('API response: $response');
-      
-      if (response['success'] == true) {
-        final reviews = List<Map<String, dynamic>>.from(response['reviews'] ?? [])
-            .map((review) {
-          if (review['reviewDate'] is String) {
-            review['reviewDate'] = DateTime.parse(review['reviewDate']);
-          }
-          return review;
-        }).toList();
-        print('Fetched ${reviews.length} reviews from database');
-        return reviews; // Return database results even if empty
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return {
+            'success': true,
+            'message': 'Product review created successfully',
+            'review': data['review'],
+          };
+        } else {
+          return {
+            'success': false,
+            'error': data['error'] ?? 'Failed to create product review',
+          };
+        }
       } else {
-        print('API call failed, returning empty list');
-        return []; // Return empty list instead of sample data
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
       }
     } catch (e) {
-      print('Error fetching reviews: $e');
-      return []; // Return empty list instead of sample data
+      print('Error creating product review: $e');
+      return {
+        'success': false,
+        'error': 'Network error: Unable to create product review',
+      };
     }
   }
 
-  // Get shop reviews from database
-  Future<List<Map<String, dynamic>>> getShopReviews(String shopId) async {
+  // Get product reviews for a specific product
+  static Future<List<Map<String, dynamic>>> getProductReviews(
+    String subcatId, {
+    String? shopOwnerId,
+  }) async {
     try {
-      final response = await ApiService.get('/reviews/shop/$shopId');
-      if (response['success'] == true) {
-        return List<Map<String, dynamic>>.from(response['reviews'] ?? [])
-            .map((review) {
-          if (review['reviewDate'] is String) {
-            review['reviewDate'] = DateTime.parse(review['reviewDate']);
-          }
-          return review;
-        }).toList();
-      } else {
-        // Fallback to sample data if API fails
-        return getSampleShopReviews(shopId);
+      String url = '$baseUrl/reviews/product/$subcatId';
+      if (shopOwnerId != null) {
+        url += '?shopOwnerId=$shopOwnerId';
       }
-    } catch (e) {
-      // Fallback to sample data
-      return getSampleShopReviews(shopId);
-    }
-  }
 
-  // Get all reviews for a customer from database
-  Future<List<Map<String, dynamic>>> getCustomerReviews(String customerId) async {
-    try {
-      final response = await ApiService.get('/reviews/customer/$customerId');
-      if (response['success'] == true) {
-        return List<Map<String, dynamic>>.from(response['reviews'] ?? [])
-            .map((review) {
-          if (review['reviewDate'] is String) {
-            review['reviewDate'] = DateTime.parse(review['reviewDate']);
-          }
-          return review;
-        }).toList();
-      } else {
-        return [];
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return List<Map<String, dynamic>>.from(data['reviews'] ?? []);
+        }
       }
+      return [];
     } catch (e) {
+      print('Error getting product reviews: $e');
       return [];
     }
   }
 
-  // Calculate average rating for a product from database
-  Future<double> getProductAverageRating(String productName) async {
+  // Get average rating for a product
+  static Future<Map<String, dynamic>> getProductAverageRating(
+    String subcatId, {
+    String? shopOwnerId,
+  }) async {
     try {
-      print('Fetching average rating for product: $productName');
-      final response = await ApiService.get('/reviews/product/$productName/average');
-      print('Average rating API response: $response');
-      
-      if (response['success'] == true) {
-        final avgRating = (response['averageRating'] ?? 0.0).toDouble();
-        print('Database average rating: $avgRating');
-        return avgRating; // Return database result even if 0
-      } else {
-        print('Average rating API failed, returning 0');
-        return 0.0; // Return 0 instead of sample data
+      String url = '$baseUrl/reviews/product/$subcatId/average';
+      if (shopOwnerId != null) {
+        url += '?shopOwnerId=$shopOwnerId';
       }
+
+      final response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return {
+            'average': data['average'] ?? 0.0,
+            'count': data['count'] ?? 0,
+          };
+        }
+      }
+      return {'average': 0.0, 'count': 0};
     } catch (e) {
-      print('Error fetching average rating: $e');
-      return 0.0; // Return 0 instead of sample data
+      print('Error getting product average rating: $e');
+      return {'average': 0.0, 'count': 0};
     }
   }
 
-  // Calculate average rating for a shop from database
-  Future<Map<String, double>> getShopAverageRatings(String shopId) async {
+  // Update a product review
+  static Future<Map<String, dynamic>> updateProductReview({
+    required String reviewId,
+    int? rating,
+    String? comment,
+  }) async {
     try {
-      final response = await ApiService.get('/reviews/shop/$shopId/average');
-      if (response['success'] == true && response['ratings'] != null) {
-        final ratings = response['ratings'];
+      final response = await http.put(
+        Uri.parse('$baseUrl/reviews/product/$reviewId'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          if (rating != null) 'rating': rating,
+          if (comment != null) 'comment': comment,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
         return {
-          'overall': (ratings['overall'] ?? 0.0).toDouble(),
-          'delivery': (ratings['delivery'] ?? 0.0).toDouble(),
-          'service': (ratings['service'] ?? 0.0).toDouble(),
+          'success': data['success'] ?? false,
+          'message': data['message'],
+          'review': data['review'],
         };
       } else {
-        // Fallback to sample data
-        return {'overall': 4.5, 'delivery': 4.3, 'service': 4.7};
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
       }
     } catch (e) {
-      // Fallback to sample data
-      return {'overall': 4.5, 'delivery': 4.3, 'service': 4.7};
+      print('Error updating product review: $e');
+      return {
+        'success': false,
+        'error': 'Network error: Unable to update product review',
+      };
     }
   }
 
-  // Mark review as helpful in database
-  Future<void> markReviewHelpful(String reviewId, String productName) async {
+  // Delete a product review
+  static Future<Map<String, dynamic>> deleteProductReview(String reviewId) async {
     try {
-      await ApiService.put('/reviews/helpful/$reviewId');
+      final response = await http.delete(
+        Uri.parse('$baseUrl/reviews/product/$reviewId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': data['success'] ?? false,
+          'message': data['message'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
+      }
     } catch (e) {
-      throw Exception('Failed to mark review as helpful: $e');
+      print('Error deleting product review: $e');
+      return {
+        'success': false,
+        'error': 'Network error: Unable to delete product review',
+      };
     }
   }
 
-  // Get sample reviews for demonstration
-  List<Map<String, dynamic>> getSampleProductReviews(String productName) {
+  // ====================================
+  // SHOP REVIEW METHODS
+  // ====================================
+
+  // Create a new shop review
+  static Future<Map<String, dynamic>> createShopReview({
+    required String customerId,
+    required String customerName,
+    required String customerEmail,
+    required String shopOwnerId,
+    required String shopName,
+    String? shopId,  // Added optional shopId parameter
+    required int overallRating,
+    int? serviceRating,
+    int? deliveryRating,
+    String? comment,
+    String? orderId,
+    bool isVerifiedPurchase = false,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/reviews/shop'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'customer_id': customerId,
+          'customer_name': customerName,
+          'customer_email': customerEmail,
+          'shop_owner_id': shopOwnerId,
+          'shop_name': shopName,
+          'shop_id': shopId,  // Added shop_id to the request body
+          'overall_rating': overallRating,
+          'service_rating': serviceRating,
+          'delivery_rating': deliveryRating,
+          'comment': comment ?? '',
+          'order_id': orderId,
+          'is_verified_purchase': isVerifiedPurchase,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return {
+            'success': true,
+            'message': 'Shop review created successfully',
+            'review': data['review'],
+          };
+        } else {
+          return {
+            'success': false,
+            'error': data['error'] ?? 'Failed to create shop review',
+          };
+        }
+      } else {
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Error creating shop review: $e');
+      return {
+        'success': false,
+        'error': 'Network error: Unable to create shop review',
+      };
+    }
+  }
+
+  // Get shop reviews for a specific shop
+  static Future<List<Map<String, dynamic>>> getShopReviews(String shopOwnerId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/reviews/shop/$shopOwnerId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return List<Map<String, dynamic>>.from(data['reviews'] ?? []);
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error getting shop reviews: $e');
+      return [];
+    }
+  }
+
+  // Get average ratings for a shop
+  static Future<Map<String, dynamic>> getShopAverageRatings(String shopOwnerId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/reviews/shop/$shopOwnerId/average'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return {
+            'overall': data['overall'] ?? 0.0,
+            'service': data['service'] ?? 0.0,
+            'delivery': data['delivery'] ?? 0.0,
+            'count': data['count'] ?? 0,
+          };
+        }
+      }
+      return {
+        'overall': 0.0,
+        'service': 0.0,
+        'delivery': 0.0,
+        'count': 0,
+      };
+    } catch (e) {
+      print('Error getting shop average ratings: $e');
+      return {
+        'overall': 0.0,
+        'service': 0.0,
+        'delivery': 0.0,
+        'count': 0,
+      };
+    }
+  }
+
+  // Update a shop review
+  static Future<Map<String, dynamic>> updateShopReview({
+    required String reviewId,
+    int? overallRating,
+    int? serviceRating,
+    int? deliveryRating,
+    String? comment,
+  }) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/reviews/shop/$reviewId'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          if (overallRating != null) 'overall_rating': overallRating,
+          if (serviceRating != null) 'service_rating': serviceRating,
+          if (deliveryRating != null) 'delivery_rating': deliveryRating,
+          if (comment != null) 'comment': comment,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': data['success'] ?? false,
+          'message': data['message'],
+          'review': data['review'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Error updating shop review: $e');
+      return {
+        'success': false,
+        'error': 'Network error: Unable to update shop review',
+      };
+    }
+  }
+
+  // Delete a shop review
+  static Future<Map<String, dynamic>> deleteShopReview(String reviewId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/reviews/shop/$reviewId'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': data['success'] ?? false,
+          'message': data['message'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Error deleting shop review: $e');
+      return {
+        'success': false,
+        'error': 'Network error: Unable to delete shop review',
+      };
+    }
+  }
+
+  // ====================================
+  // CUSTOMER REVIEW METHODS
+  // ====================================
+
+  // Get all product reviews by a specific customer
+  static Future<List<Map<String, dynamic>>> getCustomerProductReviews(String customerId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/reviews/customer/$customerId/products'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return List<Map<String, dynamic>>.from(data['reviews'] ?? []);
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error getting customer product reviews: $e');
+      return [];
+    }
+  }
+
+  // Get all shop reviews by a specific customer
+  static Future<List<Map<String, dynamic>>> getCustomerShopReviews(String customerId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/reviews/customer/$customerId/shops'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return List<Map<String, dynamic>>.from(data['reviews'] ?? []);
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error getting customer shop reviews: $e');
+      return [];
+    }
+  }
+
+  // ====================================
+  // LEGACY METHODS (for backward compatibility)
+  // ====================================
+
+  // Legacy method - redirects to getCustomerProductReviews
+  static Future<List<Map<String, dynamic>>> getReviewsByUser(String customerEmail) async {
+    // Note: This method now uses customer email but the API expects customer ID
+    // For now, return empty list - you may need to implement email-to-ID mapping
+    print('Warning: Legacy method getReviewsByUser used with email: $customerEmail');
+    return [];
+  }
+
+  // Legacy method - redirects to getCustomerShopReviews
+  static Future<List<Map<String, dynamic>>> getShopReviewsByUser(String customerEmail) async {
+    // Note: This method now uses customer email but the API expects customer ID
+    // For now, return empty list - you may need to implement email-to-ID mapping
+    print('Warning: Legacy method getShopReviewsByUser used with email: $customerEmail');
+    return [];
+  }
+
+  // Legacy method - get product reviews by product name (backward compatibility)
+  static Future<List<Map<String, dynamic>>> getProductReviewsByName(String productName) async {
+    try {
+      // For backward compatibility, we'll search through all reviews
+      final allReviews = await getAllReviews();
+      final productReviews = allReviews['productReviews'] as List<dynamic>? ?? [];
+      
+      return productReviews
+          .cast<Map<String, dynamic>>()
+          .where((review) => review['product_name'] == productName)
+          .toList();
+    } catch (e) {
+      print('Error getting product reviews by name: $e');
+      return [];
+    }
+  }
+
+  // Legacy method - get average rating by product name (backward compatibility)
+  static Future<Map<String, dynamic>> getProductAverageRatingByName(String productName) async {
+    try {
+      final reviews = await getProductReviewsByName(productName);
+      if (reviews.isEmpty) {
+        return {'average': 0.0, 'count': 0};
+      }
+      
+      final total = reviews.fold<double>(0, (sum, review) => sum + (review['rating'] ?? 0).toDouble());
+      final average = total / reviews.length;
+      
+      return {
+        'average': double.parse(average.toStringAsFixed(1)),
+        'count': reviews.length,
+      };
+    } catch (e) {
+      print('Error getting product average rating by name: $e');
+      return {'average': 0.0, 'count': 0};
+    }
+  }
+
+  // Legacy method - redirects to getProductReviews
+  static Future<List<Map<String, dynamic>>> getReviewsByProduct(String productName) async {
+    // Note: This method now uses product name but the API expects subcat_id
+    // You may need to map product name to subcat_id or update the API to accept product name
+    print('Warning: Legacy method getReviewsByProduct used with product name: $productName');
+    return [];
+  }
+
+  // Legacy method - saves a product review (backward compatibility)
+  static Future<Map<String, dynamic>> saveProductReview(Map<String, dynamic> reviewData) async {
+    try {
+      // Map old review data format to new format
+      return await createProductReview(
+        customerId: reviewData['customerId'] ?? 'anonymous',
+        customerName: reviewData['customerName'] ?? 'Anonymous User',
+        customerEmail: reviewData['customerEmail'] ?? 'anonymous@example.com',
+        subcatId: reviewData['subcatId'] ?? 'unknown_product',
+        productName: reviewData['productName'] ?? 'Unknown Product',
+        shopOwnerId: reviewData['shopId'] ?? 'unknown_shop',
+        shopName: reviewData['shopName'] ?? 'Unknown Shop',
+        rating: reviewData['rating'] ?? 1,
+        comment: reviewData['comment'] ?? '',
+        orderId: reviewData['orderId'],
+        isVerifiedPurchase: reviewData['isVerifiedPurchase'] ?? false,
+      );
+    } catch (e) {
+      print('Error in saveProductReview: $e');
+      return {
+        'success': false,
+        'error': 'Failed to save product review: $e',
+      };
+    }
+  }
+
+  // ====================================
+  // UTILITY METHODS
+  // ====================================
+
+  // Get all reviews (for debugging)
+  static Future<Map<String, dynamic>> getAllReviews() async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/reviews/all'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success']) {
+          return {
+            'productReviews': data['productReviews'] ?? [],
+            'shopReviews': data['shopReviews'] ?? [],
+            'productCount': data['productCount'] ?? 0,
+            'shopCount': data['shopCount'] ?? 0,
+          };
+        }
+      }
+      return {
+        'productReviews': [],
+        'shopReviews': [],
+        'productCount': 0,
+        'shopCount': 0,
+      };
+    } catch (e) {
+      print('Error getting all reviews: $e');
+      return {
+        'productReviews': [],
+        'shopReviews': [],
+        'productCount': 0,
+        'shopCount': 0,
+      };
+    }
+  }
+
+  // Clear all reviews (for testing)
+  static Future<Map<String, dynamic>> clearAllReviews() async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$baseUrl/reviews/all'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return {
+          'success': data['success'] ?? false,
+          'message': data['message'],
+        };
+      } else {
+        return {
+          'success': false,
+          'error': 'Server error: ${response.statusCode}',
+        };
+      }
+    } catch (e) {
+      print('Error clearing all reviews: $e');
+      return {
+        'success': false,
+        'error': 'Network error: Unable to clear reviews',
+      };
+    }
+  }
+
+  // Sample product reviews for demonstration
+  static List<Map<String, dynamic>> getSampleProductReviews(String productName) {
     return [
       {
-        'id': 'REV-001',
-        'productName': productName,
-        'shopName': 'রহমান গ্রোসারি',
-        'shopId': 'shop_001',
-        'customerId': 'customer_001',
-        'customerName': 'আহমেদ হাসান',
+        'id': 'sample1',
+        'customer_name': 'John Doe',
         'rating': 5,
-        'comment': 'অসাধারণ মানের চাল। দাম অনুযায়ী খুবই ভালো। আবার কিনব।',
-        'reviewDate': DateTime.now().subtract(const Duration(days: 5)),
-        'helpful': 12,
-        'isVerifiedPurchase': true,
-        'orderId': 'ORD-001',
+        'comment': 'Excellent product! Very satisfied with the quality.',
+        'created_at': DateTime.now().subtract(Duration(days: 2)).toIso8601String(),
+        'is_verified_purchase': true,
       },
       {
-        'id': 'REV-002',
-        'productName': productName,
-        'shopName': 'করিম স্টোর',
-        'shopId': 'shop_002',
-        'customerId': 'customer_002',
-        'customerName': 'ফাতেমা খাতুন',
+        'id': 'sample2',
+        'customer_name': 'Sarah Khan',
         'rating': 4,
-        'comment':
-            'ভালো কোয়ালিটির পণ্য। ডেলিভারি একটু দেরি হয়েছিল তবে সার্ভিস ভালো।',
-        'reviewDate': DateTime.now().subtract(const Duration(days: 10)),
-        'helpful': 8,
-        'isVerifiedPurchase': true,
-        'orderId': 'ORD-002',
+        'comment': 'Good product, fast delivery. Recommended!',
+        'created_at': DateTime.now().subtract(Duration(days: 5)).toIso8601String(),
+        'is_verified_purchase': true,
       },
       {
-        'id': 'REV-003',
-        'productName': productName,
-        'shopName': 'নিউ মার্কেট শপ',
-        'shopId': 'shop_003',
-        'customerId': 'customer_003',
-        'customerName': 'মোহাম্মদ করিম',
-        'rating': 3,
-        'comment': 'মোটামুটি ভালো। দাম একটু বেশি মনে হয়েছে।',
-        'reviewDate': DateTime.now().subtract(const Duration(days: 15)),
-        'helpful': 3,
-        'isVerifiedPurchase': false,
+        'id': 'sample3',
+        'customer_name': 'Ahmed Ali',
+        'rating': 4,
+        'comment': 'Quality is good for the price. Will buy again.',
+        'created_at': DateTime.now().subtract(Duration(days: 8)).toIso8601String(),
+        'is_verified_purchase': false,
       },
     ];
   }
 
-  List<Map<String, dynamic>> getSampleShopReviews(String shopId) {
+  // Sample shop reviews for demonstration
+  static List<Map<String, dynamic>> getSampleShopReviews(String shopId) {
     return [
       {
-        'id': 'SHOP-REV-001',
-        'shopName': 'রহমান গ্রোসারি',
-        'shopId': shopId,
-        'customerId': 'customer_001',
-        'customerName': 'সাকিব আহমেদ',
-        'rating': 5,
-        'deliveryRating': 4,
-        'serviceRating': 5,
-        'comment':
-            'চমৎকার সার্ভিস! দোকানদার খুবই ভদ্র এবং সহায়ক। পণ্যের মান অসাধারণ।',
-        'reviewDate': DateTime.now().subtract(const Duration(days: 3)),
-        'helpful': 15,
-        'isVerifiedPurchase': true,
-        'orderId': 'ORD-001',
+        'id': 'shop_sample1',
+        'customer_name': 'Fatima Rahman',
+        'overall_rating': 5,
+        'service_rating': 5,
+        'delivery_rating': 4,
+        'comment': 'Excellent shop with great customer service and fast delivery!',
+        'created_at': DateTime.now().subtract(Duration(days: 1)).toIso8601String(),
       },
       {
-        'id': 'SHOP-REV-002',
-        'shopName': 'রহমান গ্রোসারি',
-        'shopId': shopId,
-        'customerId': 'customer_002',
-        'customerName': 'রাশিদা বেগম',
-        'rating': 4,
-        'deliveryRating': 5,
-        'serviceRating': 4,
-        'comment': 'দ্রুত ডেলিভারি এবং ভালো সার্ভিস। দাম একটু কমানো যেতে পারে।',
-        'reviewDate': DateTime.now().subtract(const Duration(days: 8)),
-        'helpful': 9,
-        'isVerifiedPurchase': true,
-        'orderId': 'ORD-002',
+        'id': 'shop_sample2',
+        'customer_name': 'Mohammad Hassan',
+        'overall_rating': 4,
+        'service_rating': 4,
+        'delivery_rating': 5,
+        'comment': 'Good quality products and very quick delivery. Highly recommended!',
+        'created_at': DateTime.now().subtract(Duration(days: 3)).toIso8601String(),
+      },
+      {
+        'id': 'shop_sample3',
+        'customer_name': 'Ayesha Begum',
+        'overall_rating': 5,
+        'service_rating': 5,
+        'delivery_rating': 4,
+        'comment': 'Amazing shop owner! Very helpful and products are as described.',
+        'created_at': DateTime.now().subtract(Duration(days: 7)).toIso8601String(),
       },
     ];
   }
 
-  // Clear all reviews (for testing) - removed since using database
-  Future<void> clearAllReviews() async {
-    // This method is no longer needed as we're using a database
-    // Reviews can be managed through database administration tools
-    print('Clear reviews functionality moved to database administration');
+  // Get customer's own reviews (both product and shop reviews)
+  static Future<List<Map<String, dynamic>>> getCustomerReviews(String customerId) async {
+    try {
+      // Get both product and shop reviews for the customer
+      final productReviewsResponse = await http.get(
+        Uri.parse('$baseUrl/api/reviews/customer/$customerId/products'),
+        headers: {'Content-Type': 'application/json'},
+      );
+      
+      final shopReviewsResponse = await http.get(
+        Uri.parse('$baseUrl/api/reviews/customer/$customerId/shops'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      List<Map<String, dynamic>> allReviews = [];
+
+      // Add product reviews
+      if (productReviewsResponse.statusCode == 200) {
+        final productData = jsonDecode(productReviewsResponse.body);
+        if (productData['success'] && productData['reviews'] != null) {
+          final productReviews = List<Map<String, dynamic>>.from(productData['reviews']);
+          // Mark as product reviews
+          for (var review in productReviews) {
+            review['review_type'] = 'product';
+          }
+          allReviews.addAll(productReviews);
+        }
+      }
+
+      // Add shop reviews
+      if (shopReviewsResponse.statusCode == 200) {
+        final shopData = jsonDecode(shopReviewsResponse.body);
+        if (shopData['success'] && shopData['reviews'] != null) {
+          final shopReviews = List<Map<String, dynamic>>.from(shopData['reviews']);
+          // Mark as shop reviews
+          for (var review in shopReviews) {
+            review['review_type'] = 'shop';
+          }
+          allReviews.addAll(shopReviews);
+        }
+      }
+
+      // Sort by date (most recent first)
+      allReviews.sort((a, b) {
+        final aDate = DateTime.parse(a['created_at']);
+        final bDate = DateTime.parse(b['created_at']);
+        return bDate.compareTo(aDate);
+      });
+
+      return allReviews;
+    } catch (e) {
+      print('Error fetching customer reviews: $e');
+      return [];
+    }
   }
 }

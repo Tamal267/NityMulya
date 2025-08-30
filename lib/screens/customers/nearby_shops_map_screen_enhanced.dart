@@ -6,7 +6,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
 
+import '../../models/shop.dart';
 import '../../network/shop_api.dart';
+import 'shop_items_screen.dart';
 
 class NearbyShopsMapScreenEnhanced extends StatefulWidget {
   final String? userName;
@@ -655,10 +657,23 @@ class _NearbyShopsMapScreenEnhancedState
               icon: const Icon(Icons.center_focus_strong),
               label: const Text('Center on Route'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF079b11),
+                backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,
               ),
             ),
+          // Enter Shop button
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog first
+              _enterShop(shop);
+            },
+            icon: const Icon(Icons.store),
+            label: const Text('Enter Shop'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF079b11),
+              foregroundColor: Colors.white,
+            ),
+          ),
         ],
       ),
     );
@@ -692,12 +707,35 @@ class _NearbyShopsMapScreenEnhancedState
     _mapController.move(LatLng(centerLat, centerLon), zoom);
   }
 
+  void _enterShop(Map<String, dynamic> shopData) {
+    // Convert shop data from API to Shop model for ShopItemsScreen
+    final shop = Shop(
+      id: shopData['id']?.toString() ?? '',
+      name: shopData['name']?.toString() ?? 'Unknown Shop',
+      address: shopData['address']?.toString() ?? 'Unknown Address',
+      phone: shopData['phone']?.toString() ?? 'Unknown Phone',
+      category: shopData['category']?.toString() ?? 'General Store',
+      rating: double.tryParse(shopData['rating']?.toString() ?? '0') ?? 4.0,
+      image: shopData['image']?.toString() ?? '',
+      availableProducts: [], // Will be loaded in ShopItemsScreen
+      isVerified: shopData['is_verified'] ?? false,
+      openingHours: '${shopData['open_time']?.toString() ?? '09:00'} - ${shopData['close_time']?.toString() ?? '21:00'}',
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ShopItemsScreen(shop: shop),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF079b11),
-        title: const Text('Nearby Shops - Enhanced'),
+        title: const Text('Nearby Shops'),
         actions: [
           // Toggle route visibility
           IconButton(

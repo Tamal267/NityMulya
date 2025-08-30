@@ -12,6 +12,8 @@ class ProductDetailScreen extends StatefulWidget {
   final int low;
   final int high;
   final String? subcatId; // Add subcategory ID
+  final String? userEmail; // Add user email for reviews
+  final String? userName; // Add user name for reviews
 
   const ProductDetailScreen({
     super.key,
@@ -20,6 +22,8 @@ class ProductDetailScreen extends StatefulWidget {
     required this.low,
     required this.high,
     this.subcatId, // Optional for backward compatibility
+    this.userEmail, // Optional for reviews
+    this.userName, // Optional for reviews
   });
 
   @override
@@ -114,15 +118,15 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         isLoadingReviews = true;
       });
 
-      final reviews = await ReviewService().getProductReviews(widget.title);
-      final avgRating =
-          await ReviewService().getProductAverageRating(widget.title);
+      final reviews = await ReviewService.getProductReviewsByName(widget.title);
+      final avgRatingData =
+          await ReviewService.getProductAverageRatingByName(widget.title);
 
       setState(() {
         // Only use reviews from database, don't fall back to sample data
         productReviews = reviews;
         // Only use database average rating, or 0 if no reviews
-        averageRating = avgRating;
+        averageRating = avgRatingData['average']?.toDouble() ?? 0.0;
         isLoadingReviews = false;
       });
 
@@ -956,24 +960,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ReviewsScreen(
-                productName: widget.title,
-                shopId: availableShops.isNotEmpty ? availableShops.first['id']?.toString() : null,
-                shopName: availableShops.isNotEmpty ? availableShops.first['name']?.toString() : null,
-                customerId: widget.userEmail,
-                customerName: widget.userName,
-              ),
-            ),
-          );
-          
-          if (result == true) {
-            // Reload reviews after successful submission
-            _loadProductReviews();
-          }
+        onPressed: () {
+          // Show popup review dialog instead of navigating to full screen
+          _showReviewPopupDialog();
         },
         backgroundColor: Colors.amber,
         foregroundColor: Colors.white,
@@ -1511,7 +1500,40 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     );
   }
 
-  String _formatReviewDate(DateTime date) {
+  // Show popup review dialog
+  void _showReviewPopupDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => ReviewPopupDialog(
+        productName: widget.title,
+        shopId: availableShops.isNotEmpty ? availableShops.first['id']?.toString() : null,
+        shopName: availableShops.isNotEmpty ? availableShops.first['name']?.toString() : null,
+        customerId: widget.userEmail,
+        customerName: widget.userName,
+        existingReviews: productReviews,
+        averageRating: averageRating,
+        onReviewAdded: () {
+          _loadProductReviews(); // Reload reviews after adding
+        },
+      ),
+    );
+  }
+
+  String _formatReviewDate(dynamic reviewDate) {
+    DateTime date;
+    
+    if (reviewDate is DateTime) {
+      date = reviewDate;
+    } else if (reviewDate is String) {
+      try {
+        date = DateTime.parse(reviewDate);
+      } catch (e) {
+        return 'Unknown date';
+      }
+    } else {
+      return 'Just now';
+    }
+    
     final now = DateTime.now();
     final difference = now.difference(date);
 
@@ -1523,6 +1545,462 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       return '${difference.inHours} hours ago';
     } else {
       return 'Just now';
+    }
+  }
+}
+
+// Review Popup Dialog for showing reviews and adding new reviews
+class ReviewPopupDialog extends StatefulWidget {
+  final String productName;
+  final String? shopId;
+  final String? shopName;
+  final String? customerId;
+  final String? customerName;
+  final List<Map<String, dynamic>> existingReviews;
+  final double averageRating;
+  final VoidCallback onReviewAdded;
+
+  const ReviewPopupDialog({
+    super.key,
+    required this.productName,
+    this.shopId,
+    this.shopName,
+    this.customerId,
+    this.customerName,
+    required this.existingReviews,
+    required this.averageRating,
+    required this.onReviewAdded,
+  });
+
+  @override
+  State<ReviewPopupDialog> createState() => _ReviewPopupDialogState();
+}
+
+class _ReviewPopupDialogState extends State<ReviewPopupDialog>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  final _commentController = TextEditingController();
+  int _rating = 5;
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _commentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      insetPadding: const EdgeInsets.all(16),
+      child: Container(
+        width: double.maxFinite,
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+        ),
+        child: Column(
+          children: [
+            // Header with product info
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.indigo,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.amber, size: 28),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.productName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (widget.shopName != null)
+                          Text(
+                            'from ${widget.shopName}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 14,
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close, color: Colors.white),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Tab Bar
+            TabBar(
+              controller: _tabController,
+              tabs: [
+                Tab(
+                  icon: const Icon(Icons.list),
+                  text: 'Reviews (${widget.existingReviews.length})',
+                ),
+                Tab(
+                  icon: const Icon(Icons.edit),
+                  text: widget.customerId != null ? 'Write Review' : 'Login Required',
+                ),
+              ],
+              labelColor: Colors.indigo,
+              unselectedLabelColor: Colors.grey,
+              indicatorColor: Colors.indigo,
+            ),
+            
+            // Tab Views
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildReviewsListTab(),
+                  _buildWriteReviewTab(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReviewsListTab() {
+    if (widget.existingReviews.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.rate_review_outlined, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text('No reviews yet', style: TextStyle(fontSize: 18, color: Colors.grey)),
+            SizedBox(height: 8),
+            Text('Be the first to review this product!', style: TextStyle(color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Average Rating Summary
+        if (widget.averageRating > 0) ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: Colors.amber.withOpacity(0.1),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  widget.averageRating.toStringAsFixed(1),
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.indigo,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  children: [
+                    _buildStarRating(widget.averageRating, 20),
+                    Text(
+                      '${widget.existingReviews.length} reviews',
+                      style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+        ],
+        
+        // Reviews List
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: widget.existingReviews.length,
+            itemBuilder: (context, index) {
+              final review = widget.existingReviews[index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: Colors.indigo,
+                            child: Text(
+                              review['customerName'].toString().substring(0, 1).toUpperCase(),
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  review['customerName'],
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Row(
+                                  children: [
+                                    _buildStarRating(review['rating'].toDouble(), 16),
+                                    const SizedBox(width: 8),
+                                    if (review['isVerifiedPurchase'] == true)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: Colors.green,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: const Text(
+                                          'Verified',
+                                          style: TextStyle(color: Colors.white, fontSize: 10),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        review['comment'],
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Text(
+                            'Shop: ${review['shopName']}',
+                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                          ),
+                          const Spacer(),
+                          Text(
+                            'Just now', // You can implement proper date formatting
+                            style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWriteReviewTab() {
+    if (widget.customerId == null) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.login, size: 64, color: Colors.grey),
+            SizedBox(height: 16),
+            Text('Please login to write a review', style: TextStyle(fontSize: 18)),
+            SizedBox(height: 8),
+            Text('You need to be logged in to share your experience', style: TextStyle(color: Colors.grey)),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Rate this product:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          
+          // Star Rating Selector
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(5, (index) {
+              return IconButton(
+                onPressed: () {
+                  setState(() {
+                    _rating = index + 1;
+                  });
+                },
+                icon: Icon(
+                  index < _rating ? Icons.star : Icons.star_border,
+                  color: Colors.amber,
+                  size: 36,
+                ),
+              );
+            }),
+          ),
+          
+          const SizedBox(height: 24),
+          const Text(
+            'Write your review:',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 12),
+          
+          // Comment Field
+          TextField(
+            controller: _commentController,
+            maxLines: 6,
+            decoration: const InputDecoration(
+              hintText: 'Share your experience with this product...',
+              border: OutlineInputBorder(),
+              contentPadding: EdgeInsets.all(16),
+            ),
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Submit Button
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton(
+              onPressed: _isSubmitting ? null : _submitReview,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.indigo,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : const Text(
+                      'Submit Review',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStarRating(double rating, double size) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(5, (index) {
+        return Icon(
+          index < rating.floor()
+              ? Icons.star
+              : index < rating
+                  ? Icons.star_half
+                  : Icons.star_border,
+          color: Colors.amber,
+          size: size,
+        );
+      }),
+    );
+  }
+
+  Future<void> _submitReview() async {
+    if (_commentController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please write a review comment'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final reviewData = {
+        'customerId': widget.customerId ?? 'anonymous_user',
+        'customerName': widget.customerName ?? 'Anonymous User',
+        'customerEmail': widget.customerId ?? 'anonymous@example.com', // Use customerId as fallback email
+        'shopOwnerId': widget.shopId ?? 'unknown_shop',
+        'shopName': widget.shopName ?? 'Unknown Shop',
+        'productName': widget.productName,
+        'subcatId': widget.productName, // Use productName as subcatId fallback
+        'rating': _rating,
+        'comment': _commentController.text.trim(),
+        'isVerifiedPurchase': false,
+      };
+
+      await ReviewService.saveProductReview(reviewData);
+
+      if (mounted) {
+        Navigator.pop(context);
+        widget.onReviewAdded();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                const Text('Review submitted successfully!'),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to submit review: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 }

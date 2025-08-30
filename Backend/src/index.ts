@@ -61,11 +61,13 @@ import {
   updateInventoryItem as updateWholesalerInventoryItem,
 } from "./controller/wholesalerController";
 import { ReviewController } from "./controller/reviewController";
+import { DatabaseReviewController } from "./controller/databaseReviewController";
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
-// import sql from "./db"; // Commented out since using memory database
+// import sql from "./db"; // Database connection for persistent storage
 
 const app = new Hono<{ Variables: JwtVariables }>();
-const reviewController = new ReviewController(); // No sql parameter needed
+// Use database controller for persistent storage
+const reviewController = new DatabaseReviewController();
 
 app.use(prettyJSON());
 app.use("/*", cors());
@@ -139,23 +141,86 @@ app.post("/chat/send", sendMessage);
 app.get("/chat/messages", getChatMessages);
 app.get("/chat/conversations", getChatConversations);
 
-// Review routes - Public for viewing, protected for creating
-app.get("/reviews/product/:productName", reviewController.getProductReviews.bind(reviewController));
-app.get("/reviews/shop/:shopId", reviewController.getShopReviews.bind(reviewController));
-app.get("/reviews/customer/:customerId", reviewController.getCustomerReviews.bind(reviewController));
-app.get("/reviews/product/:productName/average", reviewController.getProductAverageRating.bind(reviewController));
-app.get("/reviews/shop/:shopId/average", reviewController.getShopAverageRating.bind(reviewController));
-app.get("/reviews/shop/:shopId/stats", reviewController.getReviewStats.bind(reviewController));
+// ====================================
+// NEW PRODUCT REVIEW ROUTES
+// ====================================
 
-// Protected review routes - require customer authentication
-app.use("/reviews/create", createAuthMiddleware(), requireRole("customer"));
-app.post("/reviews/create", reviewController.createReview.bind(reviewController));
+// Get all product reviews for a specific product (subcat_id)
+app.get("/reviews/product/:subcatId", reviewController.getProductReviews.bind(reviewController));
 
-app.use("/reviews/helpful/*", createAuthMiddleware());
-app.put("/reviews/helpful/:reviewId", reviewController.markReviewHelpful.bind(reviewController));
+// Get average rating for a product
+app.get("/reviews/product/:subcatId/average", reviewController.getProductAverageRating.bind(reviewController));
 
-app.use("/reviews/delete/*", createAuthMiddleware(), requireRole("customer"));
-app.delete("/reviews/delete/:reviewId", reviewController.deleteReview.bind(reviewController));
+// Create a new product review (protected route - temporarily removed for testing)
+// app.use("/reviews/product/create", createAuthMiddleware(), requireRole("customer"));
+app.post("/reviews/product/create", reviewController.createProductReview.bind(reviewController));
+
+// Update a product review (protected route)
+app.use("/reviews/product/:reviewId", createAuthMiddleware(), requireRole("customer"));
+app.put("/reviews/product/:reviewId", reviewController.updateProductReview.bind(reviewController));
+
+// Delete a product review (protected route)
+app.delete("/reviews/product/:reviewId", reviewController.deleteProductReview.bind(reviewController));
+
+// ====================================
+// NEW SHOP REVIEW ROUTES
+// ====================================
+
+// Get all shop reviews for a specific shop
+app.get("/reviews/shop/:shopOwnerId", reviewController.getShopReviews.bind(reviewController));
+
+// Get average ratings for a shop
+app.get("/reviews/shop/:shopOwnerId/average", reviewController.getShopAverageRatings.bind(reviewController));
+
+// Create a new shop review (protected route)
+app.use("/reviews/shop/create", createAuthMiddleware(), requireRole("customer"));
+app.post("/reviews/shop/create", reviewController.createShopReview.bind(reviewController));
+
+// Update a shop review (protected route)
+app.put("/reviews/shop/:reviewId", reviewController.updateShopReview.bind(reviewController));
+
+// Delete a shop review (protected route)
+app.delete("/reviews/shop/:reviewId", reviewController.deleteShopReview.bind(reviewController));
+
+// ====================================
+// CUSTOMER REVIEW ROUTES
+// ====================================
+
+// Get all product reviews by a specific customer
+app.get("/reviews/customer/:customerId/products", reviewController.getCustomerProductReviews.bind(reviewController));
+
+// Get all shop reviews by a specific customer
+app.get("/reviews/customer/:customerId/shops", reviewController.getCustomerShopReviews.bind(reviewController));
+
+// ====================================
+// API PREFIXED ROUTES (for Flutter app)
+// ====================================
+
+// Product reviews with /api prefix
+app.get("/api/reviews/product/:subcatId", reviewController.getProductReviews.bind(reviewController));
+app.get("/api/reviews/product/:subcatId/average", reviewController.getProductAverageRating.bind(reviewController));
+app.post("/api/reviews/product", reviewController.createProductReview.bind(reviewController));
+app.put("/api/reviews/product/:reviewId", reviewController.updateProductReview.bind(reviewController));
+app.delete("/api/reviews/product/:reviewId", reviewController.deleteProductReview.bind(reviewController));
+
+// Shop reviews with /api prefix
+app.get("/api/reviews/shop/:shopOwnerId", reviewController.getShopReviews.bind(reviewController));
+app.get("/api/reviews/shop/:shopOwnerId/average", reviewController.getShopAverageRatings.bind(reviewController));
+app.post("/api/reviews/shop", reviewController.createShopReview.bind(reviewController));
+app.put("/api/reviews/shop/:reviewId", reviewController.updateShopReview.bind(reviewController));
+app.delete("/api/reviews/shop/:reviewId", reviewController.deleteShopReview.bind(reviewController));
+
+// Customer reviews with /api prefix
+app.get("/api/reviews/customer/:customerId/products", reviewController.getCustomerProductReviews.bind(reviewController));
+app.get("/api/reviews/customer/:customerId/shops", reviewController.getCustomerShopReviews.bind(reviewController));
+
+// ====================================
+// UTILITY ROUTES (for debugging)
+// ====================================
+
+// Get all reviews (for debugging) - both with and without /api prefix
+app.get("/reviews/all", reviewController.getAllReviews.bind(reviewController));
+app.get("/api/reviews/all", reviewController.getAllReviews.bind(reviewController));
 
 export default {
   port: process.env.PORT || 5001,

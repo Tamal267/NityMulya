@@ -44,11 +44,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadReviewStats() async {
     try {
-      final reviewService = ReviewService();
       final productReviews =
-          await reviewService.getCustomerReviews('customer_current');
+          await ReviewService.getCustomerReviews('customer_current');
       final shopReviews =
-          await reviewService.getShopReviews('customer_current');
+          await ReviewService.getShopReviews('customer_current');
 
       final allReviews = [...productReviews, ...shopReviews];
 
