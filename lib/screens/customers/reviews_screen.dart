@@ -35,7 +35,9 @@ class _ReviewsScreenState extends State<ReviewsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this); // Always 2 tabs: Product Reviews + Shop Reviews
+    _tabController = TabController(
+        length: 2,
+        vsync: this); // Always 2 tabs: Product Reviews + Shop Reviews
     _loadReviews();
   }
 
@@ -52,8 +54,8 @@ class _ReviewsScreenState extends State<ReviewsScreen>
       if (widget.productName != null) {
         final reviews =
             await ReviewService.getProductReviewsByName(widget.productName!);
-        final avgRatingData =
-            await ReviewService.getProductAverageRatingByName(widget.productName!);
+        final avgRatingData = await ReviewService.getProductAverageRatingByName(
+            widget.productName!);
 
         setState(() {
           productReviews = reviews.isEmpty
@@ -86,7 +88,8 @@ class _ReviewsScreenState extends State<ReviewsScreen>
 
       // Load customer's own reviews if customer ID is provided
       if (widget.customerId != null) {
-        final reviews = await ReviewService.getCustomerReviews(widget.customerId!);
+        final reviews =
+            await ReviewService.getCustomerReviews(widget.customerId!);
         setState(() {
           customerReviews = reviews;
         });
@@ -160,7 +163,8 @@ class _ReviewsScreenState extends State<ReviewsScreen>
                 padding: const EdgeInsets.all(16),
                 child: Row(
                   children: [
-                    const Icon(Icons.shopping_bag, color: Colors.indigo, size: 40),
+                    const Icon(Icons.shopping_bag,
+                        color: Colors.indigo, size: 40),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
@@ -190,7 +194,7 @@ class _ReviewsScreenState extends State<ReviewsScreen>
             ),
             const SizedBox(height: 24),
           ],
-          
+
           // Quick add review button
           Center(
             child: ElevatedButton.icon(
@@ -200,14 +204,16 @@ class _ReviewsScreenState extends State<ReviewsScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.amber,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                textStyle:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Instructions
           Card(
             color: Colors.blue.shade50,
@@ -328,12 +334,10 @@ class _ReviewsScreenState extends State<ReviewsScreen>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildRatingColumn(
-                      'Overall', shopRatings['overall'] ?? 4.5),
+                  _buildRatingColumn('Overall', shopRatings['overall'] ?? 4.5),
                   _buildRatingColumn(
                       'Delivery', shopRatings['delivery'] ?? 4.3),
-                  _buildRatingColumn(
-                      'Service', shopRatings['service'] ?? 4.7),
+                  _buildRatingColumn('Service', shopRatings['service'] ?? 4.7),
                 ],
               ),
               const SizedBox(height: 8),
@@ -354,8 +358,7 @@ class _ReviewsScreenState extends State<ReviewsScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.store_outlined,
-                          size: 64, color: Colors.grey),
+                      Icon(Icons.store_outlined, size: 64, color: Colors.grey),
                       SizedBox(height: 16),
                       Text('No shop reviews yet',
                           style: TextStyle(fontSize: 16, color: Colors.grey)),
@@ -427,7 +430,9 @@ class _ReviewsScreenState extends State<ReviewsScreen>
   // Build customer's shop reviews tab
   Widget _buildCustomerShopReviewsTab() {
     final shopReviews = customerReviews
-        .where((review) => review.containsKey('shopName') && !review.containsKey('productName'))
+        .where((review) =>
+            review.containsKey('shopName') &&
+            !review.containsKey('productName'))
         .toList();
 
     if (shopReviews.isEmpty) {
@@ -485,7 +490,10 @@ class _ReviewsScreenState extends State<ReviewsScreen>
                   radius: 20,
                   backgroundColor: Colors.indigo,
                   child: Text(
-                    (review['customerName'] ?? 'U').toString().substring(0, 1).toUpperCase(),
+                    (review['customerName'] ?? 'U')
+                        .toString()
+                        .substring(0, 1)
+                        .toUpperCase(),
                     style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -523,7 +531,8 @@ class _ReviewsScreenState extends State<ReviewsScreen>
                       ),
                       Row(
                         children: [
-                          _buildStarRating((review['rating'] ?? 0).toDouble(), 14),
+                          _buildStarRating(
+                              (review['rating'] ?? 0).toDouble(), 14),
                           const SizedBox(width: 8),
                           Text(
                             _formatReviewDate(review['reviewDate']),
@@ -591,7 +600,10 @@ class _ReviewsScreenState extends State<ReviewsScreen>
                   radius: 20,
                   backgroundColor: Colors.indigo,
                   child: Text(
-                    (review['customerName'] ?? 'U').toString().substring(0, 1).toUpperCase(),
+                    (review['customerName'] ?? 'U')
+                        .toString()
+                        .substring(0, 1)
+                        .toUpperCase(),
                     style: const TextStyle(
                         color: Colors.white, fontWeight: FontWeight.bold),
                   ),
@@ -607,7 +619,8 @@ class _ReviewsScreenState extends State<ReviewsScreen>
                       ),
                       Row(
                         children: [
-                          _buildStarRating((review['rating'] ?? 0).toDouble(), 14),
+                          _buildStarRating(
+                              (review['rating'] ?? 0).toDouble(), 14),
                           const SizedBox(width: 8),
                           Text(
                             _formatReviewDate(review['reviewDate']),
@@ -625,17 +638,20 @@ class _ReviewsScreenState extends State<ReviewsScreen>
             ),
             const SizedBox(height: 8),
             // Show delivery and service ratings if available
-            if (review.containsKey('deliveryRating') || review.containsKey('serviceRating')) ...[
+            if (review.containsKey('deliveryRating') ||
+                review.containsKey('serviceRating')) ...[
               Row(
                 children: [
                   if (review.containsKey('deliveryRating')) ...[
                     const Text('Delivery: ', style: TextStyle(fontSize: 12)),
-                    _buildStarRating((review['deliveryRating'] ?? 0).toDouble(), 12),
+                    _buildStarRating(
+                        (review['deliveryRating'] ?? 0).toDouble(), 12),
                     const SizedBox(width: 16),
                   ],
                   if (review.containsKey('serviceRating')) ...[
                     const Text('Service: ', style: TextStyle(fontSize: 12)),
-                    _buildStarRating((review['serviceRating'] ?? 0).toDouble(), 12),
+                    _buildStarRating(
+                        (review['serviceRating'] ?? 0).toDouble(), 12),
                   ],
                 ],
               ),
@@ -651,7 +667,8 @@ class _ReviewsScreenState extends State<ReviewsScreen>
               children: [
                 if (review['isVerifiedPurchase'] == true)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: Colors.green,
                       borderRadius: BorderRadius.circular(10),
@@ -787,12 +804,12 @@ class _ReviewsScreenState extends State<ReviewsScreen>
         customerName: widget.customerName,
         onReviewAdded: () {
           _loadReviews(); // Reload reviews after adding
-          
+
           // Switch back to reviews tab after adding review
           if (_tabController.length > 1) {
             _tabController.animateTo(0);
           }
-          
+
           // Return success to parent screen (ProductDetailScreen)
           Navigator.of(context).pop(true);
         },
@@ -831,7 +848,9 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text(widget.productName != null ? 'Review ${widget.productName}' : 'Add Review'),
+      title: Text(widget.productName != null
+          ? 'Review ${widget.productName}'
+          : 'Add Review'),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -952,13 +971,13 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
             try {
               // Save the review using the API
               await ReviewService.saveProductReview(reviewData);
-              
+
               // Close dialog
               Navigator.pop(context);
-              
+
               // Trigger review reload
               widget.onReviewAdded();
-              
+
               // Show success message
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -971,10 +990,10 @@ class _AddReviewDialogState extends State<AddReviewDialog> {
                   ),
                   backgroundColor: Colors.green,
                   behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
               );
-              
             } catch (e) {
               // Show error message
               ScaffoldMessenger.of(context).showSnackBar(

@@ -719,7 +719,8 @@ class _NearbyShopsMapScreenEnhancedState
       image: shopData['image']?.toString() ?? '',
       availableProducts: [], // Will be loaded in ShopItemsScreen
       isVerified: shopData['is_verified'] ?? false,
-      openingHours: '${shopData['open_time']?.toString() ?? '09:00'} - ${shopData['close_time']?.toString() ?? '21:00'}',
+      openingHours:
+          '${shopData['open_time']?.toString() ?? '09:00'} - ${shopData['close_time']?.toString() ?? '21:00'}',
     );
 
     Navigator.push(

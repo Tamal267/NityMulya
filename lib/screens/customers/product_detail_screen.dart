@@ -133,7 +133,6 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       // Debug: Print API responses
       print('Loaded ${productReviews.length} reviews for ${widget.title}');
       print('Average rating: $averageRating');
-      
     } catch (e) {
       print('Error loading reviews: $e');
       setState(() {
@@ -861,14 +860,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                               MaterialPageRoute(
                                 builder: (context) => ReviewsScreen(
                                   productName: widget.title,
-                                  shopId: availableShops.isNotEmpty ? availableShops.first['id']?.toString() : null,
-                                  shopName: availableShops.isNotEmpty ? availableShops.first['name']?.toString() : null,
+                                  shopId: availableShops.isNotEmpty
+                                      ? availableShops.first['id']?.toString()
+                                      : null,
+                                  shopName: availableShops.isNotEmpty
+                                      ? availableShops.first['name']?.toString()
+                                      : null,
                                   customerId: widget.userEmail,
                                   customerName: widget.userName,
                                 ),
                               ),
                             );
-                            
+
                             if (result == true) {
                               // Reload reviews after successful submission
                               _loadProductReviews();
@@ -1506,8 +1509,12 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       context: context,
       builder: (context) => ReviewPopupDialog(
         productName: widget.title,
-        shopId: availableShops.isNotEmpty ? availableShops.first['id']?.toString() : null,
-        shopName: availableShops.isNotEmpty ? availableShops.first['name']?.toString() : null,
+        shopId: availableShops.isNotEmpty
+            ? availableShops.first['id']?.toString()
+            : null,
+        shopName: availableShops.isNotEmpty
+            ? availableShops.first['name']?.toString()
+            : null,
         customerId: widget.userEmail,
         customerName: widget.userName,
         existingReviews: productReviews,
@@ -1521,7 +1528,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
 
   String _formatReviewDate(dynamic reviewDate) {
     DateTime date;
-    
+
     if (reviewDate is DateTime) {
       date = reviewDate;
     } else if (reviewDate is String) {
@@ -1533,7 +1540,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     } else {
       return 'Just now';
     }
-    
+
     final now = DateTime.now();
     final difference = now.difference(date);
 
@@ -1655,7 +1662,7 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
                 ],
               ),
             ),
-            
+
             // Tab Bar
             TabBar(
               controller: _tabController,
@@ -1666,14 +1673,16 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
                 ),
                 Tab(
                   icon: const Icon(Icons.edit),
-                  text: widget.customerId != null ? 'Write Review' : 'Login Required',
+                  text: widget.customerId != null
+                      ? 'Write Review'
+                      : 'Login Required',
                 ),
               ],
               labelColor: Colors.indigo,
               unselectedLabelColor: Colors.grey,
               indicatorColor: Colors.indigo,
             ),
-            
+
             // Tab Views
             Expanded(
               child: TabBarView(
@@ -1698,9 +1707,11 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
           children: [
             Icon(Icons.rate_review_outlined, size: 64, color: Colors.grey),
             SizedBox(height: 16),
-            Text('No reviews yet', style: TextStyle(fontSize: 18, color: Colors.grey)),
+            Text('No reviews yet',
+                style: TextStyle(fontSize: 18, color: Colors.grey)),
             SizedBox(height: 8),
-            Text('Be the first to review this product!', style: TextStyle(color: Colors.grey)),
+            Text('Be the first to review this product!',
+                style: TextStyle(color: Colors.grey)),
           ],
         ),
       );
@@ -1739,7 +1750,7 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
           ),
           const Divider(height: 1),
         ],
-        
+
         // Reviews List
         Expanded(
           child: ListView.builder(
@@ -1759,7 +1770,10 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
                           CircleAvatar(
                             backgroundColor: Colors.indigo,
                             child: Text(
-                              review['customerName'].toString().substring(0, 1).toUpperCase(),
+                              review['customerName']
+                                  .toString()
+                                  .substring(0, 1)
+                                  .toUpperCase(),
                               style: const TextStyle(color: Colors.white),
                             ),
                           ),
@@ -1770,22 +1784,28 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
                               children: [
                                 Text(
                                   review['customerName'],
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 Row(
                                   children: [
-                                    _buildStarRating(review['rating'].toDouble(), 16),
+                                    _buildStarRating(
+                                        review['rating'].toDouble(), 16),
                                     const SizedBox(width: 8),
                                     if (review['isVerifiedPurchase'] == true)
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
                                         decoration: BoxDecoration(
                                           color: Colors.green,
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         child: const Text(
                                           'Verified',
-                                          style: TextStyle(color: Colors.white, fontSize: 10),
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10),
                                         ),
                                       ),
                                   ],
@@ -1805,12 +1825,14 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
                         children: [
                           Text(
                             'Shop: ${review['shopName']}',
-                            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                            style: TextStyle(
+                                color: Colors.grey[600], fontSize: 12),
                           ),
                           const Spacer(),
                           Text(
                             'Just now', // You can implement proper date formatting
-                            style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                            style: TextStyle(
+                                color: Colors.grey[500], fontSize: 12),
                           ),
                         ],
                       ),
@@ -1833,9 +1855,11 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
           children: [
             Icon(Icons.login, size: 64, color: Colors.grey),
             SizedBox(height: 16),
-            Text('Please login to write a review', style: TextStyle(fontSize: 18)),
+            Text('Please login to write a review',
+                style: TextStyle(fontSize: 18)),
             SizedBox(height: 8),
-            Text('You need to be logged in to share your experience', style: TextStyle(color: Colors.grey)),
+            Text('You need to be logged in to share your experience',
+                style: TextStyle(color: Colors.grey)),
           ],
         ),
       );
@@ -1851,7 +1875,7 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           // Star Rating Selector
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1870,14 +1894,14 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
               );
             }),
           ),
-          
+
           const SizedBox(height: 24),
           const Text(
             'Write your review:',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-          
+
           // Comment Field
           TextField(
             controller: _commentController,
@@ -1888,9 +1912,9 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
               contentPadding: EdgeInsets.all(16),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Submit Button
           SizedBox(
             width: double.infinity,
@@ -1900,17 +1924,20 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.indigo,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8)),
               ),
               child: _isSubmitting
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                          color: Colors.white, strokeWidth: 2),
                     )
                   : const Text(
                       'Submit Review',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
             ),
           ),
@@ -1955,7 +1982,8 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
       final reviewData = {
         'customerId': widget.customerId ?? 'anonymous_user',
         'customerName': widget.customerName ?? 'Anonymous User',
-        'customerEmail': widget.customerId ?? 'anonymous@example.com', // Use customerId as fallback email
+        'customerEmail': widget.customerId ??
+            'anonymous@example.com', // Use customerId as fallback email
         'shopOwnerId': widget.shopId ?? 'unknown_shop',
         'shopName': widget.shopName ?? 'Unknown Shop',
         'productName': widget.productName,
@@ -1982,7 +2010,8 @@ class _ReviewPopupDialogState extends State<ReviewPopupDialog>
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
       }

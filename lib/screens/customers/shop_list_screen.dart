@@ -785,12 +785,14 @@ class _QuickReviewDialogState extends State<_QuickReviewDialog> {
     try {
       ReviewService.createShopReview(
         shopId: widget.shop.name.toLowerCase().replaceAll(' ', '_'),
-        shopOwnerId: 'shop_owner_${widget.shop.name.toLowerCase().replaceAll(' ', '_')}',  // Added required shopOwnerId
+        shopOwnerId:
+            'shop_owner_${widget.shop.name.toLowerCase().replaceAll(' ', '_')}', // Added required shopOwnerId
         shopName: widget.shop.name,
         customerId: 'customer_current',
         customerName: 'Current Customer',
-        customerEmail: 'customer@example.com',  // Added required customerEmail
-        overallRating: _overallRating,  // Changed from 'rating' to 'overallRating'
+        customerEmail: 'customer@example.com', // Added required customerEmail
+        overallRating:
+            _overallRating, // Changed from 'rating' to 'overallRating'
         deliveryRating: _overallRating, // Use overall rating for quick review
         serviceRating: _overallRating, // Use overall rating for quick review
         comment: _commentController.text.trim(),

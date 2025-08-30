@@ -39,7 +39,7 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
 
   Future<void> _submitReview() async {
     if (!_formKey.currentState!.validate()) return;
-    
+
     if (widget.customerId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -124,7 +124,9 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
                 child: Icon(
                   Icons.star,
                   size: 32,
-                  color: starIndex <= _rating ? Colors.amber : Colors.grey.shade300,
+                  color: starIndex <= _rating
+                      ? Colors.amber
+                      : Colors.grey.shade300,
                 ),
               ),
             );
@@ -243,14 +245,14 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Rating Selector
               _buildRatingSelector(),
-              
+
               const SizedBox(height: 24),
-              
+
               // Review Text
               const Text(
                 'Your Review',
@@ -283,9 +285,9 @@ class _AddReviewScreenState extends State<AddReviewScreen> {
                   return null;
                 },
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Submit Button
               SizedBox(
                 width: double.infinity,

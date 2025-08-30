@@ -172,7 +172,8 @@ class CustomDrawer extends StatelessWidget {
 
             // Nearby Shops Map
             ListTile(
-              leading: const Icon(Icons.store_mall_directory, color: Colors.blue),
+              leading:
+                  const Icon(Icons.store_mall_directory, color: Colors.blue),
               title: const Text('Nearby Shops'),
               onTap: () {
                 Navigator.pop(context);

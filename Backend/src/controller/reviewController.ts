@@ -1,9 +1,9 @@
 import { Context } from "hono";
-import sql from "../db";
+import { memoryDb } from "../memoryDb";
 
-export class DatabaseReviewController {
+export class ReviewController {
   constructor() {
-    // Database connection is handled by the sql import
+    // No database connection needed for memory storage
   }
 
   // Create a new product review
@@ -48,22 +48,24 @@ export class DatabaseReviewController {
         );
       }
 
-      // Insert product review into database
-      const [review] = await sql`
-        INSERT INTO customer_product_reviews (
-          customer_id, customer_name, customer_email,
-          subcat_id, product_name,
-          shop_owner_id, shop_name,
-          rating, comment, order_id, is_verified_purchase
-        ) VALUES (
-          ${customer_id}, ${customer_name}, ${customer_email},
-          ${subcat_id}, ${product_name},
-          ${shop_owner_id}, ${shop_name},
-          ${rating}, ${comment || ""}, ${
-        order_id || null
-      }, ${is_verified_purchase}
-        ) RETURNING *
-      `;
+      // Create product review using memory database
+      const review = await memoryDb.createProductReview({
+        id: `product_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        customer_id,
+        customer_name,
+        customer_email,
+        subcat_id,
+        product_name,
+        shop_owner_id,
+        shop_name,
+        rating,
+        comment: comment || "",
+        order_id: order_id || null,
+        is_verified_purchase,
+        helpful_count: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       console.log("Product review created successfully:", review.id);
       return c.json({
@@ -76,7 +78,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to create product review: " + error.message,
+          error: "Failed to create product review",
         },
         500
       );
@@ -123,22 +125,24 @@ export class DatabaseReviewController {
         );
       }
 
-      // Insert shop review into database
-      const [review] = await sql`
-        INSERT INTO customer_shop_reviews (
-          customer_id, customer_name, customer_email,
-          shop_owner_id, shop_name,
-          overall_rating, service_rating, delivery_rating,
-          comment, order_id, is_verified_purchase
-        ) VALUES (
-          ${customer_id}, ${customer_name}, ${customer_email},
-          ${shop_owner_id}, ${shop_name},
-          ${overall_rating}, ${service_rating || overall_rating}, ${
-        delivery_rating || overall_rating
-      },
-          ${comment || ""}, ${order_id || null}, ${is_verified_purchase}
-        ) RETURNING *
-      `;
+      // Create shop review using memory database
+      const review = await memoryDb.createShopReview({
+        id: `shop_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        customer_id,
+        customer_name,
+        customer_email,
+        shop_owner_id,
+        shop_name,
+        overall_rating,
+        service_rating: service_rating || overall_rating,
+        delivery_rating: delivery_rating || overall_rating,
+        comment: comment || "",
+        order_id: order_id || null,
+        is_verified_purchase,
+        helpful_count: 0,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
 
       console.log("Shop review created successfully:", review.id);
       return c.json({
@@ -151,7 +155,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to create shop review: " + error.message,
+          error: "Failed to create shop review",
         },
         500
       );
@@ -178,20 +182,7 @@ export class DatabaseReviewController {
         `Getting product reviews for product: ${subcatId}, shop: ${shopOwnerId}`
       );
 
-      let reviews;
-      if (shopOwnerId) {
-        reviews = await sql`
-          SELECT * FROM customer_product_reviews 
-          WHERE subcat_id = ${subcatId} AND shop_owner_id = ${shopOwnerId}
-          ORDER BY created_at DESC
-        `;
-      } else {
-        reviews = await sql`
-          SELECT * FROM customer_product_reviews 
-          WHERE subcat_id = ${subcatId}
-          ORDER BY created_at DESC
-        `;
-      }
+      const reviews = await memoryDb.getProductReviews(subcatId, shopOwnerId);
 
       return c.json({
         success: true,
@@ -202,7 +193,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to get product reviews: " + error.message,
+          error: "Failed to get product reviews",
         },
         500
       );
@@ -226,11 +217,7 @@ export class DatabaseReviewController {
 
       console.log(`Getting shop reviews for shop: ${shopOwnerId}`);
 
-      const reviews = await sql`
-        SELECT * FROM customer_shop_reviews 
-        WHERE shop_owner_id = ${shopOwnerId}
-        ORDER BY created_at DESC
-      `;
+      const reviews = await memoryDb.getShopReviews(shopOwnerId);
 
       return c.json({
         success: true,
@@ -241,7 +228,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to get shop reviews: " + error.message,
+          error: "Failed to get shop reviews",
         },
         500
       );
@@ -265,11 +252,7 @@ export class DatabaseReviewController {
 
       console.log(`Getting product reviews by customer: ${customerId}`);
 
-      const reviews = await sql`
-        SELECT * FROM customer_product_reviews 
-        WHERE customer_id = ${customerId}
-        ORDER BY created_at DESC
-      `;
+      const reviews = await memoryDb.getCustomerProductReviews(customerId);
 
       return c.json({
         success: true,
@@ -280,7 +263,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to get customer product reviews: " + error.message,
+          error: "Failed to get customer product reviews",
         },
         500
       );
@@ -304,11 +287,7 @@ export class DatabaseReviewController {
 
       console.log(`Getting shop reviews by customer: ${customerId}`);
 
-      const reviews = await sql`
-        SELECT * FROM customer_shop_reviews 
-        WHERE customer_id = ${customerId}
-        ORDER BY created_at DESC
-      `;
+      const reviews = await memoryDb.getCustomerShopReviews(customerId);
 
       return c.json({
         success: true,
@@ -319,134 +298,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to get customer shop reviews: " + error.message,
-        },
-        500
-      );
-    }
-  }
-
-  // Get average rating for a product
-  async getProductAverageRating(c: Context) {
-    try {
-      const subcatId = c.req.param("subcatId");
-      const shopOwnerId = c.req.query("shopOwnerId");
-
-      if (!subcatId) {
-        return c.json(
-          {
-            success: false,
-            error: "Product ID (subcatId) is required",
-          },
-          400
-        );
-      }
-
-      let result;
-      if (shopOwnerId) {
-        result = await sql`
-          SELECT AVG(rating)::numeric(3,2) as average, COUNT(*) as count
-          FROM customer_product_reviews 
-          WHERE subcat_id = ${subcatId} AND shop_owner_id = ${shopOwnerId}
-        `;
-      } else {
-        result = await sql`
-          SELECT AVG(rating)::numeric(3,2) as average, COUNT(*) as count
-          FROM customer_product_reviews 
-          WHERE subcat_id = ${subcatId}
-        `;
-      }
-
-      const average = parseFloat(result[0]?.average || "0");
-      const count = parseInt(result[0]?.count || "0");
-
-      return c.json({
-        success: true,
-        average,
-        count,
-      });
-    } catch (error) {
-      console.error("Error getting product average rating:", error);
-      return c.json(
-        {
-          success: false,
-          error: "Failed to get product average rating: " + error.message,
-        },
-        500
-      );
-    }
-  }
-
-  // Get average ratings for a shop
-  async getShopAverageRatings(c: Context) {
-    try {
-      const shopOwnerId = c.req.param("shopOwnerId");
-
-      if (!shopOwnerId) {
-        return c.json(
-          {
-            success: false,
-            error: "Shop Owner ID is required",
-          },
-          400
-        );
-      }
-
-      const result = await sql`
-        SELECT 
-          AVG(overall_rating)::numeric(3,2) as overall,
-          AVG(service_rating)::numeric(3,2) as service,
-          AVG(delivery_rating)::numeric(3,2) as delivery,
-          COUNT(*) as count
-        FROM customer_shop_reviews 
-        WHERE shop_owner_id = ${shopOwnerId}
-      `;
-
-      const overall = parseFloat(result[0]?.overall || "0");
-      const service = parseFloat(result[0]?.service || "0");
-      const delivery = parseFloat(result[0]?.delivery || "0");
-      const count = parseInt(result[0]?.count || "0");
-
-      return c.json({
-        success: true,
-        overall,
-        service,
-        delivery,
-        count,
-      });
-    } catch (error) {
-      console.error("Error getting shop average ratings:", error);
-      return c.json(
-        {
-          success: false,
-          error: "Failed to get shop average ratings: " + error.message,
-        },
-        500
-      );
-    }
-  }
-
-  // Get all reviews (for debugging)
-  async getAllReviews(c: Context) {
-    try {
-      const productReviews =
-        await sql`SELECT * FROM customer_product_reviews ORDER BY created_at DESC`;
-      const shopReviews =
-        await sql`SELECT * FROM customer_shop_reviews ORDER BY created_at DESC`;
-
-      return c.json({
-        success: true,
-        productReviews,
-        shopReviews,
-        productCount: productReviews.length,
-        shopCount: shopReviews.length,
-      });
-    } catch (error) {
-      console.error("Error getting all reviews:", error);
-      return c.json(
-        {
-          success: false,
-          error: "Failed to get all reviews: " + error.message,
+          error: "Failed to get customer shop reviews",
         },
         500
       );
@@ -471,41 +323,10 @@ export class DatabaseReviewController {
 
       console.log(`Updating product review: ${reviewId}`);
 
-      const updateFields = [];
-      const values = [];
-
-      if (body.rating) {
-        updateFields.push("rating = $" + (values.length + 1));
-        values.push(body.rating);
-      }
-      if (body.comment !== undefined) {
-        updateFields.push("comment = $" + (values.length + 1));
-        values.push(body.comment);
-      }
-
-      if (updateFields.length === 0) {
-        return c.json(
-          {
-            success: false,
-            error: "No fields to update",
-          },
-          400
-        );
-      }
-
-      updateFields.push("updated_at = CURRENT_TIMESTAMP");
-      values.push(reviewId);
-
-      const [updatedReview] = await sql`
-        UPDATE customer_product_reviews 
-        SET rating = ${body.rating || sql`rating`}, 
-            comment = ${
-              body.comment !== undefined ? body.comment : sql`comment`
-            },
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${reviewId}
-        RETURNING *
-      `;
+      const updatedReview = await memoryDb.updateProductReview(reviewId, {
+        ...body,
+        updated_at: new Date().toISOString(),
+      });
 
       if (!updatedReview) {
         return c.json(
@@ -527,7 +348,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to update product review: " + error.message,
+          error: "Failed to update product review",
         },
         500
       );
@@ -552,18 +373,10 @@ export class DatabaseReviewController {
 
       console.log(`Updating shop review: ${reviewId}`);
 
-      const [updatedReview] = await sql`
-        UPDATE customer_shop_reviews 
-        SET overall_rating = ${body.overall_rating || sql`overall_rating`}, 
-            service_rating = ${body.service_rating || sql`service_rating`},
-            delivery_rating = ${body.delivery_rating || sql`delivery_rating`},
-            comment = ${
-              body.comment !== undefined ? body.comment : sql`comment`
-            },
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ${reviewId}
-        RETURNING *
-      `;
+      const updatedReview = await memoryDb.updateShopReview(reviewId, {
+        ...body,
+        updated_at: new Date().toISOString(),
+      });
 
       if (!updatedReview) {
         return c.json(
@@ -585,7 +398,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to update shop review: " + error.message,
+          error: "Failed to update shop review",
         },
         500
       );
@@ -609,13 +422,9 @@ export class DatabaseReviewController {
 
       console.log(`Deleting product review: ${reviewId}`);
 
-      const [deletedReview] = await sql`
-        DELETE FROM customer_product_reviews 
-        WHERE id = ${reviewId}
-        RETURNING id
-      `;
+      const deleted = await memoryDb.deleteProductReview(reviewId);
 
-      if (!deletedReview) {
+      if (!deleted) {
         return c.json(
           {
             success: false,
@@ -634,7 +443,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to delete product review: " + error.message,
+          error: "Failed to delete product review",
         },
         500
       );
@@ -658,13 +467,9 @@ export class DatabaseReviewController {
 
       console.log(`Deleting shop review: ${reviewId}`);
 
-      const [deletedReview] = await sql`
-        DELETE FROM customer_shop_reviews 
-        WHERE id = ${reviewId}
-        RETURNING id
-      `;
+      const deleted = await memoryDb.deleteShopReview(reviewId);
 
-      if (!deletedReview) {
+      if (!deleted) {
         return c.json(
           {
             success: false,
@@ -683,7 +488,7 @@ export class DatabaseReviewController {
       return c.json(
         {
           success: false,
-          error: "Failed to delete shop review: " + error.message,
+          error: "Failed to delete shop review",
         },
         500
       );

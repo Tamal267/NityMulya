@@ -11,7 +11,11 @@ class ShopService {
         category: 'গ্রোসারি',
         rating: 4.5,
         image: 'assets/image/1.jpg',
-        availableProducts: ['চাল সরু (নাজির/মিনিকেট)', 'সয়াবিন তেল (পিউর)', 'মসুর ডাল'],
+        availableProducts: [
+          'চাল সরু (নাজির/মিনিকেট)',
+          'সয়াবিন তেল (পিউর)',
+          'মসুর ডাল'
+        ],
         isVerified: true,
         openingHours: '৮:০০ AM - ১০:০০ PM',
       ),
@@ -23,7 +27,11 @@ class ShopService {
         category: 'সুপার শপ',
         rating: 4.2,
         image: 'assets/image/2.jpg',
-        availableProducts: ['চাল মোটা (পাইলস)', 'গমের আটা (প্রিমিয়াম)', 'পেঁয়াজ (দেশি)'],
+        availableProducts: [
+          'চাল মোটা (পাইলস)',
+          'গমের আটা (প্রিমিয়াম)',
+          'পেঁয়াজ (দেশি)'
+        ],
         isVerified: true,
         openingHours: '৭:০০ AM - ১১:০০ PM',
       ),
@@ -47,7 +55,11 @@ class ShopService {
         category: 'খুচরা',
         rating: 4.7,
         image: 'assets/image/4.jpg',
-        availableProducts: ['চাল সরু (নাজির/মিনিকেট)', 'মসুর ডাল', 'গমের আটা (প্রিমিয়াম)'],
+        availableProducts: [
+          'চাল সরু (নাজির/মিনিকেট)',
+          'মসুর ডাল',
+          'গমের আটা (প্রিমিয়াম)'
+        ],
         isVerified: true,
         openingHours: '৯:০০ AM - ১০:০০ PM',
       ),
@@ -69,20 +81,20 @@ class ShopService {
   static List<Shop> searchShops(String query) {
     final shops = getMockShops();
     if (query.isEmpty) return shops;
-    
-    return shops.where((shop) =>
-      shop.name.toLowerCase().contains(query.toLowerCase()) ||
-      shop.address.toLowerCase().contains(query.toLowerCase()) ||
-      shop.category.toLowerCase().contains(query.toLowerCase())
-    ).toList();
+
+    return shops
+        .where((shop) =>
+            shop.name.toLowerCase().contains(query.toLowerCase()) ||
+            shop.address.toLowerCase().contains(query.toLowerCase()) ||
+            shop.category.toLowerCase().contains(query.toLowerCase()))
+        .toList();
   }
 
   static List<Shop> getShopsByProduct(String productName) {
     final shops = getMockShops();
-    return shops.where((shop) =>
-      shop.availableProducts.any((product) =>
-        product.toLowerCase().contains(productName.toLowerCase())
-      )
-    ).toList();
+    return shops
+        .where((shop) => shop.availableProducts.any((product) =>
+            product.toLowerCase().contains(productName.toLowerCase())))
+        .toList();
   }
 }

@@ -1,27 +1,27 @@
-import { Hono } from 'hono'
-import { cors } from 'hono/cors'
+import { Hono } from "hono";
+import { cors } from "hono/cors";
 
-const app = new Hono()
+const app = new Hono();
 
 // Enable CORS
-app.use('/*', cors())
+app.use("/*", cors());
 
 // In-memory storage for reviews (temporary solution)
-let reviews: any[] = []
+let reviews: any[] = [];
 
 // Basic route
-app.get('/', (c) => {
-  return c.json({ 
-    message: 'NityMulya Review API Server',
-    status: 'running',
-    timestamp: new Date().toISOString()
-  })
-})
+app.get("/", (c) => {
+  return c.json({
+    message: "NityMulya Review API Server",
+    status: "running",
+    timestamp: new Date().toISOString(),
+  });
+});
 
 // Create a review
-app.post('/reviews/create', async (c) => {
+app.post("/reviews/create", async (c) => {
   try {
-    const body = await c.req.json()
+    const body = await c.req.json();
     const {
       customerId,
       shopOwnerId,
@@ -33,17 +33,17 @@ app.post('/reviews/create', async (c) => {
       shopName,
       deliveryRating,
       serviceRating,
-      isVerifiedPurchase
-    } = body
+      isVerifiedPurchase,
+    } = body;
 
     // Validate required fields
     if (!customerId || !shopOwnerId || !rating || rating < 1 || rating > 5) {
-      return c.json({ error: 'Missing or invalid required fields' }, 400)
+      return c.json({ error: "Missing or invalid required fields" }, 400);
     }
 
-    const reviewId = crypto.randomUUID()
-    const now = new Date()
-    
+    const reviewId = crypto.randomUUID();
+    const now = new Date();
+
     const review = {
       id: reviewId,
       customer_id: customerId,
@@ -51,7 +51,7 @@ app.post('/reviews/create', async (c) => {
       order_id: orderId || null,
       subcat_id: subcatId || null,
       rating: rating,
-      comment: comment || '',
+      comment: comment || "",
       product_name: productName || null,
       shop_name: shopName || null,
       delivery_rating: deliveryRating || null,
@@ -65,180 +65,190 @@ app.post('/reviews/create', async (c) => {
       customerName: `Customer ${customerId.slice(-3)}`,
       customerId: customerId,
       helpful: 0,
-      isVerifiedPurchase: isVerifiedPurchase || false
-    }
+      isVerifiedPurchase: isVerifiedPurchase || false,
+    };
 
-    reviews.push(review)
-    
-    console.log(`Review created for product: ${productName}`)
-    console.log(`Total reviews in memory: ${reviews.length}`)
+    reviews.push(review);
+
+    console.log(`Review created for product: ${productName}`);
+    console.log(`Total reviews in memory: ${reviews.length}`);
 
     return c.json({
       success: true,
-      message: 'Review created successfully',
-      reviewId: reviewId
-    })
+      message: "Review created successfully",
+      reviewId: reviewId,
+    });
   } catch (error) {
-    console.error('Error creating review:', error)
-    return c.json({ 
-      success: false, 
-      error: 'Failed to create review',
-      details: error.message 
-    }, 500)
+    console.error("Error creating review:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to create review",
+        details: error.message,
+      },
+      500
+    );
   }
-})
+});
 
 // Get reviews for a product
-app.get('/reviews/product/:productName', async (c) => {
+app.get("/reviews/product/:productName", async (c) => {
   try {
-    const productName = decodeURIComponent(c.req.param('productName'))
-    console.log(`Fetching reviews for product: "${productName}"`)
-    
-    const productReviews = reviews.filter(review => 
-      review.product_name === productName
-    )
-    
-    console.log(`Found ${productReviews.length} reviews for "${productName}"`)
-    
+    const productName = decodeURIComponent(c.req.param("productName"));
+    console.log(`Fetching reviews for product: "${productName}"`);
+
+    const productReviews = reviews.filter(
+      (review) => review.product_name === productName
+    );
+
+    console.log(`Found ${productReviews.length} reviews for "${productName}"`);
+
     return c.json({
       success: true,
-      reviews: productReviews
-    })
+      reviews: productReviews,
+    });
   } catch (error) {
-    console.error('Error fetching product reviews:', error)
-    return c.json({ 
-      success: false, 
-      error: 'Failed to fetch reviews',
-      reviews: []
-    })
+    console.error("Error fetching product reviews:", error);
+    return c.json({
+      success: false,
+      error: "Failed to fetch reviews",
+      reviews: [],
+    });
   }
-})
+});
 
 // Get average rating for a product
-app.get('/reviews/product/:productName/average', async (c) => {
+app.get("/reviews/product/:productName/average", async (c) => {
   try {
-    const productName = decodeURIComponent(c.req.param('productName'))
-    
-    const productReviews = reviews.filter(review => 
-      review.product_name === productName
-    )
-    
+    const productName = decodeURIComponent(c.req.param("productName"));
+
+    const productReviews = reviews.filter(
+      (review) => review.product_name === productName
+    );
+
     if (productReviews.length === 0) {
       return c.json({
         success: true,
         averageRating: 0,
-        totalReviews: 0
-      })
+        totalReviews: 0,
+      });
     }
-    
-    const totalRating = productReviews.reduce((sum, review) => sum + review.rating, 0)
-    const averageRating = totalRating / productReviews.length
-    
+
+    const totalRating = productReviews.reduce(
+      (sum, review) => sum + review.rating,
+      0
+    );
+    const averageRating = totalRating / productReviews.length;
+
     return c.json({
       success: true,
       averageRating: averageRating.toFixed(2),
-      totalReviews: productReviews.length
-    })
+      totalReviews: productReviews.length,
+    });
   } catch (error) {
-    console.error('Error fetching average rating:', error)
-    return c.json({ 
-      success: false, 
+    console.error("Error fetching average rating:", error);
+    return c.json({
+      success: false,
       averageRating: 0,
-      totalReviews: 0
-    })
+      totalReviews: 0,
+    });
   }
-})
+});
 
 // Get reviews for a shop
-app.get('/reviews/shop/:shopId', async (c) => {
+app.get("/reviews/shop/:shopId", async (c) => {
   try {
-    const shopId = c.req.param('shopId')
-    const shopReviews = reviews.filter(review => review.shop_owner_id === shopId)
-    
+    const shopId = c.req.param("shopId");
+    const shopReviews = reviews.filter(
+      (review) => review.shop_owner_id === shopId
+    );
+
     return c.json({
       success: true,
-      reviews: shopReviews
-    })
+      reviews: shopReviews,
+    });
   } catch (error) {
-    console.error('Error fetching shop reviews:', error)
-    return c.json({ 
-      success: false, 
-      error: 'Failed to fetch reviews',
-      reviews: []
-    })
+    console.error("Error fetching shop reviews:", error);
+    return c.json({
+      success: false,
+      error: "Failed to fetch reviews",
+      reviews: [],
+    });
   }
-})
+});
 
 // Get reviews for a customer
-app.get('/reviews/customer/:customerId', async (c) => {
+app.get("/reviews/customer/:customerId", async (c) => {
   try {
-    const customerId = c.req.param('customerId')
-    const customerReviews = reviews.filter(review => review.customer_id === customerId)
-    
+    const customerId = c.req.param("customerId");
+    const customerReviews = reviews.filter(
+      (review) => review.customer_id === customerId
+    );
+
     return c.json({
       success: true,
-      reviews: customerReviews
-    })
+      reviews: customerReviews,
+    });
   } catch (error) {
-    console.error('Error fetching customer reviews:', error)
-    return c.json({ 
-      success: false, 
-      error: 'Failed to fetch reviews',
-      reviews: []
-    })
+    console.error("Error fetching customer reviews:", error);
+    return c.json({
+      success: false,
+      error: "Failed to fetch reviews",
+      reviews: [],
+    });
   }
-})
+});
 
 // Add some initial test data
 const initTestData = () => {
   const testReviews = [
     {
       id: crypto.randomUUID(),
-      customer_id: 'customer1',
-      shop_owner_id: 'shop1',
+      customer_id: "customer1",
+      shop_owner_id: "shop1",
       rating: 5,
-      comment: 'অসাধারণ মানের চাল! দাম অনুযায়ী খুবই ভালো।',
-      product_name: 'চাল',
-      shop_name: 'রহমান গ্রোসারি',
+      comment: "অসাধারণ মানের চাল! দাম অনুযায়ী খুবই ভালো।",
+      product_name: "চাল",
+      shop_name: "রহমান গ্রোসারি",
       is_verified_purchase: true,
       helpful_count: 12,
       created_at: new Date().toISOString(),
-      customer_name: 'আহমেদ হাসান',
+      customer_name: "আহমেদ হাসান",
       reviewDate: new Date().toISOString(),
-      customerName: 'আহমেদ হাসান',
-      customerId: 'customer1',
+      customerName: "আহমেদ হাসান",
+      customerId: "customer1",
       helpful: 12,
-      isVerifiedPurchase: true
+      isVerifiedPurchase: true,
     },
     {
       id: crypto.randomUUID(),
-      customer_id: 'customer2',
-      shop_owner_id: 'shop2',
+      customer_id: "customer2",
+      shop_owner_id: "shop2",
       rating: 4,
-      comment: 'ভালো কোয়ালিটি। ডেলিভারি একটু দেরি হয়েছিল।',
-      product_name: 'চাল',
-      shop_name: 'করিম স্টোর',
+      comment: "ভালো কোয়ালিটি। ডেলিভারি একটু দেরি হয়েছিল।",
+      product_name: "চাল",
+      shop_name: "করিম স্টোর",
       is_verified_purchase: true,
       helpful_count: 8,
       created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      customer_name: 'ফাতেমা খাতুন',
+      customer_name: "ফাতেমা খাতুন",
       reviewDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-      customerName: 'ফাতেমা খাতুন',
-      customerId: 'customer2',
+      customerName: "ফাতেমা খাতুন",
+      customerId: "customer2",
       helpful: 8,
-      isVerifiedPurchase: true
-    }
-  ]
-  
-  reviews.push(...testReviews)
-  console.log(`Initialized with ${testReviews.length} test reviews`)
-}
+      isVerifiedPurchase: true,
+    },
+  ];
+
+  reviews.push(...testReviews);
+  console.log(`Initialized with ${testReviews.length} test reviews`);
+};
 
 // Initialize test data
-initTestData()
+initTestData();
 
-const port = 3001
+const port = 3001;
 export default {
   port,
   fetch: app.fetch,
-}
+};

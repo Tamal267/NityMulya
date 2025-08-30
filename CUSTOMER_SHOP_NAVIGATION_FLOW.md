@@ -3,14 +3,17 @@
 ## 🎯 **Navigation Flow Overview**
 
 ### **Step 1: Customer Login**
+
 - Customer logs in and lands on `MainCustomerScreen`
 - Bottom navigation bar with: **Home | My Orders | Shops | Favorites**
 
 ### **Step 2: Shops Tab Navigation**
+
 - Click on **"Shops"** tab → Opens `ShopListScreen`
 - Shop List shows all available shops with search and filter options
 
 ### **Step 3: Location-Based Shop Discovery**
+
 - **AppBar Location Button**: Click location icon (📍) in AppBar
 - **Dropdown Menu**: "View Nearby Shops" → Opens `NearbyShopsMapScreenEnhanced`
 - **Map Features**:
@@ -21,16 +24,19 @@
   - Click shop marker to see detailed route info
 
 ### **Step 4: Shop Selection**
+
 - **From Map**: Click shop marker → View details → "Enter Shop" button
 - **From List**: Click any shop card in Shop List
 - **Navigation**: Both lead to `ShopItemsScreen(shop: shop)`
 
 ### **Step 5: Shop Product Browsing**
+
 - **Shop Interior**: View all available products in the selected shop
 - **Product Cards**: Display product name, price, stock status
 - **Search & Filter**: Find specific products within the shop
 
 ### **Step 6: Product Detail & Actions**
+
 - **Click Product** → Opens `ProductDetailScreen`
 - **Available Actions**:
   - 🛒 **Buy Now**: Green "Buy" button → Purchase dialog
@@ -42,6 +48,7 @@
 ## 🛠 **Technical Implementation**
 
 ### **Key Components**
+
 1. **MainCustomerScreen**: Bottom navigation container
 2. **ShopListScreen**: Shop list with location dropdown
 3. **NearbyShopsMapScreenEnhanced**: Map with GPS and routing
@@ -49,12 +56,14 @@
 5. **ProductDetailScreen**: Product details with all actions
 
 ### **Database Integration**
+
 - **Orders**: `CustomerApi.createOrder()` with full database persistence
 - **Reviews**: `ReviewService` with product and shop review system
 - **Shop Data**: Real-time shop and product information
 - **Inventory**: Live stock quantity tracking
 
 ### **Location Features**
+
 - **GPS Permission Handling**: Automatic location service detection
 - **Real-time Distance**: OSRM routing for accurate travel times
 - **Interactive Map**: Draggable FAB, route visualization
@@ -88,17 +97,20 @@ Click Shop Card      Click Map Marker
 ## ✅ **Features Implemented**
 
 ### **Shop Discovery**
+
 - ✅ Shop list with search and filters
 - ✅ Location-based nearby shop map
 - ✅ Real-time distance calculation
 - ✅ Interactive map with route visualization
 
 ### **Shop Navigation**
+
 - ✅ Direct shop entry from list or map
 - ✅ Product browsing within shops
 - ✅ Stock status and pricing display
 
 ### **Product Actions**
+
 - ✅ Buy Now functionality with purchase dialog
 - ✅ Database-integrated order system
 - ✅ Customer review system with ratings
@@ -106,6 +118,7 @@ Click Shop Card      Click Map Marker
 - ✅ Favorites integration (via existing system)
 
 ### **Location Services**
+
 - ✅ GPS permission handling
 - ✅ User location display on map
 - ✅ Real-time route calculation
@@ -124,6 +137,7 @@ Click Shop Card      Click Map Marker
 ## 🔧 **Status: ✅ COMPLETE**
 
 The complete customer shop navigation flow is fully implemented with:
+
 - Bottom navigation integration
 - Location-based shop discovery
 - Interactive map with real-time routing
