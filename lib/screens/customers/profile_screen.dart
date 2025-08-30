@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../network/customer_api.dart';
 import '../../services/order_service.dart';
 import '../../services/review_service.dart';
 import '../auth/login_screen.dart';
@@ -28,6 +29,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool enableLocationServices = true;
   int totalOrders = 0;
   int pendingOrders = 0;
+  int deliveredOrders = 0;
+  int cancelledOrders = 0;
+  double totalSpent = 0.0;
   int totalReviews = 0;
   double averageRating = 0.0;
 
@@ -73,19 +77,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _loadOrderStats() async {
     try {
-      final orders = await OrderService().getOrders();
-      if (orders.isEmpty) {
-        // Use sample data if no real orders exist
-        final sampleOrders = OrderService().getSampleOrders();
+      // First, try to get stats from database
+      final dbStats = await CustomerApi.getOrderStats();
+
+      if (dbStats['success'] == true) {
         setState(() {
-          totalOrders = sampleOrders.length;
-          pendingOrders = sampleOrders
-              .where((order) =>
-                  order['status'] == 'pending' ||
-                  order['status'] == 'confirmed')
-              .length;
+          totalOrders = dbStats['totalOrders'] ?? 0;
+          pendingOrders = dbStats['pendingOrders'] ?? 0;
+          deliveredOrders = dbStats['deliveredOrders'] ?? 0;
+          cancelledOrders = dbStats['cancelledOrders'] ?? 0;
+          totalSpent = (dbStats['totalSpent'] ?? 0.0).toDouble();
         });
-      } else {
+        return;
+      }
+
+      // Fallback to local orders if database fails
+      final orders = await OrderService().getOrders();
+      setState(() {
+        totalOrders = orders.length;
+        pendingOrders = orders
+            .where((order) =>
+                order['status'] == 'pending' || order['status'] == 'confirmed')
+            .length;
+        deliveredOrders =
+            orders.where((order) => order['status'] == 'delivered').length;
+        cancelledOrders =
+            orders.where((order) => order['status'] == 'cancelled').length;
+        totalSpent = orders
+            .where((order) => order['status'] != 'cancelled')
+            .fold(0.0, (sum, order) => sum + (order['totalPrice'] ?? 0.0));
+      });
+    } catch (e) {
+      print('Error loading order stats: $e');
+
+      // Final fallback - try local orders
+      try {
+        final orders = await OrderService().getOrders();
         setState(() {
           totalOrders = orders.length;
           pendingOrders = orders
@@ -93,18 +120,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   order['status'] == 'pending' ||
                   order['status'] == 'confirmed')
               .length;
+          deliveredOrders =
+              orders.where((order) => order['status'] == 'delivered').length;
+          cancelledOrders =
+              orders.where((order) => order['status'] == 'cancelled').length;
+          totalSpent = orders
+              .where((order) => order['status'] != 'cancelled')
+              .fold(0.0, (sum, order) => sum + (order['totalPrice'] ?? 0.0));
+        });
+      } catch (localError) {
+        // Set to zero if all fails
+        setState(() {
+          totalOrders = 0;
+          pendingOrders = 0;
+          deliveredOrders = 0;
+          cancelledOrders = 0;
+          totalSpent = 0.0;
         });
       }
-    } catch (e) {
-      // Fallback to sample data
-      final sampleOrders = OrderService().getSampleOrders();
-      setState(() {
-        totalOrders = sampleOrders.length;
-        pendingOrders = sampleOrders
-            .where((order) =>
-                order['status'] == 'pending' || order['status'] == 'confirmed')
-            .length;
-      });
     }
   }
 
@@ -285,6 +318,120 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 15),
+
+            // Additional Order Statistics
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.check_circle,
+                          color: Colors.green,
+                          size: 24,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '$deliveredOrders',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                        ),
+                        const Text(
+                          'Delivered',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.red.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.red.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.cancel,
+                          color: Colors.red,
+                          size: 24,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '$cancelledOrders',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                        const Text(
+                          'Cancelled',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                    ),
+                    child: Column(
+                      children: [
+                        const Icon(
+                          Icons.attach_money,
+                          color: Colors.purple,
+                          size: 24,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '৳${totalSpent.toStringAsFixed(0)}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                        ),
+                        const Text(
+                          'Total Spent',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.purple,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../network/customer_api.dart';
 import '../../services/order_service.dart';
 
 class MyOrdersScreen extends StatefulWidget {
@@ -24,29 +25,136 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     _loadOrders();
   }
 
-  // Load orders from OrderService
+  // Load orders from both database and local storage
   Future<void> _loadOrders() async {
-    try {
-      final loadedOrders = await OrderService().getOrders();
+    setState(() {
+      isLoading = true;
+    });
 
-      // If no orders exist, show sample orders for demonstration
-      if (loadedOrders.isEmpty) {
+    try {
+      List<Map<String, dynamic>> allOrders = [];
+
+      // First, try to load from database via API
+      final apiResult = await CustomerApi.getOrders();
+      if (apiResult['success'] == true) {
+        final dbOrders =
+            List<Map<String, dynamic>>.from(apiResult['orders'] ?? []);
+
+        // Convert database orders to local format
+        for (final dbOrder in dbOrders) {
+          final convertedOrder = _convertDatabaseOrderToLocal(dbOrder);
+          allOrders.add(convertedOrder);
+        }
+      }
+
+      // Also load local orders (for offline orders)
+      final localOrders = await OrderService().getOrders();
+
+      // Merge orders, avoiding duplicates based on order ID
+      final Map<String, Map<String, dynamic>> orderMap = {};
+
+      // Add database orders first (they take priority)
+      for (final order in allOrders) {
+        orderMap[order['id']] = order;
+      }
+
+      // Add local orders that aren't already in database
+      for (final localOrder in localOrders) {
+        if (!orderMap.containsKey(localOrder['id'])) {
+          orderMap[localOrder['id']] = localOrder;
+        }
+      }
+
+      final mergedOrders = orderMap.values.toList();
+
+      // Sort by order date (newest first)
+      mergedOrders.sort((a, b) {
+        final dateA = a['orderDate'] is DateTime
+            ? a['orderDate'] as DateTime
+            : DateTime.tryParse(a['orderDate']?.toString() ?? '') ??
+                DateTime.now();
+        final dateB = b['orderDate'] is DateTime
+            ? b['orderDate'] as DateTime
+            : DateTime.tryParse(b['orderDate']?.toString() ?? '') ??
+                DateTime.now();
+        return dateB.compareTo(dateA);
+      });
+
+      setState(() {
+        orders = mergedOrders; // Remove fallback to sample orders
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading orders: $e');
+
+      // Fallback to local orders if API fails
+      try {
+        final localOrders = await OrderService().getOrders();
         setState(() {
-          orders = OrderService().getSampleOrders();
+          orders = localOrders; // Remove fallback to sample orders
           isLoading = false;
         });
-      } else {
+      } catch (localError) {
+        // Show empty list instead of sample orders
         setState(() {
-          orders = loadedOrders;
+          orders = []; // Empty list instead of sample orders
           isLoading = false;
         });
       }
-    } catch (e) {
-      // Fallback to sample orders if loading fails
-      setState(() {
-        orders = OrderService().getSampleOrders();
-        isLoading = false;
-      });
+    }
+  }
+
+  // Convert database order format to local order format
+  Map<String, dynamic> _convertDatabaseOrderToLocal(
+      Map<String, dynamic> dbOrder) {
+    return {
+      'id': dbOrder['order_number'] ?? dbOrder['id']?.toString() ?? 'Unknown',
+      'productName': dbOrder['product_name'] ?? 'Unknown Product',
+      'productImage': dbOrder['product_image'], // Add product image
+      'shopName': dbOrder['shop_name'] ?? 'Unknown Shop',
+      'shopPhone': dbOrder['shop_phone'] ?? 'No Phone',
+      'shopAddress': dbOrder['shop_address'] ?? 'No Address',
+      'quantity': dbOrder['quantity_ordered'] ?? 1,
+      'unit': dbOrder['unit'] ?? 'units',
+      'unitPrice': _parseDouble(dbOrder['unit_price']) ?? 0.0,
+      'totalPrice': _parseDouble(dbOrder['total_amount']) ?? 0.0,
+      'orderDate': _parseDateTime(dbOrder['created_at']) ?? DateTime.now(),
+      'status': _mapDatabaseStatus(dbOrder['status']),
+      'deliveryAddress': dbOrder['delivery_address'] ?? 'No Address',
+      'deliveryPhone': dbOrder['delivery_phone'] ?? 'No Phone',
+      'estimatedDelivery': _parseDateTime(dbOrder['estimated_delivery']) ??
+          DateTime.now().add(const Duration(days: 3)),
+    };
+  }
+
+  // Helper method to parse double values
+  double? _parseDouble(dynamic value) {
+    if (value == null) return null;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  // Helper method to parse DateTime values
+  DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value);
+    return null;
+  }
+
+  // Map database status to local status
+  String _mapDatabaseStatus(dynamic dbStatus) {
+    final status = dbStatus?.toString().toLowerCase() ?? 'pending';
+    switch (status) {
+      case 'pending':
+      case 'confirmed':
+      case 'delivered':
+      case 'cancelled':
+        return status;
+      default:
+        return 'pending';
     }
   }
 
@@ -94,6 +202,49 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Product Image Section
+              if (order['productImage'] != null &&
+                  order['productImage'].toString().isNotEmpty)
+                Center(
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                        width: 2,
+                      ),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        order['productImage'],
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: Colors.indigo.withOpacity(0.1),
+                            child: const Icon(
+                              Icons.shopping_bag,
+                              color: Colors.indigo,
+                              size: 48,
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            color: Colors.grey.shade200,
+                            child: const Center(
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
               _buildInfoRow('Product', order['productName']),
               _buildInfoRow('Shop', order['shopName']),
               _buildInfoRow('Shop Phone', order['shopPhone']),
@@ -255,27 +406,72 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
           ),
           ElevatedButton(
             onPressed: () async {
+              Navigator.pop(context);
+
+              // Show loading indicator
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Row(
+                    children: [
+                      SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Text('Cancelling order...'),
+                    ],
+                  ),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+
               try {
-                // Update in OrderService
+                bool databaseUpdated = false;
+
+                // First, try to cancel in database via API
+                final apiResult = await CustomerApi.cancelOrder(
+                  orderId: order['id'].toString(),
+                  cancellationReason: 'Cancelled by customer',
+                );
+
+                if (apiResult['success'] == true) {
+                  databaseUpdated = true;
+                }
+
+                // Also update in local storage for offline orders
                 await OrderService().cancelOrder(order['id']);
 
-                // Update local state
+                // Update local state immediately for UI responsiveness
                 setState(() {
                   order['status'] = 'cancelled';
                 });
 
-                Navigator.pop(context);
+                // Reload all orders to ensure synchronization
+                await _loadOrders();
+
+                ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Order cancelled successfully!'),
-                    backgroundColor: Colors.red,
+                  SnackBar(
+                    content: Text(
+                      databaseUpdated
+                          ? 'Order cancelled successfully!'
+                          : 'Order cancelled locally (will sync when online)',
+                    ),
+                    backgroundColor: Colors.green,
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               } catch (e) {
+                ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Failed to cancel order: $e'),
                     backgroundColor: Colors.red,
+                    duration: const Duration(seconds: 3),
                   ),
                 );
               }
@@ -298,6 +494,21 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
         title: const Text('My Orders'),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await _loadOrders();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Orders refreshed'),
+                  duration: Duration(seconds: 1),
+                ),
+              );
+            },
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh Orders',
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -313,18 +524,21 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                       ),
                       SizedBox(height: 16),
                       Text(
-                        'No orders yet',
+                        'No orders found',
                         style: TextStyle(
                           fontSize: 20,
                           color: Colors.grey,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                       SizedBox(height: 8),
                       Text(
-                        'Start shopping to see your orders here',
+                        'Your order history will appear here after you place your first order',
                         style: TextStyle(
                           color: Colors.grey,
+                          fontSize: 14,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   ),
@@ -391,16 +605,61 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                               Row(
                                 children: [
                                   Container(
-                                    width: 50,
-                                    height: 50,
+                                    width: 60,
+                                    height: 60,
                                     decoration: BoxDecoration(
-                                      color: Colors.indigo.withOpacity(0.1),
                                       borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Colors.grey.shade300,
+                                        width: 1,
+                                      ),
                                     ),
-                                    child: const Icon(
-                                      Icons.shopping_bag,
-                                      color: Colors.indigo,
-                                      size: 24,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(7),
+                                      child: order['productImage'] != null &&
+                                              order['productImage']
+                                                  .toString()
+                                                  .isNotEmpty
+                                          ? Image.network(
+                                              order['productImage'],
+                                              fit: BoxFit.cover,
+                                              errorBuilder:
+                                                  (context, error, stackTrace) {
+                                                return Container(
+                                                  color: Colors.indigo
+                                                      .withOpacity(0.1),
+                                                  child: const Icon(
+                                                    Icons.shopping_bag,
+                                                    color: Colors.indigo,
+                                                    size: 24,
+                                                  ),
+                                                );
+                                              },
+                                              loadingBuilder: (context, child,
+                                                  loadingProgress) {
+                                                if (loadingProgress == null) {
+                                                  return child;
+                                                }
+                                                return Container(
+                                                  color: Colors.grey.shade200,
+                                                  child: const Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : Container(
+                                              color: Colors.indigo
+                                                  .withOpacity(0.1),
+                                              child: const Icon(
+                                                Icons.shopping_bag,
+                                                color: Colors.indigo,
+                                                size: 24,
+                                              ),
+                                            ),
                                     ),
                                   ),
                                   const SizedBox(width: 12),

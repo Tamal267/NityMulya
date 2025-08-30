@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:nitymulya/config/web_config.dart';
 import 'package:nitymulya/screens/auth/login_screen.dart';
 import 'package:nitymulya/screens/customers/complaint_form_screen.dart';
 import 'package:nitymulya/screens/customers/customer_profile_screen.dart';
@@ -19,6 +20,10 @@ import 'package:nitymulya/test_order_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Configure web-specific settings to avoid Chrome debugging issues
+  WebConfig.configure();
+
   await dotenv.load(fileName: ".env.local");
   runApp(const NitiMulyaApp());
 }

@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:math';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 class ShopApi {
   static String get baseUrl =>
@@ -93,6 +94,21 @@ class ShopApi {
       final distance = calculateDistance(userLat, userLon, shopLat, shopLon);
       return distance <= radiusKm;
     }).toList();
+  }
+
+  // Get nearby shops within radius from user location
+  static Future<List<Map<String, dynamic>>> getNearbyShops(
+    double userLat,
+    double userLon,
+    double radiusKm,
+  ) async {
+    try {
+      final allShops = await fetchShops();
+      return filterShopsByDistance(allShops, userLat, userLon, radiusKm);
+    } catch (e) {
+      print('Error fetching nearby shops: $e');
+      throw Exception('Failed to load nearby shops: $e');
+    }
   }
 
   // Helper method to safely parse double values

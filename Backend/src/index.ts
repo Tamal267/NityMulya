@@ -27,6 +27,15 @@ import {
   signupWholesaler,
 } from "./controller/authController";
 import {
+  cancelCustomerOrder,
+  createCustomerOrder,
+  getCustomerOrder,
+  getCustomerOrders,
+  getCustomerOrderStats,
+  getShopOwnerCustomerOrders,
+  updateCustomerOrderStatus,
+} from "./controller/customerOrderController";
+import {
   addProductToInventory as addShopOwnerProduct,
   getChatMessages as getShopOwnerChatMessages,
   getShopOwnerDashboard,
@@ -112,6 +121,16 @@ app.put("/shop-owner/inventory", updateShopOwnerInventoryItem);
 app.get("/shop-owner/low-stock", getShopOwnerLowStockProducts);
 app.get("/shop-owner/orders", getShopOwnerOrders);
 app.get("/shop-owner/chat", getShopOwnerChatMessages);
+app.get("/shop-owner/customer-orders", getShopOwnerCustomerOrders);
+app.put("/shop-owner/customer-orders/status", updateCustomerOrderStatus);
+
+// Customer routes (protected)
+app.use("/customer/*", createAuthMiddleware(), requireRole("customer"));
+app.post("/customer/orders", createCustomerOrder);
+app.get("/customer/orders/stats", getCustomerOrderStats);
+app.get("/customer/orders", getCustomerOrders);
+app.get("/customer/orders/:orderId", getCustomerOrder);
+app.post("/customer/orders/cancel", cancelCustomerOrder);
 
 // Chat routes (protected - both wholesaler and shop owner)
 app.use("/chat/*", createAuthMiddleware());
@@ -139,7 +158,7 @@ app.use("/reviews/delete/*", createAuthMiddleware(), requireRole("customer"));
 app.delete("/reviews/delete/:reviewId", reviewController.deleteReview.bind(reviewController));
 
 export default {
-  port: process.env.PORT || 5000,
-  hostname: process.env.HOST || "0.0.0.0",
+  port: process.env.PORT || 5001,
   fetch: app.fetch,
+  idleTimeout: 255,
 };

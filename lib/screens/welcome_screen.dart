@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
+import 'package:nitymulya/screens/customers/nearby_shops_map_screen_enhanced.dart';
 import 'package:nitymulya/screens/customers/product_detail_screen.dart';
-import 'package:nitymulya/widgets/nearby_shops_widget.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String? userName;
@@ -585,9 +585,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                 high: _safeParseInt(
                                                     p["max_price"]),
                                                 subcatId: p["id"]?.toString(),
-                                                userName: widget.userName,
-                                                userEmail: widget.userEmail,
-                                                userRole: widget.userRole,
                                               ),
                                             ),
                                           );
@@ -735,9 +732,6 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                   product["max_price"]),
                                               subcatId:
                                                   product["id"]?.toString(),
-                                              userName: widget.userName,
-                                              userEmail: widget.userEmail,
-                                              userRole: widget.userRole,
                                             ),
                                           ),
                                         ),
@@ -846,7 +840,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => NearbyShopsMapScreen(
+                builder: (_) => NearbyShopsMapScreenEnhanced(
                   userName: widget.userName,
                   userEmail: widget.userEmail,
                   userRole: widget.userRole,
