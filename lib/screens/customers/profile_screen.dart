@@ -233,7 +233,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const MyOrdersScreen(),
+                            builder: (context) => MyOrdersScreen(
+                              userName: widget.userName,
+                              userEmail: widget.userEmail,
+                              userRole: widget.userRole,
+                            ),
                           ),
                         );
                       },
@@ -278,7 +282,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const MyOrdersScreen(),
+                            builder: (context) => MyOrdersScreen(
+                              userName: widget.userName,
+                              userEmail: widget.userEmail,
+                              userRole: widget.userRole,
+                            ),
                           ),
                         );
                       },
@@ -561,7 +569,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const MyOrdersScreen(),
+                      builder: (context) => MyOrdersScreen(
+                        userName: widget.userName,
+                        userEmail: widget.userEmail,
+                        userRole: widget.userRole,
+                      ),
                     ),
                   );
                 },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/network/shop_owner_api.dart';
 
 class UpdateProductScreen extends StatefulWidget {
   final Map<String, dynamic> product;
@@ -46,24 +47,82 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
     super.dispose();
   }
 
-  void _updateProduct() {
+  void _updateProduct() async {
     if (_formKey.currentState!.validate()) {
-      final updatedProduct = {
-        ...widget.product,
-        'quantity': int.parse(_quantityController.text),
-        'price': double.parse(_priceController.text),
-        'hidden': !_isVisible,
-        'lastUpdated': DateTime.now().toIso8601String(),
-      };
-
-      // TODO: Update product in database/storage
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Product "${widget.product['name']}" updated successfully!'),
-          backgroundColor: Colors.green,
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
         ),
       );
-      Navigator.pop(context, updatedProduct);
+
+      try {
+        final newQuantity = int.parse(_quantityController.text);
+        final newPrice = double.parse(_priceController.text);
+        final inventoryId = widget.product['id'].toString();
+
+        // Call the API to update the inventory item
+        final result = await ShopOwnerApiService.updateInventoryItem(
+          inventoryId: inventoryId,
+          stockQuantity: newQuantity,
+          unitPrice: newPrice,
+          lowStockThreshold: widget.product['low_stock_threshold'],
+        );
+
+        // Close loading dialog
+        Navigator.pop(context);
+
+        if (result['success'] == true) {
+          final updatedProduct = {
+            ...widget.product,
+            'quantity': newQuantity,
+            'stock_quantity': newQuantity, // Update both fields for consistency
+            'price': newPrice,
+            'unit_price': newPrice, // Update both fields for consistency
+            'hidden': !_isVisible,
+            'lastUpdated': DateTime.now().toIso8601String(),
+          };
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Product "${widget.product['name']}" updated successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, updatedProduct);
+        } else {
+          // Handle API error
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to update product'),
+              backgroundColor: Colors.red,
+            ),
+          );
+
+          // Handle authentication error
+          if (result['requiresLogin'] == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message'] ?? 'Please login again'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        // Close loading dialog
+        Navigator.pop(context);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating product: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -73,8 +132,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
       builder: (context) => AlertDialog(
         title: const Text("Delete Product"),
         content: Text(
-          'Are you sure you want to delete "${widget.product['name']}" from your inventory?'
-        ),
+            'Are you sure you want to delete "${widget.product['name']}" from your inventory?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -107,7 +165,8 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
 
   bool get _isLowStock {
     final quantity = int.tryParse(_quantityController.text) ?? 0;
-    return quantity < 10; // Consider less than 10 units as low stock
+    final threshold = widget.product['low_stock_threshold'] ?? 10;
+    return quantity < threshold;
   }
 
   @override
@@ -200,19 +259,23 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _isLowStock ? "Low Stock Alert" : "Stock Status: Good",
+                            _isLowStock
+                                ? "Low Stock Alert"
+                                : "Stock Status: Good",
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               color: _isLowStock ? Colors.red : Colors.green,
                             ),
                           ),
                           Text(
-                            _isLowStock 
+                            _isLowStock
                                 ? "Stock is running low. Consider restocking soon."
                                 : "Your stock level is adequate.",
                             style: TextStyle(
                               fontSize: 12,
-                              color: _isLowStock ? Colors.red[700] : Colors.green[700],
+                              color: _isLowStock
+                                  ? Colors.red[700]
+                                  : Colors.green[700],
                             ),
                           ),
                         ],
@@ -257,7 +320,8 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter quantity';
                               }
-                              if (int.tryParse(value) == null || int.parse(value) < 0) {
+                              if (int.tryParse(value) == null ||
+                                  int.parse(value) < 0) {
                                 return 'Please enter a valid number';
                               }
                               return null;
@@ -272,8 +336,10 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                           children: [
                             ElevatedButton(
                               onPressed: () {
-                                final current = int.tryParse(_quantityController.text) ?? 0;
-                                _quantityController.text = (current + 10).toString();
+                                final current =
+                                    int.tryParse(_quantityController.text) ?? 0;
+                                _quantityController.text =
+                                    (current + 10).toString();
                                 setState(() {});
                               },
                               style: ElevatedButton.styleFrom(
@@ -288,8 +354,11 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                             const SizedBox(height: 4),
                             ElevatedButton(
                               onPressed: () {
-                                final current = int.tryParse(_quantityController.text) ?? 0;
-                                final newValue = (current - 10).clamp(0, double.infinity).toInt();
+                                final current =
+                                    int.tryParse(_quantityController.text) ?? 0;
+                                final newValue = (current - 10)
+                                    .clamp(0, double.infinity)
+                                    .toInt();
                                 _quantityController.text = newValue.toString();
                                 setState(() {});
                               },
@@ -350,7 +419,8 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter selling price';
                         }
-                        if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                        if (double.tryParse(value) == null ||
+                            double.parse(value) <= 0) {
                           return 'Please enter a valid price';
                         }
                         return null;
@@ -380,7 +450,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                     SwitchListTile(
                       title: const Text("Visible to Customers"),
                       subtitle: Text(
-                        _isVisible 
+                        _isVisible
                             ? "Customers can see and order this product"
                             : "Product is hidden from customers",
                       ),

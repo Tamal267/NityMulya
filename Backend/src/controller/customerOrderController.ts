@@ -41,7 +41,7 @@ export const createCustomerOrder = async (c: any) => {
                 sc.subcat_name,
                 sc.unit,
                 sc.subcat_img,
-                so.name as shop_name,
+                so.full_name as shop_name,
                 so.contact as shop_phone,
                 so.address as shop_address
             FROM shop_inventory si
@@ -97,6 +97,9 @@ export const createCustomerOrder = async (c: any) => {
                 total_amount,
                 delivery_address,
                 delivery_phone,
+                shop_name,
+                shop_phone,
+                shop_address,
                 notes,
                 estimated_delivery
             ) VALUES (
@@ -109,6 +112,9 @@ export const createCustomerOrder = async (c: any) => {
                 ${totalAmount},
                 ${delivery_address},
                 ${delivery_phone},
+                ${inventory.shop_name},
+                ${inventory.shop_phone},
+                ${inventory.shop_address},
                 ${notes || null},
                 ${estimatedDelivery}
             )
@@ -158,14 +164,14 @@ export const getCustomerOrders = async (c: any) => {
                 sc.subcat_name as product_name,
                 sc.unit,
                 sc.subcat_img as product_image,
-                so.name as shop_name,
-                so.contact as shop_phone,
-                so.address as shop_address,
+                COALESCE(co.shop_name, so.full_name, 'Unknown Shop') as shop_name,
+                COALESCE(co.shop_phone, so.contact, 'No Phone') as shop_phone,
+                COALESCE(co.shop_address, so.address, 'No Address') as shop_address,
                 c.full_name as customer_name,
                 c.contact as customer_phone
             FROM customer_orders co
             JOIN subcategories sc ON co.subcat_id = sc.id
-            JOIN shop_owners so ON co.shop_owner_id = so.id
+            LEFT JOIN shop_owners so ON co.shop_owner_id = so.id
             JOIN customers c ON co.customer_id = c.id
             WHERE co.customer_id = ${customerId}
         `;
@@ -177,14 +183,14 @@ export const getCustomerOrders = async (c: any) => {
                     sc.subcat_name as product_name,
                     sc.unit,
                     sc.subcat_img as product_image,
-                    so.name as shop_name,
-                    so.contact as shop_phone,
-                    so.address as shop_address,
+                    COALESCE(co.shop_name, so.full_name, 'Unknown Shop') as shop_name,
+                    COALESCE(co.shop_phone, so.contact, 'No Phone') as shop_phone,
+                    COALESCE(co.shop_address, so.address, 'No Address') as shop_address,
                     c.full_name as customer_name,
                     c.contact as customer_phone
                 FROM customer_orders co
                 JOIN subcategories sc ON co.subcat_id = sc.id
-                JOIN shop_owners so ON co.shop_owner_id = so.id
+                LEFT JOIN shop_owners so ON co.shop_owner_id = so.id
                 JOIN customers c ON co.customer_id = c.id
                 WHERE co.customer_id = ${customerId}
                 AND co.status = ${status}
@@ -224,14 +230,14 @@ export const getCustomerOrder = async (c: any) => {
                 sc.subcat_name as product_name,
                 sc.unit,
                 sc.subcat_img as product_image,
-                so.name as shop_name,
-                so.contact as shop_phone,
-                so.address as shop_address,
+                COALESCE(co.shop_name, so.full_name, 'Unknown Shop') as shop_name,
+                COALESCE(co.shop_phone, so.contact, 'No Phone') as shop_phone,
+                COALESCE(co.shop_address, so.address, 'No Address') as shop_address,
                 c.full_name as customer_name,
                 c.contact as customer_phone
             FROM customer_orders co
             JOIN subcategories sc ON co.subcat_id = sc.id
-            JOIN shop_owners so ON co.shop_owner_id = so.id
+            LEFT JOIN shop_owners so ON co.shop_owner_id = so.id
             JOIN customers c ON co.customer_id = c.id
             WHERE co.id = ${orderId}
             AND co.customer_id = ${customerId}
@@ -369,14 +375,14 @@ export const getShopOwnerCustomerOrders = async (c: any) => {
                 sc.subcat_name as product_name,
                 sc.unit,
                 sc.subcat_img as product_image,
-                so.name as shop_name,
-                so.contact as shop_phone,
-                so.address as shop_address,
+                COALESCE(co.shop_name, so.full_name, 'Unknown Shop') as shop_name,
+                COALESCE(co.shop_phone, so.contact, 'No Phone') as shop_phone,
+                COALESCE(co.shop_address, so.address, 'No Address') as shop_address,
                 c.full_name as customer_name,
                 c.contact as customer_phone
             FROM customer_orders co
             JOIN subcategories sc ON co.subcat_id = sc.id
-            JOIN shop_owners so ON co.shop_owner_id = so.id
+            LEFT JOIN shop_owners so ON co.shop_owner_id = so.id
             JOIN customers c ON co.customer_id = c.id
             WHERE co.shop_owner_id = ${shopOwnerId}
         `;
@@ -388,14 +394,14 @@ export const getShopOwnerCustomerOrders = async (c: any) => {
                     sc.subcat_name as product_name,
                     sc.unit,
                     sc.subcat_img as product_image,
-                    so.name as shop_name,
-                    so.contact as shop_phone,
-                    so.address as shop_address,
+                    COALESCE(co.shop_name, so.full_name, 'Unknown Shop') as shop_name,
+                    COALESCE(co.shop_phone, so.contact, 'No Phone') as shop_phone,
+                    COALESCE(co.shop_address, so.address, 'No Address') as shop_address,
                     c.full_name as customer_name,
                     c.contact as customer_phone
                 FROM customer_orders co
                 JOIN subcategories sc ON co.subcat_id = sc.id
-                JOIN shop_owners so ON co.shop_owner_id = so.id
+                LEFT JOIN shop_owners so ON co.shop_owner_id = so.id
                 JOIN customers c ON co.customer_id = c.id
                 WHERE co.shop_owner_id = ${shopOwnerId}
                 AND co.status = ${status}
@@ -408,7 +414,7 @@ export const getShopOwnerCustomerOrders = async (c: any) => {
 
     return c.json({
       success: true,
-      orders: orders,
+      data: orders,
     });
   } catch (error: any) {
     console.error("Error fetching shop orders:", error);
@@ -506,6 +512,7 @@ export const updateCustomerOrderStatus = async (c: any) => {
     const validStatuses = [
       "pending",
       "confirmed",
+      "on going",
       "preparing",
       "ready",
       "delivered",
@@ -538,7 +545,106 @@ export const updateCustomerOrderStatus = async (c: any) => {
       );
     }
 
-    // Update order status
+    const order = orderResult[0];
+
+    // Special handling for confirming orders (pending -> on going)
+    if (order.status === "pending" && status === "on going") {
+      // Begin transaction to ensure atomicity
+      try {
+        // First check current stock availability
+        const currentStock = await sql`
+          SELECT stock_quantity, subcat_name 
+          FROM shop_inventory si
+          JOIN subcategories s ON si.subcat_id = s.id
+          WHERE si.shop_owner_id = ${shopOwnerId} 
+          AND si.subcat_id = ${order.subcat_id}
+        `;
+
+        if (currentStock.length === 0) {
+          return c.json(
+            {
+              success: false,
+              message: "Product not found in inventory",
+            },
+            404
+          );
+        }
+
+        const availableStock = currentStock[0].stock_quantity;
+        const productName = currentStock[0].subcat_name;
+
+        // Check if there's sufficient stock
+        if (availableStock < order.quantity_ordered) {
+          return c.json(
+            {
+              success: false,
+              message: `Low stock! Available: ${availableStock} units, Required: ${order.quantity_ordered} units for ${productName}`,
+              lowStock: true,
+              availableStock: availableStock,
+              requiredStock: order.quantity_ordered,
+              productName: productName,
+            },
+            400
+          );
+        }
+
+        // Proceed with transaction if stock is sufficient
+        await sql.begin(async (sql) => {
+          // Decrease inventory
+          const inventoryUpdate = await sql`
+            UPDATE shop_inventory 
+            SET stock_quantity = stock_quantity - ${order.quantity_ordered},
+                updated_at = CURRENT_TIMESTAMP
+            WHERE shop_owner_id = ${shopOwnerId} 
+            AND subcat_id = ${order.subcat_id}
+            AND stock_quantity >= ${order.quantity_ordered}
+            RETURNING stock_quantity
+          `;
+
+          if (inventoryUpdate.length === 0) {
+            throw new Error(
+              "Failed to update inventory - concurrent stock change detected"
+            );
+          }
+
+          // Update order status
+          await sql`
+            UPDATE customer_orders
+            SET status = ${status},
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ${order_id}
+          `;
+
+          // Log the status change with notes
+          await sql`
+            INSERT INTO order_status_history (order_id, old_status, new_status, changed_by, notes)
+            VALUES (${order_id}, ${order.status}, ${status}, 'shop_owner', ${
+            notes || "Order confirmed and inventory updated"
+          })
+          `;
+        });
+
+        return c.json({
+          success: true,
+          message: `Order confirmed successfully! Inventory updated: ${
+            availableStock - order.quantity_ordered
+          } units remaining for ${productName}`,
+          remainingStock: availableStock - order.quantity_ordered,
+          productName: productName,
+        });
+      } catch (error: any) {
+        console.error("Error confirming order:", error);
+        return c.json(
+          {
+            success: false,
+            message: error.message || "Failed to confirm order",
+          },
+          500
+        );
+      }
+    }
+
+    // Regular status update for other cases
     await sql`
             UPDATE customer_orders
             SET status = ${status},

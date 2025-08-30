@@ -6,15 +6,17 @@ class ShopOwnerApiService {
   // Get shop owner dashboard summary
   static Future<Map<String, dynamic>> getDashboardSummary() async {
     try {
-      final response = await _networkHelper.getWithToken('/shop-owner/dashboard');
-      
+      final response =
+          await _networkHelper.getWithToken('/shop-owner/dashboard');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -22,7 +24,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch dashboard data',
@@ -38,15 +40,17 @@ class ShopOwnerApiService {
   // Get shop owner inventory
   static Future<Map<String, dynamic>> getInventory() async {
     try {
-      final response = await _networkHelper.getWithToken('/shop-owner/inventory');
-      
+      final response =
+          await _networkHelper.getWithToken('/shop-owner/inventory');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -54,7 +58,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch inventory data',
@@ -82,8 +86,9 @@ class ShopOwnerApiService {
         'low_stock_threshold': lowStockThreshold ?? 10,
       };
 
-      final response = await _networkHelper.postWithToken('/shop-owner/inventory', requestData);
-      
+      final response = await _networkHelper.postWithToken(
+          '/shop-owner/inventory', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -91,7 +96,8 @@ class ShopOwnerApiService {
             'message': response['message'] ?? 'Product added successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -99,7 +105,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to add product',
@@ -126,10 +132,13 @@ class ShopOwnerApiService {
 
       if (stockQuantity != null) requestData['stock_quantity'] = stockQuantity;
       if (unitPrice != null) requestData['unit_price'] = unitPrice;
-      if (lowStockThreshold != null) requestData['low_stock_threshold'] = lowStockThreshold;
+      if (lowStockThreshold != null) {
+        requestData['low_stock_threshold'] = lowStockThreshold;
+      }
 
-      final response = await _networkHelper.putWithToken('/shop-owner/inventory', requestData);
-      
+      final response = await _networkHelper.putWithToken(
+          '/shop-owner/inventory', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -137,7 +146,8 @@ class ShopOwnerApiService {
             'message': response['message'] ?? 'Product updated successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -145,7 +155,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to update product',
@@ -161,15 +171,17 @@ class ShopOwnerApiService {
   // Get low stock products
   static Future<Map<String, dynamic>> getLowStockProducts() async {
     try {
-      final response = await _networkHelper.getWithToken('/shop-owner/low-stock');
-      
+      final response =
+          await _networkHelper.getWithToken('/shop-owner/low-stock');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -177,7 +189,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch low stock products',
@@ -193,15 +205,17 @@ class ShopOwnerApiService {
   // Get shop orders
   static Future<Map<String, dynamic>> getOrders() async {
     try {
-      final response = await _networkHelper.getWithToken('/shop-owner/orders');
-      
+      final response =
+          await _networkHelper.getWithToken('/shop-owner/customer-orders');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -209,7 +223,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch orders',
@@ -226,14 +240,15 @@ class ShopOwnerApiService {
   static Future<Map<String, dynamic>> getChatMessages() async {
     try {
       final response = await _networkHelper.getWithToken('/shop-owner/chat');
-      
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -241,7 +256,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch chat messages',
@@ -255,22 +270,24 @@ class ShopOwnerApiService {
   }
 
   // Search wholesalers for chat
-  static Future<Map<String, dynamic>> searchWholesalers({String? search}) async {
+  static Future<Map<String, dynamic>> searchWholesalers(
+      {String? search}) async {
     try {
       String endpoint = '/chat/wholesalers';
       if (search != null && search.isNotEmpty) {
         endpoint += '?search=${Uri.encodeComponent(search)}';
       }
-      
+
       final response = await _networkHelper.getWithToken(endpoint);
-      
+
       if (response is List) {
         return {
           'success': true,
           'data': response,
         };
       } else if (response is Map<String, dynamic>) {
-        if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -282,7 +299,7 @@ class ShopOwnerApiService {
           'message': response['message'] ?? 'Failed to fetch wholesalers',
         };
       }
-      
+
       return {
         'success': false,
         'message': 'Failed to fetch wholesalers',
@@ -314,8 +331,9 @@ class ShopOwnerApiService {
         'message_type': messageType,
       };
 
-      final response = await _networkHelper.postWithToken('/chat/send', requestData);
-      
+      final response =
+          await _networkHelper.postWithToken('/chat/send', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -323,7 +341,8 @@ class ShopOwnerApiService {
             'message': response['message'] ?? 'Message sent successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -331,7 +350,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to send message',
@@ -352,17 +371,19 @@ class ShopOwnerApiService {
     required String user2Type,
   }) async {
     try {
-      final endpoint = '/chat/messages?user1_id=$user1Id&user1_type=$user1Type&user2_id=$user2Id&user2_type=$user2Type';
-      
+      final endpoint =
+          '/chat/messages?user1_id=$user1Id&user1_type=$user1Type&user2_id=$user2Id&user2_type=$user2Type';
+
       final response = await _networkHelper.getWithToken(endpoint);
-      
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -370,10 +391,11 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
-        'message': response['message'] ?? 'Failed to fetch conversation messages',
+        'message':
+            response['message'] ?? 'Failed to fetch conversation messages',
       };
     } catch (e) {
       return {
@@ -389,17 +411,19 @@ class ShopOwnerApiService {
     required String userType,
   }) async {
     try {
-      final endpoint = '/chat/conversations?user_id=$userId&user_type=$userType';
-      
+      final endpoint =
+          '/chat/conversations?user_id=$userId&user_type=$userType';
+
       final response = await _networkHelper.getWithToken(endpoint);
-      
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -407,7 +431,7 @@ class ShopOwnerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch conversations',
@@ -416,6 +440,96 @@ class ShopOwnerApiService {
       return {
         'success': false,
         'message': 'Error fetching conversations: $e',
+      };
+    }
+  }
+
+  // Update order status
+  static Future<Map<String, dynamic>> updateOrderStatus({
+    required String orderId,
+    required String status,
+    String? rejectionReason,
+  }) async {
+    try {
+      final requestData = {
+        'order_id': orderId,
+        'status': status,
+        if (rejectionReason != null) 'rejection_reason': rejectionReason,
+      };
+
+      final response = await _networkHelper.putWithToken(
+          '/shop-owner/customer-orders/status', requestData);
+
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message':
+                response['message'] ?? 'Order status updated successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to update order status',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error updating order status: $e',
+      };
+    }
+  }
+
+  // Confirm order (changes status from pending to on going and decreases inventory)
+  static Future<Map<String, dynamic>> confirmOrder({
+    required String orderId,
+    String? notes,
+  }) async {
+    try {
+      final requestData = {
+        'order_id': orderId,
+        'status': 'on going',
+        if (notes != null) 'notes': notes,
+      };
+
+      final response = await _networkHelper.putWithToken(
+          '/shop-owner/customer-orders/status', requestData);
+
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message': response['message'] ?? 'Order confirmed successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to confirm order',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error confirming order: $e',
       };
     }
   }

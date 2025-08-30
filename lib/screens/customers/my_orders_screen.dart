@@ -2,13 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../network/customer_api.dart';
 import '../../services/order_service.dart';
+import 'main_customer_screen.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   final String? customerId;
+  final String? userName;
+  final String? userEmail;
+  final String? userRole;
+  final bool isInBottomNav;
+  final VoidCallback? onNavigateToHome;
 
   const MyOrdersScreen({
     super.key,
     this.customerId,
+    this.userName,
+    this.userEmail,
+    this.userRole,
+    this.isInBottomNav = false,
+    this.onNavigateToHome,
   });
 
   @override
@@ -150,6 +161,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     switch (status) {
       case 'pending':
       case 'confirmed':
+      case 'on going':
       case 'delivered':
       case 'cancelled':
         return status;
@@ -163,6 +175,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       case 'pending':
         return Colors.orange;
       case 'confirmed':
+      case 'on going':
         return Colors.blue;
       case 'delivered':
         return Colors.green;
@@ -179,6 +192,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
         return Icons.access_time;
       case 'confirmed':
         return Icons.check_circle;
+      case 'on going':
+        return Icons.work;
       case 'delivered':
         return Icons.done_all;
       case 'cancelled':
@@ -494,6 +509,27 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
         title: const Text('My Orders'),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (widget.isInBottomNav && widget.onNavigateToHome != null) {
+              // If we're in bottom navigation context, call the callback to switch to home tab
+              widget.onNavigateToHome!();
+            } else {
+              // Otherwise, navigate to MainCustomerScreen (for cases like profile navigation)
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MainCustomerScreen(
+                    userName: widget.userName,
+                    userEmail: widget.userEmail,
+                    userRole: widget.userRole,
+                  ),
+                ),
+              );
+            }
+          },
+        ),
         actions: [
           IconButton(
             onPressed: () async {
@@ -726,7 +762,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   if (order['status'] != 'delivered' &&
-                                      order['status'] != 'cancelled')
+                                      order['status'] != 'cancelled' &&
+                                      order['status'] != 'on going')
                                     Expanded(
                                       child: ElevatedButton(
                                         onPressed: () =>
@@ -736,6 +773,38 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                                           foregroundColor: Colors.white,
                                         ),
                                         child: const Text('Edit Delivery'),
+                                      ),
+                                    ),
+                                  if (order['status'] == 'on going')
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue[50],
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                              color: Colors.blue[300]!),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.work,
+                                                size: 16,
+                                                color: Colors.blue[700]),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'Order Being Prepared',
+                                              style: TextStyle(
+                                                color: Colors.blue[700],
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   if (order['status'] == 'pending')
