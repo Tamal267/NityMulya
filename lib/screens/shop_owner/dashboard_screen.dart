@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/models/location_models.dart';
 import 'package:nitymulya/network/shop_owner_api.dart';
 import 'package:nitymulya/screens/shop_owner/add_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/update_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_chat_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_list_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_search_screen.dart';
+import 'package:nitymulya/utils/user_session.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
 
 class ShopOwnerDashboard extends StatefulWidget {
@@ -22,17 +24,219 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
   int totalProducts = 25;
   int stockAlerts = 3;
   String vatRewardStatus = "Eligible";
-  
+
+  // Shop owner data state
+  ShopOwner? currentShopOwner;
+  String shopOwnerName = "Shop Owner";
+  String shopOwnerEmail = "owner@example.com";
+  bool isLoadingShopOwner = false;
+
   // Inventory state
   List<Map<String, dynamic>> inventoryItems = [];
   bool isLoadingInventory = false;
   String? inventoryError;
 
+  // Orders state
+  List<Map<String, dynamic>> orderItems = [];
+  bool isLoadingOrders = false;
+  String? ordersError;
+
+  // Notification state
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _loadShopOwnerData(); // Load shop owner data first
     _loadInventory(); // Load inventory on startup
+    _loadOrders(); // Load orders on startup
+    _loadNotifications(); // Load notifications on startup
+  }
+
+  Future<void> _loadShopOwnerData() async {
+    setState(() {
+      isLoadingShopOwner = true;
+    });
+
+    try {
+      debugPrint('🔍 Loading shop owner data...');
+
+      // Check if user is logged in
+      final isLoggedIn = await UserSession.isLoggedIn();
+      debugPrint('✅ Is logged in: $isLoggedIn');
+
+      // Get user type
+      final userType = await UserSession.getCurrentUserType();
+      debugPrint('✅ User type: $userType');
+
+      // Get user data
+      final userData = await UserSession.getCurrentUserData();
+      debugPrint('✅ User data: $userData');
+
+      if (userData != null) {
+        debugPrint('🏪 Converting to ShopOwner model...');
+
+        // Try direct field access first (fallback)
+        String name = userData['full_name'] ??
+            userData['name'] ??
+            userData['fullName'] ??
+            "Shop Owner";
+        String email = userData['email'] ?? "owner@example.com";
+
+        debugPrint('📋 Direct field access - Name: $name, Email: $email');
+
+        // Try ShopOwner model conversion
+        try {
+          currentShopOwner = ShopOwner.fromMap(userData);
+          debugPrint(
+              '✅ Shop Owner model: ${currentShopOwner?.fullName} - ${currentShopOwner?.email}');
+
+          // Use model data if available, otherwise use direct access
+          name = currentShopOwner?.fullName ?? name;
+          email = currentShopOwner?.email ?? email;
+        } catch (modelError) {
+          debugPrint('⚠️ ShopOwner model conversion failed: $modelError');
+          debugPrint('📝 Using direct field access instead');
+        }
+
+        setState(() {
+          shopOwnerName = name;
+          shopOwnerEmail = email;
+          isLoadingShopOwner = false;
+        });
+
+        debugPrint('🎉 Shop owner data loaded successfully!');
+        debugPrint('📝 Final Name: $shopOwnerName');
+        debugPrint('📧 Final Email: $shopOwnerEmail');
+      } else {
+        debugPrint('❌ No user data found');
+        setState(() {
+          isLoadingShopOwner = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading shop owner data: $e');
+      setState(() {
+        isLoadingShopOwner = false;
+      });
+    }
+  }
+
+  // 🔧 Debug method to test user session
+  Future<void> _debugUserSession() async {
+    try {
+      debugPrint('🔧 === DEBUG USER SESSION ===');
+
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Debugging user session...'),
+            ],
+          ),
+        ),
+      );
+
+      // Test current session
+      final isLoggedIn = await UserSession.isLoggedIn();
+      final userType = await UserSession.getCurrentUserType();
+      final userData = await UserSession.getCurrentUserData();
+      final authToken = await UserSession.getAuthToken();
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Create test data if no data exists
+      if (userData == null) {
+        debugPrint('❌ No user data found. Creating test data...');
+
+        final testUserData = {
+          'id': 'test-shop-owner-123',
+          'full_name': 'রহমান গ্রোসারি (Test)',
+          'email': 'test.shop@example.com',
+          'contact': '01711123456',
+          'address': 'ধানমন্ডি-৩২, ঢাকা',
+          'latitude': 23.7465,
+          'longitude': 90.3763,
+          'shop_name': 'রহমান গ্রোসারি',
+          'shop_description': 'Quality grocery items',
+          'is_verified': true,
+        };
+
+        await UserSession.saveUserSession(
+          userId: 'test-shop-owner-123',
+          userType: 'shop_owner',
+          userData: testUserData,
+          token: 'test-token-123',
+        );
+
+        // Reload shop owner data
+        await _loadShopOwnerData();
+      }
+
+      // Show debug info
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('🔧 Debug Info'),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Is Logged In: $isLoggedIn'),
+                Text('User Type: $userType'),
+                Text('Auth Token: ${authToken?.substring(0, 20) ?? 'null'}...'),
+                const SizedBox(height: 8),
+                const Text('User Data:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('$userData'),
+                const SizedBox(height: 8),
+                const Text('Current Values:',
+                    style: TextStyle(fontWeight: FontWeight.bold)),
+                Text('Name: $shopOwnerName'),
+                Text('Email: $shopOwnerEmail'),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _loadShopOwnerData(); // Reload data
+              },
+              child: const Text('Reload Data'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      Navigator.pop(context); // Close loading dialog if open
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('❌ Debug Error'),
+          content: Text('Error: $e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Close'),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   Future<void> _loadInventory() async {
@@ -43,10 +247,11 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
 
     try {
       final result = await ShopOwnerApiService.getInventory();
-      
+
       if (result['success'] == true) {
         setState(() {
-          inventoryItems = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          inventoryItems =
+              List<Map<String, dynamic>>.from(result['data'] ?? []);
           totalProducts = inventoryItems.length;
           stockAlerts = inventoryItems.where((item) {
             final stockQuantity = item['stock_quantity'] ?? 0;
@@ -60,7 +265,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
           inventoryError = result['message'] ?? 'Failed to load inventory';
           isLoadingInventory = false;
         });
-        
+
         // If authentication error, show message
         if (result['requiresLogin'] == true) {
           if (mounted) {
@@ -79,6 +284,59 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
         isLoadingInventory = false;
       });
     }
+  }
+
+  Future<void> _loadOrders() async {
+    setState(() {
+      isLoadingOrders = true;
+      ordersError = null;
+    });
+
+    try {
+      final result = await ShopOwnerApiService.getOrders();
+
+      if (result['success'] == true) {
+        setState(() {
+          orderItems = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          // Update pending orders count from real data
+          pendingOrders = orderItems
+              .where((order) =>
+                  order['status']?.toString().toLowerCase() == 'pending')
+              .length;
+          isLoadingOrders = false;
+        });
+      } else {
+        setState(() {
+          ordersError = result['message'] ?? 'Failed to load orders';
+          isLoadingOrders = false;
+        });
+
+        // If authentication error, show message
+        if (result['requiresLogin'] == true) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(result['message'] ?? 'Please login again'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      setState(() {
+        ordersError = 'Error loading orders: $e';
+        isLoadingOrders = false;
+      });
+    }
+  }
+
+  Future<void> _loadNotifications() async {
+    // For now, just calculate notifications based on pending orders
+    // In a real app, this could be a separate API call
+    setState(() {
+      unreadNotifications = pendingOrders;
+    });
   }
 
   @override
@@ -272,204 +530,218 @@ Widget build(BuildContext context) {
 }
 */
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    backgroundColor: Colors.grey[50],
-    drawer: CustomDrawer( // ✅ This is newly added
-    userName: "Shop Owner",
-    userEmail: "owner@example.com",
-    userRole: "Shop",
-  ),
-    appBar: AppBar(
-      title: const Text(
-        "Shop Dashboard",
-        style: TextStyle(fontWeight: FontWeight.bold),
-      ),
-      backgroundColor: Colors.green[600],
-      foregroundColor: Colors.white,
-      elevation: 0,
-      actions: [
-        Stack(
-          children: [
-            IconButton(
-              icon: const Icon(Icons.notifications),
-              onPressed: () {
-                _showNotifications(context);
-              },
-            ),
-            if (unreadNotifications > 0)
-              Positioned(
-                right: 8,
-                top: 8,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 16,
-                    minHeight: 16,
-                  ),
-                  child: Text(
-                    '$unreadNotifications',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      drawer: isLoadingShopOwner
+          ? const Drawer(
+              child: Center(
+                child: CircularProgressIndicator(),
               ),
-          ],
+            )
+          : CustomDrawer(
+              userName: shopOwnerName,
+              userEmail: shopOwnerEmail,
+              userRole: "Shop Owner",
+            ),
+      appBar: AppBar(
+        title: const Text(
+          "Shop Dashboard",
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        IconButton(
-          icon: const Icon(Icons.person),
-          onPressed: () {
-            _showProfileSettings(context);
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: () {
-            _showLogoutConfirmation(context);
-          },
-          tooltip: "Logout",
-        ),
-      ],
-    ),
-    body: ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        // ✅ UPDATED: Summary Cards in One Row
-        Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  debugPrint("Tapped Total Products");
-                },
-                child: _buildSummaryCard(
-                  "Total Products",
-                  "$totalProducts",
-                  Icons.inventory,
-                  Colors.blue,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  debugPrint("Tapped Pending Orders");
-                },
-                child: _buildSummaryCard(
-                  "Pending Orders",
-                  "$pendingOrders",
-                  Icons.shopping_cart,
-                  Colors.orange,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  debugPrint("Tapped Stock Alerts");
-                },
-                child: _buildSummaryCard(
-                  "Stock Alerts",
-                  "$stockAlerts",
-                  Icons.warning,
-                  Colors.red,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  debugPrint("Tapped VAT Reward");
-                },
-                child: _buildSummaryCard(
-                  "VAT Reward",
-                  vatRewardStatus,
-                  Icons.card_giftcard,
-                  Colors.green,
-                ),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 24),
-
-        // Tab Content
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.75,
-          child: TabBarView(
-            controller: _tabController,
+        backgroundColor: Colors.green[600],
+        foregroundColor: Colors.white,
+        elevation: 0,
+        actions: [
+          Stack(
             children: [
-              _buildInventoryTab(),
-              _buildOrdersTab(),
-              _buildChatTab(),
-              _buildPricesTab(),
-              _buildOffersTab(),
+              IconButton(
+                icon: const Icon(Icons.notifications),
+                onPressed: () {
+                  _showNotifications(context);
+                },
+              ),
+              if (unreadNotifications > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      '$unreadNotifications',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () {
+              _showProfileSettings(context);
+            },
+          ),
+          // 🔧 Debug button to test user data
+          IconButton(
+            icon: const Icon(Icons.bug_report),
+            onPressed: () {
+              _debugUserSession();
+            },
+            tooltip: "Debug User Session",
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              _showLogoutConfirmation(context);
+            },
+            tooltip: "Logout",
+          ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // ✅ UPDATED: Summary Cards in One Row
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    debugPrint("Tapped Total Products");
+                  },
+                  child: _buildSummaryCard(
+                    "Total Products",
+                    "$totalProducts",
+                    Icons.inventory,
+                    Colors.blue,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    debugPrint("Tapped Pending Orders");
+                  },
+                  child: _buildSummaryCard(
+                    "Pending Orders",
+                    "$pendingOrders",
+                    Icons.shopping_cart,
+                    Colors.orange,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    debugPrint("Tapped Stock Alerts");
+                  },
+                  child: _buildSummaryCard(
+                    "Stock Alerts",
+                    "$stockAlerts",
+                    Icons.warning,
+                    Colors.red,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    debugPrint("Tapped VAT Reward");
+                  },
+                  child: _buildSummaryCard(
+                    "VAT Reward",
+                    vatRewardStatus,
+                    Icons.card_giftcard,
+                    Colors.green,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 24),
+
+          // Tab Content
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.75,
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildInventoryTab(),
+                _buildOrdersTab(),
+                _buildChatTab(),
+                _buildPricesTab(),
+                _buildOffersTab(),
+              ],
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Material(
+        color: Colors.white,
+        elevation: 8,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                // ignore: deprecated_member_use
+                color: Colors.grey.withOpacity(0.2),
+                blurRadius: 5,
+                offset: const Offset(0, -1),
+              ),
+            ],
+          ),
+          child: TabBar(
+            controller: _tabController,
+            isScrollable: false,
+            labelColor: Colors.green[600],
+            unselectedLabelColor: Colors.grey,
+            indicatorColor: Colors.green[600],
+            tabs: const [
+              Tab(icon: Icon(Icons.inventory), text: "Inventory"),
+              Tab(icon: Icon(Icons.shopping_cart), text: "Orders"),
+              Tab(icon: Icon(Icons.chat), text: "Chat"),
+              Tab(icon: Icon(Icons.price_check), text: "Prices"),
+              Tab(icon: Icon(Icons.local_offer), text: "Offers"),
             ],
           ),
         ),
-      ],
-    ),
-    bottomNavigationBar: Material(
-      color: Colors.white,
-      elevation: 8,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              // ignore: deprecated_member_use
-              color: Colors.grey.withOpacity(0.2),
-              blurRadius: 5,
-              offset: const Offset(0, -1),
-            ),
-          ],
-        ),
-        child: TabBar(
-          controller: _tabController,
-          isScrollable: false,
-          labelColor: Colors.green[600],
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: Colors.green[600],
-          tabs: const [
-            Tab(icon: Icon(Icons.inventory), text: "Inventory"),
-            Tab(icon: Icon(Icons.shopping_cart), text: "Orders"),
-            Tab(icon: Icon(Icons.chat), text: "Chat"),
-            Tab(icon: Icon(Icons.price_check), text: "Prices"),
-            Tab(icon: Icon(Icons.local_offer), text: "Offers"),
-          ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          _showQuickActions(context);
+        },
+        backgroundColor: Colors.green[600],
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          "Quick Add",
+          style: TextStyle(color: Colors.white),
         ),
       ),
-    ),
-    floatingActionButton: FloatingActionButton.extended(
-      onPressed: () {
-        _showQuickActions(context);
-      },
-      backgroundColor: Colors.green[600],
-      icon: const Icon(Icons.add, color: Colors.white),
-      label: const Text(
-        "Quick Add",
-        style: TextStyle(color: Colors.white),
-      ),
-    ),
-  );
-}
+    );
+  }
 
 //--------------------------tush---------------
 /*
@@ -534,66 +806,65 @@ Widget build(BuildContext context) {
 
 */
 
-
-Widget _buildSummaryCard(
-    String title, String value, IconData icon, Color color) {
-  return Container(
-    padding: const EdgeInsets.all(12), // reduced padding
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(10), // slightly smaller corners
-      boxShadow: [
-        BoxShadow(
-          // ignore: deprecated_member_use
-          color: Colors.grey.withOpacity(0.1),
-          spreadRadius: 1,
-          blurRadius: 2,
-        ),
-      ],
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, color: color, size: 20), // smaller icon
-            const Spacer(),
-            if (title == "Stock Alerts" && stockAlerts > 0)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  "!",
-                  style: TextStyle(color: Colors.white, fontSize: 10),
-                ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 1), // reduced spacing
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 15, // slightly smaller
-            fontWeight: FontWeight.bold,
-            color: color,
+  Widget _buildSummaryCard(
+      String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12), // reduced padding
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10), // slightly smaller corners
+        boxShadow: [
+          BoxShadow(
+            // ignore: deprecated_member_use
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 2,
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 11, // slightly smaller
-            color: Colors.grey,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: color, size: 20), // smaller icon
+              const Spacer(),
+              if (title == "Stock Alerts" && stockAlerts > 0)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "!",
+                    style: TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                ),
+            ],
           ),
-        ),
-      ],
-    ),
-  );
-}
-
+          const SizedBox(height: 1), // reduced spacing
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 15, // slightly smaller
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 11, // slightly smaller
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
 //-----------------------------------------------
 
@@ -621,13 +892,14 @@ Widget _buildSummaryCard(
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: isLoadingInventory ? null : _loadInventory,
-                  icon: isLoadingInventory 
-                    ? const SizedBox(
-                        width: 16, 
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Icon(Icons.refresh),
+                  icon: isLoadingInventory
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Icon(Icons.refresh),
                   label: Text(
                     isLoadingInventory ? "Loading..." : "Refresh",
                   ),
@@ -738,9 +1010,11 @@ Widget _buildSummaryCard(
     final unitPrice = item['unit_price'] ?? 0.0;
     final lowStockThreshold = item['low_stock_threshold'] ?? 10;
     final inventoryId = item['id']?.toString() ?? '';
-    
+
     final isLowStock = stockQuantity < lowStockThreshold;
-    final displayPrice = unitPrice is String ? double.tryParse(unitPrice) ?? 0.0 : unitPrice.toDouble();
+    final displayPrice = unitPrice is String
+        ? double.tryParse(unitPrice) ?? 0.0
+        : unitPrice.toDouble();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -772,8 +1046,8 @@ Widget _buildSummaryCard(
             if (isLowStock)
               Text(
                 "⚠️ Low Stock (Threshold: $lowStockThreshold)",
-                style:
-                    const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.bold),
               ),
           ],
         ),
@@ -804,17 +1078,32 @@ Widget _buildSummaryCard(
               padding: const EdgeInsets.all(12),
               child: Row(
                 children: [
-                  Icon(Icons.info, color: Colors.blue[600]),
+                  Icon(Icons.shopping_cart, color: Colors.blue[600]),
                   const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      "Click on Pending orders to confirm or reject",
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                  Text(
+                    isLoadingOrders
+                        ? "Loading orders..."
+                        : "Total Orders: ${orderItems.length}",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  if (pendingOrders > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        "$pendingOrders Pending",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -826,11 +1115,9 @@ Widget _buildSummaryCard(
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    _viewAllOrders();
-                  },
-                  icon: const Icon(Icons.list),
-                  label: const Text("View All Orders"),
+                  onPressed: _loadOrders,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text("Refresh Orders"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blue[600],
                     foregroundColor: Colors.white,
@@ -840,11 +1127,9 @@ Widget _buildSummaryCard(
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () {
-                    _showOrderStats();
-                  },
+                  onPressed: _showOrderStats,
                   icon: const Icon(Icons.analytics),
-                  label: const Text("Statistics"),
+                  label: const Text("Order Stats"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[600],
                     foregroundColor: Colors.white,
@@ -856,12 +1141,7 @@ Widget _buildSummaryCard(
           const SizedBox(height: 16),
 
           Expanded(
-            child: ListView.builder(
-              itemCount: 5,
-              itemBuilder: (context, index) {
-                return _buildOrderCard(index);
-              },
-            ),
+            child: _buildOrdersContent(),
           ),
         ],
       ),
@@ -1109,7 +1389,7 @@ Widget _buildSummaryCard(
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
 
           Row(
@@ -1655,14 +1935,16 @@ Widget _buildSummaryCard(
     }
   }
 
-  void _handleProductActionWithData(String action, String productName, String inventoryId, Map<String, dynamic> item) async {
+  void _handleProductActionWithData(String action, String productName,
+      String inventoryId, Map<String, dynamic> item) async {
     if (action == "edit") {
       // Convert the item data to the format expected by UpdateProductScreen
       final productForUpdate = {
         "name": productName,
         "quantity": item['stock_quantity'] ?? 0,
         "price": item['unit_price'] ?? 0.0,
-        "lowStock": (item['stock_quantity'] ?? 0) < (item['low_stock_threshold'] ?? 10),
+        "lowStock":
+            (item['stock_quantity'] ?? 0) < (item['low_stock_threshold'] ?? 10),
         "id": inventoryId,
         "subcat_id": item['subcat_id'],
         "low_stock_threshold": item['low_stock_threshold'],
@@ -1676,8 +1958,20 @@ Widget _buildSummaryCard(
       );
 
       if (result != null) {
-        // Refresh the inventory data regardless of the result
+        // Refresh the inventory data after successful update
         _loadInventory();
+
+        // Show success message if the update was successful
+        if (result is Map<String, dynamic> && result.containsKey('success')) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Product updated successfully'),
+                backgroundColor: Colors.green,
+              ),
+            );
+          }
+        }
       }
     } else if (action == "delete") {
       // Show confirmation dialog for delete
@@ -1685,7 +1979,8 @@ Widget _buildSummaryCard(
         context: context,
         builder: (context) => AlertDialog(
           title: Text("Delete $productName"),
-          content: Text("Are you sure you want to delete $productName from your inventory?"),
+          content: Text(
+              "Are you sure you want to delete $productName from your inventory?"),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
@@ -1702,7 +1997,8 @@ Widget _buildSummaryCard(
 
       if (confirmed == true) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Delete $productName - API integration needed")),
+          SnackBar(
+              content: Text("Delete $productName - API integration needed")),
         );
       }
     } else {
@@ -1710,12 +2006,6 @@ Widget _buildSummaryCard(
         SnackBar(content: Text("$action $productName - Coming Soon!")),
       );
     }
-  }
-
-  void _viewAllOrders() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("View All Orders - Coming Soon!")),
-    );
   }
 
   void _showConfirmOrderDialog(String customer, Map<String, dynamic> order) {
@@ -2066,5 +2356,535 @@ Widget _buildSummaryCard(
         ],
       ),
     );
+  }
+
+  // Real order handling methods
+  Widget _buildOrdersContent() {
+    if (isLoadingOrders) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text("Loading orders..."),
+          ],
+        ),
+      );
+    }
+
+    if (ordersError != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+            const SizedBox(height: 16),
+            Text(
+              ordersError!,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.red),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _loadOrders,
+              child: const Text("Retry"),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (orderItems.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.shopping_cart_outlined,
+                size: 64, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              "No orders yet",
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Orders will appear here when customers place them",
+              style: TextStyle(
+                color: Colors.grey[500],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: orderItems.length,
+      itemBuilder: (context, index) {
+        return _buildRealOrderCard(orderItems[index]);
+      },
+    );
+  }
+
+  Widget _buildRealOrderCard(Map<String, dynamic> order) {
+    final customerName =
+        order['customer_name']?.toString() ?? 'Unknown Customer';
+    final productName = order['product_name']?.toString() ?? 'Unknown Product';
+    final quantity = order['quantity_ordered'] ?? 0;
+    final status = order['status']?.toString() ?? 'pending';
+    final orderNumber = order['order_number']?.toString() ?? '';
+    final createdAt = order['created_at']?.toString() ?? '';
+    final totalAmount = order['total_amount'] ?? order['total_price'] ?? 0.0;
+    final orderDate = DateTime.tryParse(createdAt);
+
+    // Format time
+    final timeString = orderDate != null
+        ? "${orderDate.hour.toString().padLeft(2, '0')}:${orderDate.minute.toString().padLeft(2, '0')}"
+        : 'Unknown time';
+
+    // Format date
+    final dateString = orderDate != null
+        ? "${orderDate.day.toString().padLeft(2, '0')}/${orderDate.month.toString().padLeft(2, '0')}/${orderDate.year}"
+        : 'Unknown date';
+
+    // Parse total amount properly
+    final displayTotalAmount = totalAmount is String
+        ? double.tryParse(totalAmount) ?? 0.0
+        : totalAmount.toDouble();
+
+    // Define colors and background for different statuses
+    Color statusColor;
+    Color backgroundColor;
+    IconData statusIcon;
+
+    switch (status.toLowerCase()) {
+      case 'pending':
+        statusColor = Colors.orange[700]!;
+        backgroundColor = Colors.orange[50]!;
+        statusIcon = Icons.access_time;
+        break;
+      case 'confirmed':
+      case 'on going':
+        statusColor = Colors.blue[700]!;
+        backgroundColor = Colors.blue[50]!;
+        statusIcon = Icons.check_circle;
+        break;
+      case 'delivered':
+        statusColor = Colors.green[700]!;
+        backgroundColor = Colors.green[50]!;
+        statusIcon = Icons.delivery_dining;
+        break;
+      case 'rejected':
+      case 'cancelled':
+        statusColor = Colors.red[700]!;
+        backgroundColor = Colors.red[50]!;
+        statusIcon = Icons.cancel;
+        break;
+      default:
+        statusColor = Colors.grey[700]!;
+        backgroundColor = Colors.grey[50]!;
+        statusIcon = Icons.help;
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      color: backgroundColor,
+      elevation: status.toLowerCase() == "pending" ? 3 : 1,
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: statusColor.withOpacity(0.2),
+          child: Icon(
+            Icons.person,
+            color: statusColor,
+          ),
+        ),
+        title: Text(
+          customerName,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("$productName × $quantity units"),
+            Text("Order ID: $orderNumber"),
+            Text("Date: $dateString"),
+            Text("Time: $timeString"),
+            Text("Total: ৳${displayTotalAmount.toStringAsFixed(2)}"),
+            const SizedBox(height: 4),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: statusColor,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(statusIcon, color: Colors.white, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    status.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        trailing: status.toLowerCase() == "pending"
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.green[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.check, color: Colors.green[700]),
+                      tooltip: "Confirm Order",
+                      onPressed: () => _confirmRealOrder(order),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.red[100],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: IconButton(
+                      icon: Icon(Icons.close, color: Colors.red[700]),
+                      tooltip: "Reject Order",
+                      onPressed: () => _rejectRealOrder(order),
+                    ),
+                  ),
+                ],
+              )
+            : (status.toLowerCase() == "confirmed" ||
+                    status.toLowerCase() == "on going")
+                ? Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[100],
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.blue[300]!),
+                    ),
+                    child: const Text(
+                      "On Going",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                : null,
+      ),
+    );
+  }
+
+  void _confirmRealOrder(Map<String, dynamic> order) async {
+    final orderId = order['id']?.toString();
+    if (orderId == null) return;
+
+    // Show confirmation dialog
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.check_circle, color: Colors.green[600]),
+            const SizedBox(width: 8),
+            const Text("Confirm Order"),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              "Are you sure you want to confirm this order?",
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue[200]!),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Customer: ${order['customer_name'] ?? 'Unknown'}",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text("Product: ${order['product_name'] ?? 'Unknown'}"),
+                  Text("Quantity: ${order['quantity_ordered'] ?? 0} units"),
+                  Text("Order: ${order['order_number'] ?? 'Unknown'}"),
+                ],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.orange[200]!),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.inventory, color: Colors.orange, size: 16),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      "This will decrease your product inventory and change status to 'On Going'",
+                      style: TextStyle(fontSize: 12, color: Colors.orange),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => Navigator.pop(context, true),
+            icon: const Icon(Icons.check, color: Colors.white),
+            label: const Text(
+              "Confirm Order",
+              style: TextStyle(color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green[600],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      // Use the new confirm order API method
+      final result = await ShopOwnerApiService.confirmOrder(
+        orderId: orderId,
+        notes: 'Confirmed by shop owner',
+      );
+
+      if (result['success'] == true) {
+        // Success message with remaining stock info
+        final message = result['message'] ?? 'Order confirmed successfully!';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(message),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+
+        // Update notification count
+        setState(() {
+          unreadNotifications++;
+        });
+
+        // Refresh orders and inventory to get updated data
+        _loadOrders();
+        _loadInventory(); // Refresh inventory to show updated quantities
+      } else {
+        // Check if it's a low stock error
+        if (result.containsKey('lowStock') && result['lowStock'] == true) {
+          final availableStock = result['availableStock'] ?? 0;
+          final requiredStock = result['requiredStock'] ?? 0;
+          final productName = result['productName'] ?? 'Product';
+
+          // Show limited stock dialog with restore message
+          showDialog(
+            context: context,
+            barrierDismissible: false, // Prevent dismissing by tapping outside
+            builder: (context) => AlertDialog(
+              title: Row(
+                children: [
+                  Icon(Icons.warning_amber, color: Colors.red[600]),
+                  const SizedBox(width: 8),
+                  const Text("Limited Stock",
+                      style: TextStyle(color: Colors.red)),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.inventory_2_outlined,
+                    size: 48,
+                    color: Colors.red[400],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Limited stock please restore',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red[700],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red[200]!),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '$productName',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 4),
+                        Text('Available Stock: $availableStock units'),
+                        Text('Required: $requiredStock units'),
+                        Text(
+                          'Need to restore: ${requiredStock - availableStock} units',
+                          style: TextStyle(
+                            color: Colors.red[600],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Please restore your stock first, then you can confirm this order.',
+                    style: TextStyle(fontSize: 14),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // Navigate to inventory tab to restore stock
+                    _tabController.animateTo(0);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: const Text(
+                            'Please restore the stock first, then try to confirm the order again.'),
+                        backgroundColor: Colors.orange[600],
+                        duration: const Duration(seconds: 4),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red[600],
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Restore Stock'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Regular error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to confirm order'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error confirming order: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  void _rejectRealOrder(Map<String, dynamic> order) async {
+    final orderId = order['id']?.toString();
+    if (orderId == null) return;
+
+    try {
+      final result = await ShopOwnerApiService.updateOrderStatus(
+        orderId: orderId,
+        status: 'rejected',
+        rejectionReason: 'Rejected by shop owner',
+      );
+
+      if (result['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.cancel, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text("Order ${order['order_number']} rejected"),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red[600],
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+
+        // Refresh orders to get updated status
+        _loadOrders();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message'] ?? 'Failed to reject order'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error rejecting order: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

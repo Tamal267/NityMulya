@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/screens/customers/favorite_products_screen.dart';
 import 'package:nitymulya/screens/customers/home_screen.dart';
 import 'package:nitymulya/screens/customers/my_orders_screen.dart';
 import 'package:nitymulya/screens/customers/shop_list_screen.dart';
-import 'package:nitymulya/screens/customers/favorite_products_screen.dart';
 
 class MainCustomerScreen extends StatefulWidget {
   final String? userName;
@@ -25,22 +25,31 @@ class _MainCustomerScreenState extends State<MainCustomerScreen> {
 
   // List of screens for each tab
   List<Widget> get _screens => [
-    HomeScreen(
-      userName: widget.userName,
-      userEmail: widget.userEmail,
-      userRole: widget.userRole,
-    ),
-    _buildOrdersScreen(),
-    const ShopListScreen(),
-    _buildFavoritesScreen(),
-  ];
+        HomeScreen(
+          userName: widget.userName,
+          userEmail: widget.userEmail,
+          userRole: widget.userRole,
+        ),
+        _buildOrdersScreen(),
+        const ShopListScreen(),
+        _buildFavoritesScreen(),
+      ];
 
   Widget _buildOrdersScreen() {
     if (widget.userName == null) {
       return _buildLoginRequiredScreen('My Orders');
     }
-    return const MyOrdersScreen(
+    return MyOrdersScreen(
       customerId: null, // You may need to pass actual customer ID
+      userName: widget.userName,
+      userEmail: widget.userEmail,
+      userRole: widget.userRole,
+      isInBottomNav: true,
+      onNavigateToHome: () {
+        setState(() {
+          currentBottomNavIndex = 0; // Switch to Home tab
+        });
+      },
     );
   }
 
@@ -109,22 +118,13 @@ class _MainCustomerScreenState extends State<MainCustomerScreen> {
           });
         },
         items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home), 
-            label: "Home"
-          ),
+              icon: Icon(Icons.shopping_bag), label: "My Orders"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shopping_bag), 
-            label: "My Orders"
-          ),
+              icon: Icon(Icons.store_mall_directory), label: "Shops"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.store_mall_directory), 
-            label: "Shops"
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite), 
-            label: "Favorites"
-          ),
+              icon: Icon(Icons.favorite), label: "Favorites"),
         ],
       ),
     );
