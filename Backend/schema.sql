@@ -90,6 +90,25 @@ CREATE TABLE IF NOT EXISTS shop_orders (
     notes TEXT
 );
 
+-- Customer reviews table
+CREATE TABLE IF NOT EXISTS customer_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    customer_id UUID REFERENCES customers(id) ON DELETE CASCADE,
+    shop_owner_id UUID REFERENCES shop_owners(id) ON DELETE CASCADE,
+    order_id UUID,
+    subcat_id UUID REFERENCES subcategories(id) ON DELETE SET NULL,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    product_name VARCHAR(255),
+    shop_name VARCHAR(255),
+    delivery_rating INTEGER CHECK (delivery_rating >= 1 AND delivery_rating <= 5),
+    service_rating INTEGER CHECK (service_rating >= 1 AND service_rating <= 5),
+    helpful_count INTEGER DEFAULT 0,
+    is_verified_purchase BOOLEAN DEFAULT FALSE
+);
+
 -- Chat/communication between wholesalers and shops
 CREATE TABLE IF NOT EXISTS chat_messages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -138,3 +157,7 @@ CREATE INDEX IF NOT EXISTS idx_shop_orders_status ON shop_orders (status);
 CREATE INDEX IF NOT EXISTS idx_chat_sender ON chat_messages (sender_id);
 CREATE INDEX IF NOT EXISTS idx_chat_receiver ON chat_messages (receiver_id);
 CREATE INDEX IF NOT EXISTS idx_wholesaler_offers_wholesaler ON wholesaler_offers (wholesaler_id);
+CREATE INDEX IF NOT EXISTS idx_customer_reviews_customer ON customer_reviews (customer_id);
+CREATE INDEX IF NOT EXISTS idx_customer_reviews_shop ON customer_reviews (shop_owner_id);
+CREATE INDEX IF NOT EXISTS idx_customer_reviews_subcat ON customer_reviews (subcat_id);
+CREATE INDEX IF NOT EXISTS idx_customer_reviews_rating ON customer_reviews (rating);

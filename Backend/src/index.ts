@@ -51,9 +51,12 @@ import {
   updateOrderStatus,
   updateInventoryItem as updateWholesalerInventoryItem,
 } from "./controller/wholesalerController";
+import { ReviewController } from "./controller/reviewController";
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
+// import sql from "./db"; // Commented out since using memory database
 
 const app = new Hono<{ Variables: JwtVariables }>();
+const reviewController = new ReviewController(); // No sql parameter needed
 
 app.use(prettyJSON());
 app.use("/*", cors());
@@ -116,6 +119,24 @@ app.get("/chat/wholesalers", getWholesalers);
 app.post("/chat/send", sendMessage);
 app.get("/chat/messages", getChatMessages);
 app.get("/chat/conversations", getChatConversations);
+
+// Review routes - Public for viewing, protected for creating
+app.get("/reviews/product/:productName", reviewController.getProductReviews.bind(reviewController));
+app.get("/reviews/shop/:shopId", reviewController.getShopReviews.bind(reviewController));
+app.get("/reviews/customer/:customerId", reviewController.getCustomerReviews.bind(reviewController));
+app.get("/reviews/product/:productName/average", reviewController.getProductAverageRating.bind(reviewController));
+app.get("/reviews/shop/:shopId/average", reviewController.getShopAverageRating.bind(reviewController));
+app.get("/reviews/shop/:shopId/stats", reviewController.getReviewStats.bind(reviewController));
+
+// Protected review routes - require customer authentication
+app.use("/reviews/create", createAuthMiddleware(), requireRole("customer"));
+app.post("/reviews/create", reviewController.createReview.bind(reviewController));
+
+app.use("/reviews/helpful/*", createAuthMiddleware());
+app.put("/reviews/helpful/:reviewId", reviewController.markReviewHelpful.bind(reviewController));
+
+app.use("/reviews/delete/*", createAuthMiddleware(), requireRole("customer"));
+app.delete("/reviews/delete/:reviewId", reviewController.deleteReview.bind(reviewController));
 
 export default {
   port: process.env.PORT || 5000,

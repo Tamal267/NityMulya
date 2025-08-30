@@ -8,4 +8,6 @@ if (!connectionString) {
 
 const sql: Sql = postgres(connectionString)
 
+// Export both default and named export for compatibility
 export default sql
+export { sql as db }

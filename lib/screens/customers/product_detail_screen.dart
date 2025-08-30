@@ -124,19 +124,23 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
           await ReviewService().getProductAverageRating(widget.title);
 
       setState(() {
-        productReviews = reviews.isEmpty
-            ? ReviewService().getSampleProductReviews(widget.title)
-            : reviews;
-        averageRating = avgRating > 0
-            ? avgRating
-            : 4.2; // Use sample average if no real reviews
+        // Only use reviews from database, don't fall back to sample data
+        productReviews = reviews;
+        // Only use database average rating, or 0 if no reviews
+        averageRating = avgRating;
         isLoadingReviews = false;
       });
+
+      // Debug: Print API responses
+      print('Loaded ${productReviews.length} reviews for ${widget.title}');
+      print('Average rating: $averageRating');
+      
     } catch (e) {
       print('Error loading reviews: $e');
       setState(() {
-        productReviews = ReviewService().getSampleProductReviews(widget.title);
-        averageRating = 4.2;
+        // On error, show empty reviews instead of sample data
+        productReviews = [];
+        averageRating = 0.0;
         isLoadingReviews = false;
       });
     }
@@ -704,13 +708,14 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   _buildStarRating(averageRating, 16),
                   const SizedBox(width: 8),
                   Text(
-                    '${averageRating.toStringAsFixed(1)}',
+                    averageRating.toStringAsFixed(1),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.indigo,
                     ),
                   ),
                 ],
+                const Spacer(),
                 if (isLoadingReviews)
                   const Padding(
                     padding: EdgeInsets.only(left: 8),
@@ -824,15 +829,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: TextButton(
-                          onPressed: () {
-                            Navigator.push(
+                          onPressed: () async {
+                            final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) => ReviewsScreen(
                                   productName: widget.title,
+                                  shopId: availableShops.isNotEmpty ? availableShops.first['id']?.toString() : null,
+                                  shopName: availableShops.isNotEmpty ? availableShops.first['name']?.toString() : null,
+                                  customerId: widget.userEmail,
+                                  customerName: widget.userName,
                                 ),
                               ),
                             );
+                            
+                            if (result == true) {
+                              // Reload reviews after successful submission
+                              _loadProductReviews();
+                            }
                           },
                           child:
                               Text('View all ${productReviews.length} reviews'),
@@ -925,15 +939,24 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.push(
+        onPressed: () async {
+          final result = await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ReviewsScreen(
                 productName: widget.title,
+                shopId: availableShops.isNotEmpty ? availableShops.first['id']?.toString() : null,
+                shopName: availableShops.isNotEmpty ? availableShops.first['name']?.toString() : null,
+                customerId: widget.userEmail,
+                customerName: widget.userName,
               ),
             ),
           );
+          
+          if (result == true) {
+            // Reload reviews after successful submission
+            _loadProductReviews();
+          }
         },
         backgroundColor: Colors.amber,
         foregroundColor: Colors.white,

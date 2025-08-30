@@ -131,12 +131,17 @@ class CustomDrawer extends StatelessWidget {
           // Reviews
           ListTile(
             leading: const Icon(Icons.star, color: Colors.amber),
-            title: const Text('Reviews'),
+            title: const Text('My Reviews'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const ReviewsScreen()),
+                MaterialPageRoute(
+                  builder: (context) => ReviewsScreen(
+                    customerId: userEmail, // Using email as customer ID
+                    customerName: userName,
+                  ),
+                ),
               );
             },
           ),

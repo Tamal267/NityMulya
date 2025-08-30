@@ -33,7 +33,7 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
   bool _showRoute = false;
   bool _showRoutes = false;
   List<Polyline> _routePolylines = [];
-  Map<String, Map<String, dynamic>> _realDistanceCache = {};
+  final Map<String, Map<String, dynamic>> _realDistanceCache = {};
 
   // Draggable FAB position
   double _fabX = 300.0;
@@ -224,8 +224,8 @@ class _NearbyShopsMapScreenState extends State<NearbyShopsMapScreen> {
         final durationMin = (summary['duration'] / 60).toStringAsFixed(0);
 
         final result = {
-          'distance': '${distanceKm} km',
-          'duration': '${durationMin} min',
+          'distance': '$distanceKm km',
+          'duration': '$durationMin min',
           'coordinates': route['geometry']['coordinates'],
         };
 
