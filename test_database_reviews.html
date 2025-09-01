@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Review System Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 10px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .output { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 15px; margin: 10px 0; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Database Review System Test</h1>
+        <p>Testing persistent database storage for reviews</p>
+        
+        <h3>Test Operations:</h3>
+        <button onclick="createProductReview()">Create Product Review</button>
+        <button onclick="createShopReview()">Create Shop Review</button>
+        <button onclick="getAllReviews()">Get All Reviews</button>
+        <button onclick="getProductReviews()">Get Product Reviews</button>
+        <button onclick="clearOutput()">Clear Output</button>
+        
+        <h3>Server Test:</h3>
+        <button onclick="testServer()">Test Server Connection</button>
+        
+        <div id="output" class="output">
+            <p class="info">Click buttons above to test database persistence...</p>
+        </div>
+    </div>
+
+    <script>
+        const baseURL = 'http://localhost:3001'; // Server is running on 3001
+        
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            output.innerHTML += `<p class="${className}">[${timestamp}] ${message}</p>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '<p class="info">Output cleared...</p>';
+        }
+
+        async function testServer() {
+            try {
+                log('Testing server connection...', 'info');
+                const response = await fetch(`${baseURL}/api/reviews/all`);
+                const data = await response.json();
+                log(`✅ Server connected successfully! Status: ${response.status}`, 'success');
+                log(`Response: ${JSON.stringify(data, null, 2)}`, 'info');
+            } catch (error) {
+                log(`❌ Server connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function createProductReview() {
+            try {
+                log('Creating product review...', 'info');
+                const reviewData = {
+                    customer_id: Math.floor(Math.random() * 100) + 1,
+                    product_id: Math.floor(Math.random() * 50) + 1,
+                    rating: Math.floor(Math.random() * 5) + 1,
+                    comment: `Database test review created at ${new Date().toISOString()}`
+                };
+                
+                log(`Sending data: ${JSON.stringify(reviewData, null, 2)}`, 'info');
+                
+                const response = await fetch(`${baseURL}/api/reviews/product`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(reviewData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    log(`✅ Product review created successfully!`, 'success');
+                    log(`Review ID: ${result.review.id}`, 'success');
+                    log(`Full response: ${JSON.stringify(result, null, 2)}`, 'info');
+                } else {
+                    log(`❌ Failed to create product review: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error creating product review: ${error.message}`, 'error');
+            }
+        }
+
+        async function createShopReview() {
+            try {
+                log('Creating shop review...', 'info');
+                const reviewData = {
+                    customer_id: Math.floor(Math.random() * 100) + 1,
+                    shop_id: Math.floor(Math.random() * 20) + 1,
+                    overall_rating: Math.floor(Math.random() * 5) + 1,
+                    service_rating: Math.floor(Math.random() * 5) + 1,
+                    delivery_rating: Math.floor(Math.random() * 5) + 1,
+                    comment: `Database test shop review created at ${new Date().toISOString()}`
+                };
+                
+                log(`Sending data: ${JSON.stringify(reviewData, null, 2)}`, 'info');
+                
+                const response = await fetch(`${baseURL}/api/reviews/shop`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(reviewData)
+                });
+
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    log(`✅ Shop review created successfully!`, 'success');
+                    log(`Review ID: ${result.review.id}`, 'success');
+                    log(`Full response: ${JSON.stringify(result, null, 2)}`, 'info');
+                } else {
+                    log(`❌ Failed to create shop review: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error creating shop review: ${error.message}`, 'error');
+            }
+        }
+
+        async function getAllReviews() {
+            try {
+                log('Fetching all reviews from database...', 'info');
+                const response = await fetch(`${baseURL}/api/reviews/all`);
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    log(`✅ Retrieved all reviews successfully!`, 'success');
+                    log(`Product reviews: ${result.productCount}, Shop reviews: ${result.shopCount}`, 'success');
+                    log(`Full response: ${JSON.stringify(result, null, 2)}`, 'info');
+                } else {
+                    log(`❌ Failed to get all reviews: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error getting all reviews: ${error.message}`, 'error');
+            }
+        }
+
+        async function getProductReviews() {
+            try {
+                const productId = 1; // Test with product ID 1
+                log(`Fetching reviews for product ${productId}...`, 'info');
+                const response = await fetch(`${baseURL}/api/reviews/product/${productId}`);
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    log(`✅ Retrieved product reviews successfully!`, 'success');
+                    log(`Reviews count: ${result.reviews.length}`, 'success');
+                    log(`Full response: ${JSON.stringify(result, null, 2)}`, 'info');
+                } else {
+                    log(`❌ Failed to get product reviews: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error getting product reviews: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-test server connection on page load
+        window.addEventListener('load', () => {
+            log('🚀 Database Review System Test Page Loaded', 'success');
+            log('Ready to test persistent database storage!', 'info');
+            setTimeout(testServer, 1000); // Auto-test server after 1 second
+        });
+    </script>
+</body>
+</html>

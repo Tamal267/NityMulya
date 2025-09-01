@@ -585,6 +585,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                 high: _safeParseInt(
                                                     p["max_price"]),
                                                 subcatId: p["id"]?.toString(),
+                                                userEmail: widget.userEmail,
+                                                userName: widget.userName,
                                               ),
                                             ),
                                           );
@@ -732,6 +734,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                   product["max_price"]),
                                               subcatId:
                                                   product["id"]?.toString(),
+                                              userEmail: widget.userEmail,
+                                              userName: widget.userName,
                                             ),
                                           ),
                                         ),

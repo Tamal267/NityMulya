@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Review API Test</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <h1>Review API Test</h1>
+    <div id="results"></div>
+
+    <script>
+        const baseUrl = 'http://localhost:3001';
+        const resultsDiv = document.getElementById('results');
+
+        function addResult(title, data) {
+            const div = document.createElement('div');
+            div.innerHTML = `<h3>${title}</h3><pre>${JSON.stringify(data, null, 2)}</pre><hr>`;
+            resultsDiv.appendChild(div);
+        }
+
+        // Test API endpoints
+        async function testAPIs() {
+            try {
+                addResult('Testing API Connection...', { message: 'Starting tests...' });
+
+                // Test basic API
+                console.log('Testing basic API...');
+                const basicResponse = await fetch(`${baseUrl}/`);
+                const basicData = await basicResponse.json();
+                addResult('Basic API Response', basicData);
+
+                // Test get product reviews with URL encoding
+                console.log('Testing product reviews API...');
+                const productName = encodeURIComponent('চাল');
+                const productResponse = await fetch(`${baseUrl}/reviews/product/${productName}`);
+                const productData = await productResponse.json();
+                addResult('Product Reviews for চাল', productData);
+
+                // Test get product average rating
+                console.log('Testing product average rating API...');
+                const avgResponse = await fetch(`${baseUrl}/reviews/product/${productName}/average`);
+                const avgData = await avgResponse.json();
+                addResult('Average Rating for চাল', avgData);
+
+                // Test creating a review (this should work without auth for testing)
+                console.log('Testing create review API...');
+                const createResponse = await fetch(`${baseUrl}/reviews/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customerId: 'a0fb3a75-f78e-4fe5-a8c8-ff908562472d',
+                        shopOwnerId: 'test-shop',
+                        rating: 5,
+                        comment: 'এটি একটি টেস্ট রিভিউ।',
+                        productName: 'চাল',
+                        shopName: 'টেস্ট শপ',
+                        isVerifiedPurchase: false
+                    })
+                });
+                const createData = await createResponse.json();
+                addResult('Create Review Response', createData);
+
+                // Test other products
+                const products = ['ডাল', 'তেল', 'চিনি'];
+                for (const product of products) {
+                    try {
+                        const encoded = encodeURIComponent(product);
+                        const response = await fetch(`${baseUrl}/reviews/product/${encoded}`);
+                        const data = await response.json();
+                        addResult(`Reviews for ${product}`, data);
+                    } catch (error) {
+                        addResult(`Error for ${product}`, { error: error.message });
+                    }
+                }
+
+            } catch (error) {
+                addResult('Error', { error: error.message });
+            }
+        }
+
+        // Run tests when page loads
+        window.onload = testAPIs;
+    </script>
+</body>
+</html>

@@ -354,6 +354,8 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
                                   high: product["high"],
                                   subcatId: product[
                                       "subcat_id"], // Pass subcategory ID if available
+                                  userEmail: null, // TODO: Pass actual user email
+                                  userName: null, // TODO: Pass actual user name
                                 ),
                               ),
                             );
@@ -529,10 +531,12 @@ class _ShopReviewDialogState extends State<_ShopReviewDialog> {
     try {
       ReviewService.createShopReview(
         shopId: widget.shop.name.toLowerCase().replaceAll(' ', '_'),
+        shopOwnerId: 'shop_owner_${widget.shop.name.toLowerCase().replaceAll(' ', '_')}',  // Added required shopOwnerId
         shopName: widget.shop.name,
         customerId: 'customer_current', // Replace with actual customer ID
         customerName: 'Current Customer', // Replace with actual customer name
-        rating: _overallRating,
+        customerEmail: 'customer@example.com',  // Added required customerEmail
+        overallRating: _overallRating,  // Changed from 'rating' to 'overallRating'
         deliveryRating: _deliveryRating,
         serviceRating: _serviceRating,
         comment: _commentController.text.trim(),

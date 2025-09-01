@@ -459,9 +459,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                       ?.toInt() ??
                                                   0,
                                               subcatId: p["id"]?.toString(),
-                                              userName: widget.userName,
                                               userEmail: widget.userEmail,
-                                              userRole: widget.userRole,
+                                              userName: widget.userName,
                                             ),
                                           ),
                                         );
@@ -605,9 +604,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                     ?.toInt() ??
                                                 0,
                                             subcatId: product["id"]?.toString(),
-                                            userName: widget.userName,
                                             userEmail: widget.userEmail,
-                                            userRole: widget.userRole,
+                                            userName: widget.userName,
                                           ),
                                         ),
                                       ),

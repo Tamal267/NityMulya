@@ -10,8 +10,12 @@ class ShopService {
         phone: '01711123456',
         category: 'গ্রোসারি',
         rating: 4.5,
-        image: 'assets/images/shop_1.jpg',
-        availableProducts: ['চাল সরু (নাজির/মিনিকেট)', 'সয়াবিন তেল (পিউর)', 'মসুর ডাল'],
+        image: 'assets/image/1.jpg',
+        availableProducts: [
+          'চাল সরু (নাজির/মিনিকেট)',
+          'সয়াবিন তেল (পিউর)',
+          'মসুর ডাল'
+        ],
         isVerified: true,
         openingHours: '৮:০০ AM - ১০:০০ PM',
       ),
@@ -22,8 +26,12 @@ class ShopService {
         phone: '01812345678',
         category: 'সুপার শপ',
         rating: 4.2,
-        image: 'assets/images/shop_2.jpg',
-        availableProducts: ['চাল মোটা (পাইলস)', 'গমের আটা (প্রিমিয়াম)', 'পেঁয়াজ (দেশি)'],
+        image: 'assets/image/2.jpg',
+        availableProducts: [
+          'চাল মোটা (পাইলস)',
+          'গমের আটা (প্রিমিয়াম)',
+          'পেঁয়াজ (দেশি)'
+        ],
         isVerified: true,
         openingHours: '৭:০০ AM - ১১:০০ PM',
       ),
@@ -34,7 +42,7 @@ class ShopService {
         phone: '01913456789',
         category: 'পাইকারি',
         rating: 4.0,
-        image: 'assets/images/shop_3.jpg',
+        image: 'assets/image/3.jpg',
         availableProducts: ['রুই মাছ', 'গরুর দুধ', 'সয়াবিন তেল (পিউর)'],
         isVerified: false,
         openingHours: '৬:০০ AM - ৯:০০ PM',
@@ -46,8 +54,12 @@ class ShopService {
         phone: '01714567890',
         category: 'খুচরা',
         rating: 4.7,
-        image: 'assets/images/shop_4.jpg',
-        availableProducts: ['চাল সরু (নাজির/মিনিকেট)', 'মসুর ডাল', 'গমের আটা (প্রিমিয়াম)'],
+        image: 'assets/image/4.jpg',
+        availableProducts: [
+          'চাল সরু (নাজির/মিনিকেট)',
+          'মসুর ডাল',
+          'গমের আটা (প্রিমিয়াম)'
+        ],
         isVerified: true,
         openingHours: '৯:০০ AM - ১০:০০ PM',
       ),
@@ -58,7 +70,7 @@ class ShopService {
         phone: '01615678901',
         category: 'সুপার শপ',
         rating: 4.3,
-        image: 'assets/images/shop_5.jpg',
+        image: 'assets/image/5.jpg',
         availableProducts: ['পেঁয়াজ (দেশি)', 'রুই মাছ', 'গরুর দুধ'],
         isVerified: true,
         openingHours: '৮:৩০ AM - ১০:৩০ PM',
@@ -69,20 +81,20 @@ class ShopService {
   static List<Shop> searchShops(String query) {
     final shops = getMockShops();
     if (query.isEmpty) return shops;
-    
-    return shops.where((shop) =>
-      shop.name.toLowerCase().contains(query.toLowerCase()) ||
-      shop.address.toLowerCase().contains(query.toLowerCase()) ||
-      shop.category.toLowerCase().contains(query.toLowerCase())
-    ).toList();
+
+    return shops
+        .where((shop) =>
+            shop.name.toLowerCase().contains(query.toLowerCase()) ||
+            shop.address.toLowerCase().contains(query.toLowerCase()) ||
+            shop.category.toLowerCase().contains(query.toLowerCase()))
+        .toList();
   }
 
   static List<Shop> getShopsByProduct(String productName) {
     final shops = getMockShops();
-    return shops.where((shop) =>
-      shop.availableProducts.any((product) =>
-        product.toLowerCase().contains(productName.toLowerCase())
-      )
-    ).toList();
+    return shops
+        .where((shop) => shop.availableProducts.any((product) =>
+            product.toLowerCase().contains(productName.toLowerCase())))
+        .toList();
   }
 }

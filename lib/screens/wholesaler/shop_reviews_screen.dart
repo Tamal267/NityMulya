@@ -32,13 +32,13 @@ class _ShopReviewsScreenState extends State<ShopReviewsScreen> {
     setState(() => isLoading = true);
 
     try {
-      final sReviews = await ReviewService().getShopReviews(widget.shopId);
+      final sReviews = await ReviewService.getShopReviews(widget.shopId);
       final ratings =
-          await ReviewService().getShopAverageRatings(widget.shopId);
+          await ReviewService.getShopAverageRatings(widget.shopId);
 
       // Get all product reviews for this shop
       final allCustomerReviews =
-          await ReviewService().getCustomerReviews('customer_current');
+          await ReviewService.getCustomerReviews('customer_current');
       final pReviews = allCustomerReviews
           .where((review) =>
               review['shopId'] == widget.shopId ||
@@ -47,17 +47,21 @@ class _ShopReviewsScreenState extends State<ShopReviewsScreen> {
 
       setState(() {
         shopReviews = sReviews.isEmpty
-            ? ReviewService().getSampleShopReviews(widget.shopId)
+            ? ReviewService.getSampleShopReviews(widget.shopId)
             : sReviews;
         productReviews = pReviews;
         shopRatings = ratings['overall']! > 0
-            ? ratings
+            ? {
+                'overall': (ratings['overall'] as num).toDouble(),
+                'delivery': (ratings['delivery'] as num).toDouble(),
+                'service': (ratings['service'] as num).toDouble(),
+              }
             : {'overall': 4.5, 'delivery': 4.3, 'service': 4.7};
       });
     } catch (e) {
       // Fallback to sample data
       setState(() {
-        shopReviews = ReviewService().getSampleShopReviews(widget.shopId);
+        shopReviews = ReviewService.getSampleShopReviews(widget.shopId);
         productReviews = [];
         shopRatings = {'overall': 4.5, 'delivery': 4.3, 'service': 4.7};
       });

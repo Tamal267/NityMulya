@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/shop.dart';
 import '../../services/review_service.dart';
 import '../../services/shop_service.dart';
+import 'nearby_shops_map_screen_enhanced.dart';
 import 'reviews_screen.dart';
 import 'shop_items_screen.dart';
 
@@ -153,8 +154,34 @@ class _ShopListScreenState extends State<ShopListScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF079b11),
         foregroundColor: Colors.white,
-        title: const Text("Shop List"),
+        title: const Text("Shops"),
         actions: [
+          // Location Dropdown Button for Nearby Shops Map
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.location_on, color: Colors.white),
+            tooltip: "Nearby Shops on Map",
+            onSelected: (String value) {
+              if (value == "nearby_map") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NearbyShopsMapScreenEnhanced(),
+                  ),
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: "nearby_map",
+                child: ListTile(
+                  leading: Icon(Icons.map, color: Color(0xFF079b11)),
+                  title: Text("View Nearby Shops"),
+                  subtitle: Text("See shops on map with distance"),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
           IconButton(
             icon: Icon(isMapView ? Icons.list : Icons.map),
             onPressed: () {
@@ -758,10 +785,14 @@ class _QuickReviewDialogState extends State<_QuickReviewDialog> {
     try {
       ReviewService.createShopReview(
         shopId: widget.shop.name.toLowerCase().replaceAll(' ', '_'),
+        shopOwnerId:
+            'shop_owner_${widget.shop.name.toLowerCase().replaceAll(' ', '_')}', // Added required shopOwnerId
         shopName: widget.shop.name,
         customerId: 'customer_current',
         customerName: 'Current Customer',
-        rating: _overallRating,
+        customerEmail: 'customer@example.com', // Added required customerEmail
+        overallRating:
+            _overallRating, // Changed from 'rating' to 'overallRating'
         deliveryRating: _overallRating, // Use overall rating for quick review
         serviceRating: _overallRating, // Use overall rating for quick review
         comment: _commentController.text.trim(),
