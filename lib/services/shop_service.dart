@@ -18,6 +18,8 @@ class ShopService {
         ],
         isVerified: true,
         openingHours: '৮:০০ AM - ১০:০০ PM',
+        latitude: 23.7461,
+        longitude: 90.3742,
       ),
       Shop(
         id: '2',
@@ -34,6 +36,8 @@ class ShopService {
         ],
         isVerified: true,
         openingHours: '৭:০০ AM - ১১:০০ PM',
+        latitude: 23.7805,
+        longitude: 90.4159,
       ),
       Shop(
         id: '3',
@@ -46,6 +50,8 @@ class ShopService {
         availableProducts: ['রুই মাছ', 'গরুর দুধ', 'সয়াবিন তেল (পিউর)'],
         isVerified: false,
         openingHours: '৬:০০ AM - ৯:০০ PM',
+        latitude: 23.8223,
+        longitude: 90.3654,
       ),
       Shop(
         id: '4',
@@ -62,6 +68,8 @@ class ShopService {
         ],
         isVerified: true,
         openingHours: '৯:০০ AM - ১০:০০ PM',
+        latitude: 23.7332,
+        longitude: 90.3837,
       ),
       Shop(
         id: '5',
@@ -74,6 +82,8 @@ class ShopService {
         availableProducts: ['পেঁয়াজ (দেশি)', 'রুই মাছ', 'গরুর দুধ'],
         isVerified: true,
         openingHours: '৮:৩০ AM - ১০:৩০ PM',
+        latitude: 23.8759,
+        longitude: 90.3795,
       ),
     ];
   }
@@ -93,8 +103,8 @@ class ShopService {
   static List<Shop> getShopsByProduct(String productName) {
     final shops = getMockShops();
     return shops
-        .where((shop) => shop.availableProducts.any((product) =>
-            product.toLowerCase().contains(productName.toLowerCase())))
+        .where((shop) => shop.availableProducts.any(
+            (product) => product.toLowerCase().contains(productName.toLowerCase())))
         .toList();
   }
 }
