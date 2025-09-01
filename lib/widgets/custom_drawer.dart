@@ -8,7 +8,6 @@ import '../screens/customers/price_alert_screen.dart';
 import '../screens/customers/profile_screen.dart';
 import '../screens/customers/reviews_screen.dart';
 import '../screens/customers/rewarded_shops_screen.dart';
-import '../screens/shop_owner/on_going_orders_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
   final String userName;
@@ -101,105 +100,79 @@ class CustomDrawer extends StatelessWidget {
 
           const Divider(),
 
-          // Shop Owner specific menu items
-          if (userRole.toLowerCase() == 'shop owner' ||
-              userRole.toLowerCase() == 'shop_owner')
-            ListTile(
-              leading: const Icon(Icons.work, color: Colors.blue),
-              title: const Text('On Going Orders'),
-              onTap: () {
-                Navigator.pop(context); // Close drawer
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => OnGoingOrdersScreen(
-                      userName: userName,
-                      userEmail: userEmail,
-                      userRole: userRole,
-                    ),
+          // Favorites
+          ListTile(
+            leading: const Icon(Icons.favorite, color: Colors.red),
+            title: const Text('Favorite Products'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const FavoriteProductsScreen()),
+              );
+            },
+          ),
+
+          // Price Alerts
+          ListTile(
+            leading: const Icon(Icons.notifications, color: Colors.orange),
+            title: const Text('Price Alerts'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const PriceAlertScreen()),
+              );
+            },
+          ),
+
+          // Reviews
+          ListTile(
+            leading: const Icon(Icons.star, color: Colors.amber),
+            title: const Text('Reviews'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ReviewsScreen()),
+              );
+            },
+          ),
+
+          // Nearby Shops Map
+          ListTile(
+            leading: const Icon(Icons.store_mall_directory, color: Colors.blue),
+            title: const Text('Nearby Shops'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => NearbyShopsMapScreenEnhanced(
+                    userName: userName,
+                    userEmail: userEmail,
+                    userRole: userRole,
                   ),
-                );
-              },
-            ),
+                ),
+              );
+            },
+          ),
 
-          // Customer specific menu items
-          if (userRole.toLowerCase() == 'customer') ...[
-            // Favorites
-            ListTile(
-              leading: const Icon(Icons.favorite, color: Colors.red),
-              title: const Text('Favorite Products'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const FavoriteProductsScreen()),
-                );
-              },
-            ),
-
-            // Price Alerts
-            ListTile(
-              leading: const Icon(Icons.notifications, color: Colors.orange),
-              title: const Text('Price Alerts'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const PriceAlertScreen()),
-                );
-              },
-            ),
-
-            // Reviews
-            ListTile(
-              leading: const Icon(Icons.star, color: Colors.amber),
-              title: const Text('Reviews'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const ReviewsScreen()),
-                );
-              },
-            ),
-
-            // Nearby Shops Map
-            ListTile(
-              leading:
-                  const Icon(Icons.store_mall_directory, color: Colors.blue),
-              title: const Text('Nearby Shops'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NearbyShopsMapScreenEnhanced(
-                      userName: userName,
-                      userEmail: userEmail,
-                      userRole: userRole,
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            // Rewarded Shops
-            ListTile(
-              leading: const Icon(Icons.card_giftcard, color: Colors.green),
-              title: const Text('Rewarded Shops'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const RewardedShopsScreen()),
-                );
-              },
-            ),
-          ],
+          // Rewarded Shops
+          ListTile(
+            leading: const Icon(Icons.card_giftcard, color: Colors.green),
+            title: const Text('Rewarded Shops'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const RewardedShopsScreen()),
+              );
+            },
+          ),
 
           const Divider(),
 
