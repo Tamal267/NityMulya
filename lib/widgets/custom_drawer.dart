@@ -204,21 +204,43 @@ class CustomDrawer extends StatelessWidget {
               },
             ),
 
-            // Reviews
+            // Nearby Shops Map
             ListTile(
-              leading: const Icon(Icons.star, color: Colors.amber),
-              title: const Text('Reviews'),
+              leading:
+                  const Icon(Icons.store_mall_directory, color: Colors.blue),
+              title: const Text('Nearby Shops'),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const ReviewsScreen()),
+                    builder: (context) => NearbyShopsMapScreenEnhanced(
+                      userName: userName,
+                      userEmail: userEmail,
+                      userRole: userRole,
+                    ),
+                  ),
                 );
               },
             ),
 
-            // Nearby Shops Map
+            // Rewarded Shops
+            ListTile(
+              leading: const Icon(Icons.card_giftcard, color: Colors.green),
+              title: const Text('Rewarded Shops'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const RewardedShopsScreen()),
+                );
+              },
+            ),
+
+            // Common menu items for all users
+            const Divider(),
+
             ListTile(
               leading:
                   const Icon(Icons.store_mall_directory, color: Colors.blue),

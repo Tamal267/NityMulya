@@ -161,6 +161,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     switch (status) {
       case 'pending':
       case 'confirmed':
+      case 'on going':
       case 'delivered':
       case 'cancelled':
         return status;
@@ -174,6 +175,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       case 'pending':
         return Colors.orange;
       case 'confirmed':
+      case 'on going':
         return Colors.blue;
       case 'delivered':
         return Colors.green;
@@ -190,6 +192,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
         return Icons.access_time;
       case 'confirmed':
         return Icons.check_circle;
+      case 'on going':
+        return Icons.work;
       case 'delivered':
         return Icons.done_all;
       case 'cancelled':
@@ -758,7 +762,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   if (order['status'] != 'delivered' &&
-                                      order['status'] != 'cancelled')
+                                      order['status'] != 'cancelled' &&
+                                      order['status'] != 'on going')
                                     Expanded(
                                       child: ElevatedButton(
                                         onPressed: () =>
@@ -768,6 +773,38 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
                                           foregroundColor: Colors.white,
                                         ),
                                         child: const Text('Edit Delivery'),
+                                      ),
+                                    ),
+                                  if (order['status'] == 'on going')
+                                    Expanded(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.blue[50],
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          border: Border.all(
+                                              color: Colors.blue[300]!),
+                                        ),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.work,
+                                                size: 16,
+                                                color: Colors.blue[700]),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              'Order Being Prepared',
+                                              style: TextStyle(
+                                                color: Colors.blue[700],
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   if (order['status'] == 'pending')
