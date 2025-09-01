@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../network/customer_api.dart';
 import '../../services/review_service.dart';
+import '../../widgets/shop_card_with_distance.dart';
 import 'order_confirmation_screen.dart';
 import 'reviews_screen.dart';
 
@@ -37,6 +39,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   bool isLoadingHistory = true;
   String? errorMessage;
 
+  // Location-related variables
+  Position? userLocation;
+  bool isLoadingLocation = false;
+
   // Review-related variables
   List<Map<String, dynamic>> productReviews = [];
   double averageRating = 0.0;
@@ -49,11 +55,63 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   }
 
   Future<void> _loadData() async {
+    // Start location loading in parallel
+    _getCurrentLocation();
+    
     await Future.wait([
       _loadAvailableShops(),
       _loadPriceHistory(),
       _loadProductReviews(),
     ]);
+  }
+
+  Future<void> _getCurrentLocation() async {
+    try {
+      setState(() {
+        isLoadingLocation = true;
+      });
+
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() {
+          isLoadingLocation = false;
+        });
+        return;
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            isLoadingLocation = false;
+          });
+          return;
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          isLoadingLocation = false;
+        });
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 10),
+      );
+
+      setState(() {
+        userLocation = position;
+        isLoadingLocation = false;
+      });
+    } catch (e) {
+      print('Error getting location: $e');
+      setState(() {
+        isLoadingLocation = false;
+      });
+    }
   }
 
   Future<void> _loadAvailableShops() async {
@@ -332,288 +390,89 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 itemCount: availableShops.length,
                 itemBuilder: (context, index) {
                   final shop = availableShops[index];
-                  final price = shop['unit_price']?.toString() ?? '0';
-                  final shopName = shop['name']?.toString() ?? 'Unknown Shop';
-                  final shopAddress =
-                      shop['address']?.toString() ?? 'Unknown Address';
-                  final shopPhone = shop['phone']?.toString() ?? 'No Phone';
-                  final stockQuantity =
-                      shop['stock_quantity']?.toString() ?? '0';
-                  final shopDescription =
-                      shop['shop_description']?.toString() ?? '';
-                  final lowStockThreshold =
-                      shop['low_stock_threshold']?.toString() ?? '10';
+                  
+                  return ShopCardWithDistance(
+                    shop: shop,
+                    userLocation: userLocation,
+                    productTitle: widget.title,
+                    unit: widget.unit,
+                    onTap: () {
+                      final shopName = shop['name']?.toString() ?? 'Unknown Shop';
+                      final shopAddress = shop['address']?.toString() ?? 'Unknown Address';
+                      final shopPhone = shop['phone']?.toString() ?? 'No Phone';
+                      final stockQuantity = shop['stock_quantity']?.toString() ?? '0';
+                      final shopDescription = shop['shop_description']?.toString() ?? '';
+                      final price = shop['unit_price']?.toString() ?? '0';
+                      final stock = int.tryParse(stockQuantity) ?? 0;
+                      final threshold = int.tryParse(shop['low_stock_threshold']?.toString() ?? '10') ?? 10;
+                      final isLowStock = stock <= threshold;
+                      final stockStatus = stock > 50 ? 'High Stock' : stock > threshold ? 'Medium Stock' : 'Low Stock';
 
-                  // Determine stock status
-                  final stock = int.tryParse(stockQuantity) ?? 0;
-                  final threshold = int.tryParse(lowStockThreshold) ?? 10;
-                  final isLowStock = stock <= threshold;
-                  final stockStatus = stock > 50
-                      ? 'High Stock'
-                      : stock > threshold
-                          ? 'Medium Stock'
-                          : 'Low Stock';
-                  final stockColor = stock > 50
-                      ? Colors.green
-                      : stock > threshold
-                          ? Colors.orange
-                          : Colors.red;
-
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.indigo.withOpacity(0.1),
-                        child: Text(
-                          shopName.isNotEmpty ? shopName[0] : 'S',
-                          style: const TextStyle(
-                            color: Colors.indigo,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      title: Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Text(
-                              shopName,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          // Show verified icon if shop has good rating or stock
-                          if (stock > 50)
-                            const Icon(
-                              Icons.verified,
-                              color: Colors.green,
-                              size: 20,
-                            ),
-                          const SizedBox(width: 4),
-                          // Show stock status chip
-                          Flexible(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 6,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: stockColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: stockColor, width: 1),
-                              ),
-                              child: Text(
-                                stockStatus,
-                                style: TextStyle(
-                                  color: stockColor,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 4),
-                          Row(
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: Text(shopName),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(
-                                Icons.location_on,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  shopAddress,
-                                  style: const TextStyle(fontSize: 12),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.phone,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  shopPhone,
-                                  style: const TextStyle(fontSize: 12),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 2),
-                          if (shopDescription.isNotEmpty) ...[
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.info_outline,
-                                  size: 16,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(width: 4),
-                                Expanded(
-                                  child: Text(
-                                    shopDescription,
-                                    style: const TextStyle(fontSize: 12),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                          ],
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.inventory,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  "Stock: $stockQuantity ${widget.unit}",
+                              Text("Address: $shopAddress"),
+                              Text("Phone: $shopPhone"),
+                              if (shopDescription.isNotEmpty)
+                                Text("Description: $shopDescription"),
+                              Text("Stock: $stockQuantity ${widget.unit}"),
+                              Text("Stock Status: $stockStatus"),
+                              Text("Price: ৳$price per ${widget.unit}"),
+                              if (isLowStock)
+                                const Text(
+                                  "⚠️ Low stock - order soon!",
                                   style: TextStyle(
-                                    fontSize: 12,
-                                    color: stockColor,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              if (isLowStock) ...[
-                                const SizedBox(width: 4),
-                                Icon(
-                                  Icons.warning,
-                                  size: 12,
-                                  color: Colors.orange[700],
-                                ),
-                              ],
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.indigo.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  "৳$price",
-                                  style: const TextStyle(
-                                    color: Colors.indigo,
+                                    color: Colors.orange,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 14,
                                   ),
                                 ),
-                              ),
                             ],
                           ),
-                        ],
-                      ),
-                      trailing: SizedBox(
-                        width: 70,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            _showPurchaseDialog(
-                                context, shop, widget.title, widget.unit);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            minimumSize: const Size(60, 28),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(6),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text("Close"),
                             ),
-                          ),
-                          child: const Text(
-                            'Buy',
-                            style: TextStyle(fontSize: 12),
-                          ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Calling $shopName..."),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.blue,
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text("Contact"),
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                _showPurchaseDialog(
+                                    context, shop, widget.title, widget.unit);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text("Purchase"),
+                            ),
+                          ],
                         ),
-                      ),
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: Text(shopName),
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("Address: $shopAddress"),
-                                Text("Phone: $shopPhone"),
-                                if (shopDescription.isNotEmpty)
-                                  Text("Description: $shopDescription"),
-                                Text("Stock: $stockQuantity ${widget.unit}"),
-                                Text("Stock Status: $stockStatus"),
-                                Text("Price: ৳$price per ${widget.unit}"),
-                                if (isLowStock)
-                                  const Text(
-                                    "⚠️ Low stock - order soon!",
-                                    style: TextStyle(
-                                      color: Colors.orange,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Close"),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("Calling $shopName..."),
-                                    ),
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.blue,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: const Text("Contact"),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                  _showPurchaseDialog(
-                                      context, shop, widget.title, widget.unit);
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                  foregroundColor: Colors.white,
-                                ),
-                                child: const Text("Purchase"),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
+                      );
+                    },
+                    onBuyNow: () {
+                      _showPurchaseDialog(
+                          context, shop, widget.title, widget.unit);
+                    },
                   );
                 },
               ),

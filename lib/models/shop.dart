@@ -9,6 +9,8 @@ class Shop {
   final List<String> availableProducts;
   final bool isVerified;
   final String openingHours;
+  final double? latitude;
+  final double? longitude;
 
   Shop({
     required this.id,
@@ -21,6 +23,8 @@ class Shop {
     required this.availableProducts,
     this.isVerified = false,
     required this.openingHours,
+    this.latitude,
+    this.longitude,
   });
 
   factory Shop.fromMap(Map<String, dynamic> map) {
@@ -35,6 +39,8 @@ class Shop {
       availableProducts: List<String>.from(map['availableProducts'] ?? []),
       isVerified: map['isVerified'] ?? false,
       openingHours: map['openingHours'] ?? '',
+      latitude: map['latitude']?.toDouble(),
+      longitude: map['longitude']?.toDouble(),
     );
   }
 
@@ -50,6 +56,8 @@ class Shop {
       'availableProducts': availableProducts,
       'isVerified': isVerified,
       'openingHours': openingHours,
+      'latitude': latitude,
+      'longitude': longitude,
     };
   }
 }
