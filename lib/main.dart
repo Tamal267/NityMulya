@@ -15,8 +15,6 @@ import 'package:nitymulya/screens/customers/rewarded_shops_screen.dart';
 import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
 import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
-import 'package:nitymulya/test_map_debug.dart';
-import 'package:nitymulya/test_order_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,8 +58,6 @@ class NitiMulyaApp extends StatelessWidget {
         '/map': (context) => const MapScreen(),
         '/enhanced-map': (context) => const EnhancedMapScreen(),
         '/customer-profile': (context) => const CustomerProfileScreen(),
-        '/order-test': (context) => const OrderTestWidget(),
-        '/map-debug': (context) => const MapDebugScreen(),
         // '/': (context) => const ShopOwnerDashboard(),
         '/shop-dashboard': (context) => const ShopOwnerDashboard(),
         '/wholesaler-dashboard': (context) => const WholesalerDashboardScreen(),

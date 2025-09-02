@@ -31,7 +31,11 @@ class _MainCustomerScreenState extends State<MainCustomerScreen> {
           userRole: widget.userRole,
         ),
         _buildOrdersScreen(),
-        const ShopListScreen(),
+        ShopListScreen(
+          userName: widget.userName,
+          userEmail: widget.userEmail,
+          userRole: widget.userRole,
+        ),
         _buildFavoritesScreen(),
       ];
 
@@ -57,7 +61,11 @@ class _MainCustomerScreenState extends State<MainCustomerScreen> {
     if (widget.userName == null) {
       return _buildLoginRequiredScreen('Favorites');
     }
-    return const FavoriteProductsScreen();
+    return FavoriteProductsScreen(
+      userName: widget.userName,
+      userEmail: widget.userEmail,
+      userRole: widget.userRole,
+    );
   }
 
   Widget _buildLoginRequiredScreen(String feature) {

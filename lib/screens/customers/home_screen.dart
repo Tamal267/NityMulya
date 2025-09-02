@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
@@ -28,9 +29,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<Map<String, dynamic>> products = [];
   List<String> categories = ["All"]; // Start with "All", will load from API
+  Map<String, int> shopCounts = {}; // Store shop counts for each product
   bool isLoading = true;
   bool isCategoriesLoading = true;
   String? errorMessage;
+  DateTime? lastUpdated; // Track when data was last updated
+  Timer? _timer; // Timer for updating time display
 
   List<Map<String, dynamic>> get filteredProducts {
     List<Map<String, dynamic>> result = products;
@@ -78,6 +82,41 @@ class _HomeScreenState extends State<HomeScreen> {
         .toList();
   }
 
+  // Get formatted time since last update
+  String getTimeSinceLastUpdate() {
+    if (lastUpdated == null) {
+      return isBangla ? "কখনো আপডেট হয়নি" : "Never updated";
+    }
+
+    final now = DateTime.now();
+    final difference = now.difference(lastUpdated!);
+
+    if (difference.inMinutes < 1) {
+      return isBangla ? "এখনই" : "Just now";
+    } else if (difference.inHours < 1) {
+      final minutes = difference.inMinutes;
+      if (isBangla) {
+        return "$minutes মিনিট আগে";
+      } else {
+        return "$minutes minute${minutes == 1 ? '' : 's'} ago";
+      }
+    } else if (difference.inDays < 1) {
+      final hours = difference.inHours;
+      if (isBangla) {
+        return "$hours ঘন্টা আগে";
+      } else {
+        return "$hours hour${hours == 1 ? '' : 's'} ago";
+      }
+    } else {
+      final days = difference.inDays;
+      if (isBangla) {
+        return "$days দিন আগে";
+      } else {
+        return "$days day${days == 1 ? '' : 's'} ago";
+      }
+    }
+  }
+
   // Load products from API
   Future<void> loadProducts() async {
     try {
@@ -91,7 +130,11 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         products = apiProducts;
         isLoading = false;
+        lastUpdated = DateTime.now(); // Set current time as last updated
       });
+      
+      // Load shop counts after products are loaded
+      _loadShopCounts();
     } catch (e) {
       setState(() {
         errorMessage = e.toString();
@@ -99,6 +142,31 @@ class _HomeScreenState extends State<HomeScreen> {
         // Use empty list as fallback
         products = [];
       });
+    }
+  }
+
+  // Load shop counts for each product
+  Future<void> _loadShopCounts() async {
+    // Load shop counts for each product in the background
+    for (final product in products) {
+      final subcatId = product["id"]?.toString();
+      if (subcatId != null && subcatId.isNotEmpty) {
+        try {
+          final shops = await fetchShopsBySubcategoryId(subcatId);
+          if (mounted) {
+            setState(() {
+              shopCounts[subcatId] = shops.length;
+            });
+          }
+        } catch (e) {
+          // Silently handle error, just don't show shop count for this product
+          if (mounted) {
+            setState(() {
+              shopCounts[subcatId] = 0;
+            });
+          }
+        }
+      }
     }
   }
 
@@ -123,6 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         categories = categoryNames;
         isCategoriesLoading = false;
+        lastUpdated = DateTime.now(); // Set current time as last updated
       });
     } catch (e) {
       print('Error loading categories: $e');
@@ -163,11 +232,117 @@ class _HomeScreenState extends State<HomeScreen> {
     return 0;
   }
 
+  // Build shop availability widget
+  Widget _buildShopAvailability(Map<String, dynamic> product) {
+    final subcatId = product["id"]?.toString();
+
+    if (subcatId == null || subcatId.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    if (!shopCounts.containsKey(subcatId)) {
+      // Still loading
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              "Loading...",
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    final shopCount = shopCounts[subcatId] ?? 0;
+
+    if (shopCount == 0) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.red.shade200),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.store_outlined, size: 12, color: Colors.red.shade600),
+            const SizedBox(width: 4),
+            Text(
+              "No shops",
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.red.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade200),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.store, size: 12, color: Colors.green.shade700),
+          const SizedBox(width: 4),
+          Text(
+            "$shopCount ${shopCount == 1 ? 'Shop' : 'Shops'}",
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.green.shade700,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     loadCategories(); // Load categories from API
     loadProducts(); // Load products from API
+    
+    // Start periodic timer to update time display every minute
+    _timer = Timer.periodic(const Duration(minutes: 1), (timer) {
+      setState(() {}); // Just trigger rebuild to update time display
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel timer to prevent memory leaks
+    super.dispose();
   }
 
   Widget _buildProductImage(Map<String, dynamic> product) {
@@ -324,16 +499,34 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text(
-                isBangla ? "Daily Price Update" : "দৈনিক মূল্য আপডেট",
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    isBangla ? "Daily Price Update" : "দৈনিক মূল্য আপডেট",
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      loadProducts();
+                      loadCategories();
+                    },
+                    icon: Icon(
+                      Icons.refresh,
+                      color: Colors.green.shade700,
+                      size: 20,
+                    ),
+                    tooltip: isBangla ? "রিফ্রেশ করুন" : "Refresh",
+                  ),
+                ],
               ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               child: Text(
-                "Last Updated: 2 hours ago",
+                isBangla 
+                  ? "সর্বশেষ আপডেট: ${getTimeSinceLastUpdate()}"
+                  : "Last Updated: ${getTimeSinceLastUpdate()}",
                 style: TextStyle(color: Colors.grey[600]),
               ),
             ),
@@ -486,12 +679,25 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Padding(
                                           padding: const EdgeInsets.only(
                                               bottom: 8, left: 8, right: 8),
-                                          child: Text(
-                                            "৳${_parsePrice(product["min_price"])} - ৳${_parsePrice(product["max_price"])}",
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                            ),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              // Price
+                                              Text(
+                                                "৳${_parsePrice(product["min_price"])} - ৳${_parsePrice(product["max_price"])}",
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 6),
+                                              
+                                              // Shop Availability - Centered at bottom
+                                              Center(
+                                                child: _buildShopAvailability(product),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],

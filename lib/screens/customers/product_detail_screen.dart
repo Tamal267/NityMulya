@@ -5,6 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import '../../network/customer_api.dart';
 import '../../services/review_service.dart';
 import '../../widgets/shop_card_with_distance.dart';
+import 'favorite_products_screen.dart';
 import 'order_confirmation_screen.dart';
 import 'reviews_screen.dart';
 
@@ -209,6 +210,57 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         title: Text(widget.title),
         backgroundColor: Colors.indigo,
         foregroundColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.favorite, color: Colors.white),
+            tooltip: 'Favourite Options',
+            onSelected: (String value) {
+              if (value == 'add_to_favourites') {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${widget.title} added to favorites!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else if (value == 'view_favourites') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FavoriteProductsScreen(
+                      userName: widget.userName,
+                      userEmail: widget.userEmail,
+                      userRole: 'Customer',
+                    ),
+                  ),
+                );
+              }
+            },
+            itemBuilder: (BuildContext context) => [
+              const PopupMenuItem<String>(
+                value: 'add_to_favourites',
+                child: ListTile(
+                  leading: Icon(Icons.favorite_border, color: Colors.red),
+                  title: Text('Add to Favourites'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+              const PopupMenuItem<String>(
+                value: 'view_favourites',
+                child: ListTile(
+                  leading: Icon(Icons.favorite, color: Colors.green),
+                  title: Text('View My Favourites'),
+                  contentPadding: EdgeInsets.zero,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
