@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../../models/shop.dart';
 import '../../services/review_service.dart';
 import '../../services/shop_service.dart';
+import '../../widgets/custom_drawer.dart';
 import 'nearby_shops_map_screen_enhanced.dart';
 import 'reviews_screen.dart';
 import 'shop_items_screen.dart';
 
 class ShopListScreen extends StatefulWidget {
-  const ShopListScreen({super.key});
+  final String? userName;
+  final String? userEmail;
+  final String? userRole;
+
+  const ShopListScreen({
+    super.key,
+    this.userName,
+    this.userEmail,
+    this.userRole,
+  });
 
   @override
   State<ShopListScreen> createState() => _ShopListScreenState();
@@ -21,6 +32,12 @@ class _ShopListScreenState extends State<ShopListScreen> {
   String sortBy = "Distance";
   bool isMapView = false;
   bool isSearchingByProduct = false;
+  
+  // Location related variables
+  Position? userLocation;
+  bool isLoadingLocation = false;
+  Map<String, double> shopDistances = {}; // Store calculated distances
+  List<String> suggestions = []; // For search suggestions
 
   final TextEditingController _searchController = TextEditingController();
 
@@ -53,6 +70,115 @@ class _ShopListScreenState extends State<ShopListScreen> {
     "Name A-Z",
     "Price (Low to High)"
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _getCurrentLocation();
+  }
+
+  // Get current user location
+  Future<void> _getCurrentLocation() async {
+    setState(() => isLoadingLocation = true);
+    
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        throw Exception('Location services are disabled.');
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          throw Exception('Location permissions are denied');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        throw Exception('Location permissions are permanently denied');
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      
+      setState(() {
+        userLocation = position;
+        isLoadingLocation = false;
+      });
+      
+      // Calculate distances to all shops
+      _calculateShopDistances();
+      
+    } catch (e) {
+      setState(() => isLoadingLocation = false);
+      print('Error getting location: $e');
+    }
+  }
+
+  // Calculate distances to all shops
+  void _calculateShopDistances() {
+    if (userLocation == null) return;
+    
+    final shops = ShopService.getMockShops();
+    for (var shop in shops) {
+      // Mock coordinates - in real app these would come from shop data
+      double shopLat = 23.8103 + (shops.indexOf(shop) * 0.01); // Mock latitude
+      double shopLon = 90.4125 + (shops.indexOf(shop) * 0.01); // Mock longitude
+      
+      double distance = Geolocator.distanceBetween(
+        userLocation!.latitude,
+        userLocation!.longitude,
+        shopLat,
+        shopLon,
+      ) / 1000; // Convert to kilometers
+      
+      shopDistances[shop.name] = distance;
+    }
+    setState(() {});
+  }
+
+  // Get nearby locations based on user location
+  List<String> getNearbyLocations() {
+    // This would be dynamic based on user location in real app
+    return [
+      "All Areas",
+      "ধানমন্ডি", // Closest areas first
+      "নিউমার্কেট",
+      "গুলশান",
+      "মিরপুর",
+      "উত্তরা",
+      "বাশুন্ধরা",
+      "মতিঝিল"
+    ];
+  }
+
+  // Get search suggestions
+  List<String> getSearchSuggestions(String query) {
+    if (query.isEmpty) return [];
+    
+    List<String> suggestions = [];
+    
+    // Add product suggestions
+    final products = getAllProducts();
+    suggestions.addAll(
+      products
+          .where((p) => p.toLowerCase().contains(query.toLowerCase()))
+          .take(3)
+    );
+    
+    // Add shop name suggestions
+    final shops = ShopService.getMockShops();
+    suggestions.addAll(
+      shops
+          .where((s) => s.name.toLowerCase().contains(query.toLowerCase()))
+          .map((s) => s.name)
+          .take(3)
+    );
+    
+    return suggestions.take(6).toList();
+  }
 
   // Get all available products for autocomplete
   List<String> getAllProducts() {
@@ -119,9 +245,17 @@ class _ShopListScreenState extends State<ShopListScreen> {
         shops.sort((a, b) => a.name.compareTo(b.name));
         break;
       case "Distance":
+        if (shopDistances.isNotEmpty) {
+          shops.sort((a, b) {
+            double distanceA = shopDistances[a.name] ?? double.infinity;
+            double distanceB = shopDistances[b.name] ?? double.infinity;
+            return distanceA.compareTo(distanceB);
+          });
+        }
+        break;
       case "Price (Low to High)":
       default:
-        // Keep original order for now (mock distance/price sorting)
+        // Keep original order for now (mock price sorting)
         break;
     }
 
@@ -151,6 +285,11 @@ class _ShopListScreenState extends State<ShopListScreen> {
     final filteredShops = getFilteredShops();
 
     return Scaffold(
+      drawer: CustomDrawer(
+        userName: widget.userName ?? 'Guest User',
+        userEmail: widget.userEmail ?? 'guest@example.com',
+        userRole: widget.userRole ?? 'Customer',
+      ),
       appBar: AppBar(
         backgroundColor: const Color(0xFF079b11),
         foregroundColor: Colors.white,
@@ -253,12 +392,13 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
+                
                 // Filter Bar
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      _buildFilterChip("Location", selectedLocation, locations),
+                      _buildLocationChipWithMap("Location", selectedLocation, locations),
                       const SizedBox(width: 8),
                       _buildFilterChip(
                           "Category", selectedCategory, categories),
@@ -303,6 +443,263 @@ class _ShopListScreenState extends State<ShopListScreen> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Build location chip with map popup
+  Widget _buildLocationChipWithMap(String label, String selected, List<String> options) {
+    return GestureDetector(
+      onTap: () => _showLocationMapDialog(label, selected, options),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color.fromRGBO(63, 81, 181, 1).withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.indigo.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.location_on, color: Colors.indigo, size: 16),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.indigo,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(Icons.arrow_drop_down, color: Colors.indigo, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Show location selection dialog with map
+  void _showLocationMapDialog(String title, String selected, List<String> options) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.7,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  const Icon(Icons.location_on, color: Colors.indigo, size: 24),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Select Location',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Map Card
+              Container(
+                width: double.infinity,
+                height: 180,
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Stack(
+                  children: [
+                    // Mock Map Background
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.green.shade100,
+                            Colors.green.shade200,
+                          ],
+                        ),
+                      ),
+                      child: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.map,
+                              size: 48,
+                              color: Colors.green.shade700,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              isLoadingLocation 
+                                ? "Getting your location..." 
+                                : userLocation != null
+                                  ? "আপনার অবস্থান পাওয়া গেছে"
+                                  : "Click to get your location",
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.green.shade700,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            if (userLocation != null)
+                              Text(
+                                "${userLocation!.latitude.toStringAsFixed(4)}, ${userLocation!.longitude.toStringAsFixed(4)}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green.shade600,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    
+                    // Click My Location Button
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: GestureDetector(
+                        onTap: isLoadingLocation ? null : _getCurrentLocation,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade600,
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.1),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isLoadingLocation ? Icons.refresh : Icons.my_location,
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isLoadingLocation ? "Loading..." : "My Location",
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Location List
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Choose your location:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: getNearbyLocations().length,
+                        itemBuilder: (context, index) {
+                          final location = getNearbyLocations()[index];
+                          bool isNearby = userLocation != null && location != "All Areas";
+                          bool isSelected = location == selectedLocation;
+                          
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? Colors.indigo.withValues(alpha: 0.1) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected ? Colors.indigo : Colors.grey.shade300,
+                              ),
+                            ),
+                            child: ListTile(
+                              leading: Icon(
+                                isNearby ? Icons.near_me : Icons.location_on,
+                                color: isSelected ? Colors.indigo : (isNearby ? Colors.green.shade600 : Colors.grey),
+                                size: 20,
+                              ),
+                              title: Text(
+                                location,
+                                style: TextStyle(
+                                  fontWeight: isSelected ? FontWeight.bold : (isNearby ? FontWeight.w600 : FontWeight.normal),
+                                  color: isSelected ? Colors.indigo : Colors.black87,
+                                ),
+                              ),
+                              trailing: isNearby && shopDistances.isNotEmpty
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      "${(1.2 + locations.indexOf(location) * 0.8).toStringAsFixed(1)} km",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.green.shade700,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  )
+                                : (isSelected ? const Icon(Icons.check_circle, color: Colors.indigo) : null),
+                              onTap: () {
+                                setState(() {
+                                  selectedLocation = location;
+                                });
+                                Navigator.pop(context);
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -458,6 +855,38 @@ class _ShopListScreenState extends State<ShopListScreen> {
                                   ],
                                 ),
                               ),
+                            // Distance Badge
+                            if (shopDistances.containsKey(shop.name))
+                              Container(
+                                margin: EdgeInsets.only(left: shop.isVerified ? 8 : 0),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.location_on,
+                                      color: Colors.blue,
+                                      size: 12,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      "${shopDistances[shop.name]!.toStringAsFixed(1)} km",
+                                      style: const TextStyle(
+                                        color: Colors.blue,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
                         const SizedBox(height: 4),
@@ -519,13 +948,8 @@ class _ShopListScreenState extends State<ShopListScreen> {
                         color: Colors.grey,
                       ),
                       SizedBox(width: 4),
-                      Text(
-                        "0.5 km",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                        ),
-                      ),
+                     
+        
                     ],
                   ),
                   const SizedBox(width: 16),

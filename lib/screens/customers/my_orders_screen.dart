@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../network/customer_api.dart';
 import '../../services/order_service.dart';
-import 'main_customer_screen.dart';
+import '../../widgets/custom_drawer.dart';
 
 class MyOrdersScreen extends StatefulWidget {
   final String? customerId;
@@ -505,31 +505,15 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: CustomDrawer(
+        userName: widget.userName ?? 'Guest User',
+        userEmail: widget.userEmail ?? 'guest@example.com',
+        userRole: widget.userRole ?? 'Customer',
+      ),
       appBar: AppBar(
         title: const Text('My Orders'),
-        backgroundColor: Colors.indigo,
+        backgroundColor: const Color(0xFF079b11),
         foregroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (widget.isInBottomNav && widget.onNavigateToHome != null) {
-              // If we're in bottom navigation context, call the callback to switch to home tab
-              widget.onNavigateToHome!();
-            } else {
-              // Otherwise, navigate to MainCustomerScreen (for cases like profile navigation)
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MainCustomerScreen(
-                    userName: widget.userName,
-                    userEmail: widget.userEmail,
-                    userRole: widget.userRole,
-                  ),
-                ),
-              );
-            }
-          },
-        ),
         actions: [
           IconButton(
             onPressed: () async {
