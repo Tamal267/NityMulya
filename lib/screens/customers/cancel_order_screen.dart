@@ -6,9 +6,9 @@ class CancelOrderScreen extends StatefulWidget {
   final Map<String, dynamic> order;
 
   const CancelOrderScreen({
-    Key? key,
+    super.key,
     required this.order,
-  }) : super(key: key);
+  });
 
   @override
   _CancelOrderScreenState createState() => _CancelOrderScreenState();
