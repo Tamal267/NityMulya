@@ -190,6 +190,20 @@ class CustomDrawer extends StatelessWidget {
               },
             ),
 
+            // Rewarded Shops
+            ListTile(
+              leading: const Icon(Icons.card_giftcard, color: Colors.green),
+              title: const Text('Rewarded Shops'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const RewardedShopsScreen()),
+                );
+              },
+            ),
+
             // Price Alerts
             ListTile(
               leading: const Icon(Icons.notifications, color: Colors.orange),
@@ -204,75 +218,8 @@ class CustomDrawer extends StatelessWidget {
               },
             ),
 
-            // Nearby Shops Map
-            ListTile(
-              leading:
-                  const Icon(Icons.store_mall_directory, color: Colors.blue),
-              title: const Text('Nearby Shops'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NearbyShopsMapScreenEnhanced(
-                      userName: userName,
-                      userEmail: userEmail,
-                      userRole: userRole,
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            // Rewarded Shops
-            ListTile(
-              leading: const Icon(Icons.card_giftcard, color: Colors.green),
-              title: const Text('Rewarded Shops'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const RewardedShopsScreen()),
-                );
-              },
-            ),
-
             // Common menu items for all users
             const Divider(),
-
-            ListTile(
-              leading:
-                  const Icon(Icons.store_mall_directory, color: Colors.blue),
-              title: const Text('Nearby Shops'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => NearbyShopsMapScreenEnhanced(
-                      userName: userName,
-                      userEmail: userEmail,
-                      userRole: userRole,
-                    ),
-                  ),
-                );
-              },
-            ),
-
-            // Rewarded Shops
-            ListTile(
-              leading: const Icon(Icons.card_giftcard, color: Colors.green),
-              title: const Text('Rewarded Shops'),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const RewardedShopsScreen()),
-                );
-              },
-            ),
           ],
 
           const Divider(),

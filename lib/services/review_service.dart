@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ReviewService {
-  static const String baseUrl = 'http://localhost:3001';
+  static const String baseUrl = 'http://localhost:3005';
 
   // ====================================
   // PRODUCT REVIEW METHODS

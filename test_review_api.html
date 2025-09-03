@@ -1,157 +1,143 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Review API</title>
-    <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 800px; 
-            margin: 0 auto; 
-            padding: 20px; 
-        }
-        .test-section { 
-            background: #f5f5f5; 
-            padding: 15px; 
-            margin: 10px 0; 
-            border-radius: 5px; 
-        }
-        button { 
-            background: #007bff; 
-            color: white; 
-            padding: 10px 15px; 
-            border: none; 
-            border-radius: 5px; 
-            cursor: pointer; 
-            margin: 5px; 
-        }
-        button:hover { background: #0056b3; }
-        .result { 
-            background: #e9ecef; 
-            padding: 10px; 
-            margin: 10px 0; 
-            border-left: 4px solid #007bff; 
-            white-space: pre-wrap; 
-        }
-        .success { border-left-color: #28a745; }
-        .error { border-left-color: #dc3545; }
-    </style>
+    <title>Review API Test</title>
 </head>
 <body>
-    <h1>Review System API Test</h1>
-    <p>Backend server should be running on <strong>http://localhost:3001</strong></p>
-
-    <div class="test-section">
-        <h3>1. Create a Test Review</h3>
-        <button onclick="createTestReview()">Submit Test Review</button>
-        <div id="create-result" class="result"></div>
-    </div>
-
-    <div class="test-section">
-        <h3>2. Get Product Reviews</h3>
-        <button onclick="getProductReviews()">Get Reviews for "ময়দা (খোলা)"</button>
-        <div id="get-result" class="result"></div>
-    </div>
-
-    <div class="test-section">
-        <h3>3. Get Average Rating</h3>
-        <button onclick="getAverageRating()">Get Average Rating for "ময়দা (খোলা)"</button>
-        <div id="rating-result" class="result"></div>
-    </div>
+    <h1>Review API Test</h1>
+    
+    <button onclick="testDatabaseTables()">1. Check Database Tables</button><br><br>
+    
+    <button onclick="testReviewSubmission()">2. Test Review Submission</button><br><br>
+    
+    <button onclick="testReviewFetch()">3. Fetch Reviews for Shop ID 1</button><br><br>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; min-height: 100px;"></div>
 
     <script>
-        const BASE_URL = 'http://localhost:3001';
+        const API_BASE = 'http://localhost:3005';
+        const resultDiv = document.getElementById('result');
 
-        async function createTestReview() {
-            const resultDiv = document.getElementById('create-result');
-            resultDiv.textContent = 'Creating test review...';
-            
+        async function testDatabaseTables() {
             try {
-                const response = await fetch(`${BASE_URL}/reviews/create`, {
+                resultDiv.innerHTML = '<p>Testing database tables...</p>';
+                
+                const response = await fetch(`${API_BASE}/test/tables`);
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <h3>✅ Database Tables Check:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                console.log('Database tables:', data);
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3>❌ Database Tables Error:</h3>
+                    <p>${error.message}</p>
+                `;
+                console.error('Error:', error);
+            }
+        }
+
+        async function testReviewSubmission() {
+            try {
+                resultDiv.innerHTML = '<p>Testing review submission...</p>';
+                
+                const reviewData = {
+                    customer_id: "1",
+                    customer_name: "Test Customer",
+                    customer_email: "test@example.com",
+                    shop_id: "1",
+                    shop_name: "Test Shop",
+                    overall_rating: 5,
+                    review_comment: "Excellent shop! Great service and quality products.",
+                    review_title: "Amazing Experience",
+                    product_quality_rating: 5,
+                    service_rating: 5
+                };
+
+                const response = await fetch(`${API_BASE}/api/enhanced/reviews`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        customerId: 'test-customer-123',
-                        customerName: 'Test Customer',
-                        shopOwnerId: 'test-shop-456',
-                        shopName: 'Test Shop',
-                        productName: 'ময়দা (খোলা)',
-                        subcatId: 'test-subcat-789',
-                        rating: 5,
-                        comment: 'এটি একটি চমৎকার পণ্য! খুবই ভালো মানের ময়দা।',
-                        isVerifiedPurchase: true
-                    })
+                    body: JSON.stringify(reviewData)
                 });
 
                 const result = await response.json();
                 
-                if (result.success) {
-                    resultDiv.textContent = `✅ SUCCESS: ${JSON.stringify(result, null, 2)}`;
-                    resultDiv.classList.add('success');
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Review Submission Success:</h3>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
                 } else {
-                    resultDiv.textContent = `❌ FAILED: ${JSON.stringify(result, null, 2)}`;
-                    resultDiv.classList.add('error');
+                    resultDiv.innerHTML = `
+                        <h3>❌ Review Submission Failed:</h3>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
                 }
-            } catch (error) {
-                resultDiv.textContent = `❌ ERROR: ${error.message}`;
-                resultDiv.classList.add('error');
-            }
-        }
-
-        async function getProductReviews() {
-            const resultDiv = document.getElementById('get-result');
-            resultDiv.textContent = 'Getting reviews...';
-            
-            try {
-                const productName = encodeURIComponent('ময়দা (খোলা)');
-                const response = await fetch(`${BASE_URL}/reviews/product/${productName}`);
-                const result = await response.json();
                 
-                if (result.success) {
-                    resultDiv.textContent = `✅ SUCCESS: Found ${result.reviews.length} reviews\n${JSON.stringify(result, null, 2)}`;
-                    resultDiv.classList.add('success');
-                } else {
-                    resultDiv.textContent = `❌ FAILED: ${JSON.stringify(result, null, 2)}`;
-                    resultDiv.classList.add('error');
-                }
+                console.log('Review submission result:', result);
             } catch (error) {
-                resultDiv.textContent = `❌ ERROR: ${error.message}`;
-                resultDiv.classList.add('error');
+                resultDiv.innerHTML = `
+                    <h3>❌ Review Submission Error:</h3>
+                    <p>${error.message}</p>
+                `;
+                console.error('Error submitting review:', error);
             }
         }
 
-        async function getAverageRating() {
-            const resultDiv = document.getElementById('rating-result');
-            resultDiv.textContent = 'Getting average rating...';
-            
+        async function testReviewFetch() {
             try {
-                const productName = encodeURIComponent('ময়দা (খোলা)');
-                const response = await fetch(`${BASE_URL}/reviews/product/${productName}/rating`);
-                const result = await response.json();
+                resultDiv.innerHTML = '<p>Fetching reviews for shop ID 1...</p>';
                 
-                if (result.success) {
-                    resultDiv.textContent = `✅ SUCCESS: Average Rating = ${result.averageRating}\n${JSON.stringify(result, null, 2)}`;
-                    resultDiv.classList.add('success');
+                const response = await fetch(`${API_BASE}/api/enhanced/reviews/1`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h3>✅ Reviews Fetch Success:</h3>
+                        <p>Found ${data.data ? data.data.length : 0} reviews</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
                 } else {
-                    resultDiv.textContent = `❌ FAILED: ${JSON.stringify(result, null, 2)}`;
-                    resultDiv.classList.add('error');
+                    resultDiv.innerHTML = `
+                        <h3>❌ Reviews Fetch Failed:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
                 }
+                
+                console.log('Reviews fetch result:', data);
             } catch (error) {
-                resultDiv.textContent = `❌ ERROR: ${error.message}`;
-                resultDiv.classList.add('error');
+                resultDiv.innerHTML = `
+                    <h3>❌ Reviews Fetch Error:</h3>
+                    <p>${error.message}</p>
+                `;
+                console.error('Error fetching reviews:', error);
             }
         }
 
-        // Auto-test when page loads
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                console.log('Running automatic test...');
-                createTestReview();
-            }, 1000);
-        });
+        // Auto-test on page load
+        window.onload = function() {
+            resultDiv.innerHTML = '<p>Click buttons above to test Review API endpoints</p>';
+        }
     </script>
+
+    <style>
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        pre {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
 </body>
 </html>

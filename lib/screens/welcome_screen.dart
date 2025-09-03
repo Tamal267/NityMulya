@@ -381,52 +381,88 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
     if (!shopCounts.containsKey(subcatId)) {
       // Still loading
-      return Row(
-        children: [
-          Icon(Icons.store_outlined, size: 14, color: Colors.grey[600]),
-          const SizedBox(width: 4),
-          Text(
-            "Loading shops...",
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 12,
+              height: 12,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.grey.shade600,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(width: 6),
+            Text(
+              "Loading...",
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       );
     }
 
     final shopCount = shopCounts[subcatId] ?? 0;
 
     if (shopCount == 0) {
-      return Row(
-        children: [
-          Icon(Icons.store_outlined, size: 14, color: Colors.grey[600]),
-          const SizedBox(width: 4),
-          Text(
-            "No shops available",
-            style: TextStyle(
-              fontSize: 11,
-              color: Colors.grey[600],
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.red.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.red.shade200),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.store_outlined, size: 12, color: Colors.red.shade600),
+            const SizedBox(width: 4),
+            Text(
+              "No shops",
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.red.shade600,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     }
 
-    return Row(
-      children: [
-        const Icon(Icons.store, size: 14, color: Color(0xFF079b11)),
-        const SizedBox(width: 4),
-        Text(
-          "$shopCount ${shopCount == 1 ? 'shop' : 'shops'} available",
-          style: const TextStyle(
-            fontSize: 11,
-            color: Color(0xFF079b11),
-            fontWeight: FontWeight.w500,
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.green.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.green.shade200),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.store, size: 12, color: Colors.green.shade700),
+          const SizedBox(width: 4),
+          Text(
+            "$shopCount ${shopCount == 1 ? 'Shop' : 'Shops'}",
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.green.shade700,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -796,6 +832,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                 crossAxisAlignment:
                                                     CrossAxisAlignment.start,
                                                 children: [
+                                                  // Price
                                                   Text(
                                                     "৳${_safeParseInt(product["min_price"])} - ৳${_safeParseInt(product["max_price"])}",
                                                     style: const TextStyle(
@@ -804,9 +841,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                                           FontWeight.w600,
                                                     ),
                                                   ),
-                                                  const SizedBox(height: 4),
-                                                  _buildShopAvailability(
-                                                      product),
+                                                  const SizedBox(height: 6),
+                                                  
+                                                  // Shop Availability - Centered at bottom
+                                                  Center(
+                                                    child: _buildShopAvailability(
+                                                        product),
+                                                  ),
                                                 ],
                                               ),
                                             ),
