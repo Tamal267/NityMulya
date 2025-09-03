@@ -298,7 +298,7 @@ export const cancelCustomerOrder = async (c: any) => {
     // Check if order exists and belongs to customer
     const orderResult = await sql`
             SELECT * FROM customer_orders
-            WHERE id = ${order_id}
+            WHERE order_number = ${order_id}
             AND customer_id = ${customerId}
         `;
 
@@ -343,7 +343,7 @@ export const cancelCustomerOrder = async (c: any) => {
                   cancellation_reason || "Cancelled by customer"
                 },
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = ${order_id}
+            WHERE order_number = ${order_id}
         `;
 
     return c.json({
@@ -471,6 +471,9 @@ export const getCustomerOrderStats = async (c: any) => {
       confirmedOrders: parseInt(stats.confirmed_orders) || 0,
       preparingOrders: parseInt(stats.preparing_orders) || 0,
       readyOrders: parseInt(stats.ready_orders) || 0,
+      onGoingOrders:
+        (parseInt(stats.preparing_orders) || 0) +
+        (parseInt(stats.ready_orders) || 0),
       deliveredOrders: parseInt(stats.delivered_orders) || 0,
       cancelledOrders: parseInt(stats.cancelled_orders) || 0,
       totalSpent: parseFloat(stats.total_spent) || 0,
@@ -670,6 +673,57 @@ export const updateCustomerOrderStatus = async (c: any) => {
       {
         success: false,
         message: "Internal server error",
+      },
+      500
+    );
+  }
+};
+
+// Get cancelled orders for customer
+export const getCancelledOrders = async (c: any) => {
+  try {
+    const user = c.get("user");
+    const customerId = user.userId;
+
+    const orders = await sql`
+      SELECT 
+        co.id,
+        co.order_number,
+        co.quantity_ordered,
+        co.total_amount,
+        co.unit_price,
+        co.delivery_address,
+        co.delivery_phone,
+        co.notes,
+        co.status,
+        co.created_at,
+        co.updated_at,
+        co.cancellation_reason,
+        so.full_name AS shop_name,
+        so.phone AS shop_phone,
+        so.address AS shop_address,
+        sc.name AS product_name,
+        sc.image AS product_image,
+        sc.unit
+      FROM customer_orders co
+      JOIN shop_owners so ON co.shop_owner_id = so.id
+      JOIN shop_subcategories sc ON co.subcat_id = sc.id
+      WHERE co.customer_id = ${customerId} 
+      AND co.status = 'cancelled'
+      ORDER BY co.created_at DESC
+    `;
+
+    return c.json({
+      success: true,
+      cancelled_orders: orders,
+    });
+  } catch (error: any) {
+    console.error("Error fetching cancelled orders:", error);
+    return c.json(
+      {
+        success: false,
+        message: "Internal server error",
+        error: error.message,
       },
       500
     );

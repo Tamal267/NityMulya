@@ -5,6 +5,7 @@ import '../../services/order_service.dart';
 import '../../services/review_service.dart';
 import '../auth/login_screen.dart';
 import 'my_orders_screen.dart';
+import 'order_list_screen.dart';
 import 'reviews_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -29,9 +30,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool enableLocationServices = true;
   int totalOrders = 0;
   int pendingOrders = 0;
+  int onGoingOrders = 0;
   int deliveredOrders = 0;
   int cancelledOrders = 0;
-  double totalSpent = 0.0;
   int totalReviews = 0;
   double averageRating = 0.0;
 
@@ -83,9 +84,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           totalOrders = dbStats['totalOrders'] ?? 0;
           pendingOrders = dbStats['pendingOrders'] ?? 0;
+          onGoingOrders = dbStats['onGoingOrders'] ?? 0;
           deliveredOrders = dbStats['deliveredOrders'] ?? 0;
           cancelledOrders = dbStats['cancelledOrders'] ?? 0;
-          totalSpent = (dbStats['totalSpent'] ?? 0.0).toDouble();
         });
         return;
       }
@@ -98,13 +99,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             .where((order) =>
                 order['status'] == 'pending' || order['status'] == 'confirmed')
             .length;
+        onGoingOrders = orders
+            .where((order) =>
+                order['status'] == 'preparing' || order['status'] == 'ready')
+            .length;
         deliveredOrders =
             orders.where((order) => order['status'] == 'delivered').length;
         cancelledOrders =
             orders.where((order) => order['status'] == 'cancelled').length;
-        totalSpent = orders
-            .where((order) => order['status'] != 'cancelled')
-            .fold(0.0, (sum, order) => sum + (order['totalPrice'] ?? 0.0));
       });
     } catch (e) {
       print('Error loading order stats: $e');
@@ -119,22 +121,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   order['status'] == 'pending' ||
                   order['status'] == 'confirmed')
               .length;
+          onGoingOrders = orders
+              .where((order) =>
+                  order['status'] == 'preparing' || order['status'] == 'ready')
+              .length;
           deliveredOrders =
               orders.where((order) => order['status'] == 'delivered').length;
           cancelledOrders =
               orders.where((order) => order['status'] == 'cancelled').length;
-          totalSpent = orders
-              .where((order) => order['status'] != 'cancelled')
-              .fold(0.0, (sum, order) => sum + (order['totalPrice'] ?? 0.0));
         });
       } catch (localError) {
         // Set to zero if all fails
         setState(() {
           totalOrders = 0;
           pendingOrders = 0;
+          onGoingOrders = 0;
           deliveredOrders = 0;
           cancelledOrders = 0;
-          totalSpent = 0.0;
         });
       }
     }
@@ -281,7 +284,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MyOrdersScreen(
+                            builder: (context) => OrderListScreen(
+                              orderType: 'pending',
+                              title: 'Pending Orders',
+                              customerId: 'customer_current',
                               userName: widget.userName,
                               userEmail: widget.userEmail,
                               userRole: widget.userRole,
@@ -328,113 +334,170 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 15),
 
-            // Additional Order Statistics
+            // On Going Orders Row
             Row(
               children: [
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderListScreen(
+                            orderType: 'ongoing',
+                            title: 'On Going Orders',
+                            customerId: 'customer_current',
+                            userName: widget.userName,
+                            userEmail: widget.userEmail,
+                            userRole: widget.userRole,
+                          ),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.sync,
+                            color: Colors.blue,
+                            size: 28,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '$onGoingOrders',
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blue,
+                            ),
+                          ),
+                          const Text(
+                            'On Going Orders',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.check_circle,
-                          color: Colors.green,
-                          size: 24,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$deliveredOrders',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+
+            // Delivered and Cancelled Orders Row
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderListScreen(
+                            orderType: 'delivered',
+                            title: 'Delivered Orders',
+                            customerId: 'customer_current',
+                            userName: widget.userName,
+                            userEmail: widget.userEmail,
+                            userRole: widget.userRole,
                           ),
                         ),
-                        const Text(
-                          'Delivered',
-                          style: TextStyle(
-                            fontSize: 11,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border:
+                            Border.all(color: Colors.green.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
                             color: Colors.green,
+                            size: 24,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(
+                            '$deliveredOrders',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
+                          ),
+                          const Text(
+                            'Delivered',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.green,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.withOpacity(0.3)),
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.cancel,
-                          color: Colors.red,
-                          size: 24,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OrderListScreen(
+                            orderType: 'cancelled',
+                            title: 'Cancelled Orders',
+                            customerId: 'customer_current',
+                            userName: widget.userName,
+                            userEmail: widget.userEmail,
+                            userRole: widget.userRole,
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '$cancelledOrders',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.withOpacity(0.3)),
+                      ),
+                      child: Column(
+                        children: [
+                          const Icon(
+                            Icons.cancel,
                             color: Colors.red,
+                            size: 24,
                           ),
-                        ),
-                        const Text(
-                          'Cancelled',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.red,
+                          const SizedBox(height: 8),
+                          Text(
+                            '$cancelledOrders',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.red,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.purple.withOpacity(0.3)),
-                    ),
-                    child: Column(
-                      children: [
-                        const Icon(
-                          Icons.attach_money,
-                          color: Colors.purple,
-                          size: 24,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '৳${totalSpent.toStringAsFixed(0)}',
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple,
+                          const Text(
+                            'Cancelled',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.red,
+                            ),
                           ),
-                        ),
-                        const Text(
-                          'Total Spent',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Colors.purple,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

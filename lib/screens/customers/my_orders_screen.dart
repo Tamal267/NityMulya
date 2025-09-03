@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../network/customer_api.dart';
 import '../../services/order_service.dart';
+import 'cancel_order_screen.dart';
 import 'main_customer_screen.dart';
 
 class MyOrdersScreen extends StatefulWidget {
@@ -135,6 +136,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
       'deliveryPhone': dbOrder['delivery_phone'] ?? 'No Phone',
       'estimatedDelivery': _parseDateTime(dbOrder['estimated_delivery']) ??
           DateTime.now().add(const Duration(days: 3)),
+      'cancellationReason': dbOrder['cancellation_reason'], // Add cancellation reason
     };
   }
 
@@ -274,6 +276,12 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
               _buildInfoRow('Estimated Delivery',
                   _formatDate(order['estimatedDelivery'])),
               _buildInfoRow('Status', order['status'].toString().toUpperCase()),
+              // Show cancellation reason if order is cancelled
+              if (order['status'] == 'cancelled')
+                _buildInfoRow(
+                    'Cancellation Reason', 
+                    order['cancellationReason'] ?? 'change my mind'
+                ),
               const SizedBox(height: 16),
               const Text('Delivery Details:',
                   style: TextStyle(fontWeight: FontWeight.bold)),
@@ -408,98 +416,19 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> {
     );
   }
 
-  void _cancelOrder(Map<String, dynamic> order) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Cancel Order'),
-        content: Text('Are you sure you want to cancel order ${order['id']}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('No'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-
-              // Show loading indicator
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Row(
-                    children: [
-                      SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      Text('Cancelling order...'),
-                    ],
-                  ),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-
-              try {
-                bool databaseUpdated = false;
-
-                // First, try to cancel in database via API
-                final apiResult = await CustomerApi.cancelOrder(
-                  orderId: order['id'].toString(),
-                  cancellationReason: 'Cancelled by customer',
-                );
-
-                if (apiResult['success'] == true) {
-                  databaseUpdated = true;
-                }
-
-                // Also update in local storage for offline orders
-                await OrderService().cancelOrder(order['id']);
-
-                // Update local state immediately for UI responsiveness
-                setState(() {
-                  order['status'] = 'cancelled';
-                });
-
-                // Reload all orders to ensure synchronization
-                await _loadOrders();
-
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      databaseUpdated
-                          ? 'Order cancelled successfully!'
-                          : 'Order cancelled locally (will sync when online)',
-                    ),
-                    backgroundColor: Colors.green,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Failed to cancel order: $e'),
-                    backgroundColor: Colors.red,
-                    duration: const Duration(seconds: 3),
-                  ),
-                );
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Yes, Cancel'),
-          ),
-        ],
+  void _cancelOrder(Map<String, dynamic> order) async {
+    // Navigate to cancel order screen
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CancelOrderScreen(order: order),
       ),
     );
+
+    // If cancellation was successful, refresh the orders list
+    if (result == true) {
+      _loadOrders(); // Refresh the orders list
+    }
   }
 
   @override

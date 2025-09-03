@@ -106,6 +106,34 @@ class CustomerApi {
     }
   }
 
+  // Get cancelled orders for customer
+  static Future<Map<String, dynamic>> getCancelledOrders() async {
+    try {
+      final response =
+          await _networkHelper.getWithToken('/customer/cancelled-orders');
+
+      if (response['error'] != null) {
+        return {
+          'success': false,
+          'error': response['error'],
+          'cancelled_orders': <Map<String, dynamic>>[],
+        };
+      }
+
+      return {
+        'success': response['success'] ?? true,
+        'cancelled_orders':
+            List<Map<String, dynamic>>.from(response['cancelled_orders'] ?? []),
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Failed to fetch cancelled orders: $e',
+        'cancelled_orders': <Map<String, dynamic>>[],
+      };
+    }
+  }
+
   // Cancel a customer order
   static Future<Map<String, dynamic>> cancelOrder({
     required String orderId,
