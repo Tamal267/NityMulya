@@ -41,6 +41,11 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
   bool isLoadingOrders = false;
   String? ordersError;
 
+  // Order status counts
+  int ongoingOrders = 0;
+  int deliveredOrders = 0;
+  int cancelledOrders = 0;
+
   // Notification state
 
   @override
@@ -298,10 +303,24 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
       if (result['success'] == true) {
         setState(() {
           orderItems = List<Map<String, dynamic>>.from(result['data'] ?? []);
-          // Update pending orders count from real data
+          // Update all order status counts from real data
           pendingOrders = orderItems
               .where((order) =>
                   order['status']?.toString().toLowerCase() == 'pending')
+              .length;
+          ongoingOrders = orderItems
+              .where((order) =>
+                  order['status']?.toString().toLowerCase() == 'on going' ||
+                  order['status']?.toString().toLowerCase() == 'ongoing')
+              .length;
+          deliveredOrders = orderItems
+              .where((order) =>
+                  order['status']?.toString().toLowerCase() == 'delivered')
+              .length;
+          cancelledOrders = orderItems
+              .where((order) =>
+                  order['status']?.toString().toLowerCase() == 'cancelled' ||
+                  order['status']?.toString().toLowerCase() == 'canceled')
               .length;
           isLoadingOrders = false;
         });
@@ -614,63 +633,122 @@ Widget build(BuildContext context) {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // ✅ UPDATED: Summary Cards in One Row
-          Row(
+          // ✅ UPDATED: Summary Cards in Two Rows
+          Column(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    debugPrint("Tapped Total Products");
-                  },
-                  child: _buildSummaryCard(
-                    "Total Products",
-                    "$totalProducts",
-                    Icons.inventory,
-                    Colors.blue,
+              // First Row - Original Cards
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        debugPrint("Tapped Total Products");
+                      },
+                      child: _buildSummaryCard(
+                        "Total Products",
+                        "$totalProducts",
+                        Icons.inventory,
+                        Colors.blue,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        debugPrint("Tapped Pending Orders");
+                      },
+                      child: _buildSummaryCard(
+                        "Pending Orders",
+                        "$pendingOrders",
+                        Icons.shopping_cart,
+                        Colors.orange,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        debugPrint("Tapped Stock Alerts");
+                      },
+                      child: _buildSummaryCard(
+                        "Stock Alerts",
+                        "$stockAlerts",
+                        Icons.warning,
+                        Colors.red,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        debugPrint("Tapped VAT Reward");
+                      },
+                      child: _buildSummaryCard(
+                        "VAT Reward",
+                        vatRewardStatus,
+                        Icons.card_giftcard,
+                        Colors.green,
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    debugPrint("Tapped Pending Orders");
-                  },
-                  child: _buildSummaryCard(
-                    "Pending Orders",
-                    "$pendingOrders",
-                    Icons.shopping_cart,
-                    Colors.orange,
+
+              const SizedBox(height: 12),
+
+              // Second Row - Order Status Cards
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        debugPrint("Tapped On Going Orders");
+                      },
+                      child: _buildSummaryCard(
+                        "On Going",
+                        "$ongoingOrders",
+                        Icons.local_shipping,
+                        Colors.blue[700]!,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    debugPrint("Tapped Stock Alerts");
-                  },
-                  child: _buildSummaryCard(
-                    "Stock Alerts",
-                    "$stockAlerts",
-                    Icons.warning,
-                    Colors.red,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        debugPrint("Tapped Delivered Orders");
+                      },
+                      child: _buildSummaryCard(
+                        "Delivered",
+                        "$deliveredOrders",
+                        Icons.check_circle,
+                        Colors.green[600]!,
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    debugPrint("Tapped VAT Reward");
-                  },
-                  child: _buildSummaryCard(
-                    "VAT Reward",
-                    vatRewardStatus,
-                    Icons.card_giftcard,
-                    Colors.green,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        debugPrint("Tapped Cancelled Orders");
+                      },
+                      child: _buildSummaryCard(
+                        "Cancelled",
+                        "$cancelledOrders",
+                        Icons.cancel,
+                        Colors.red[600]!,
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 8),
+                  // Empty space for symmetry
+                  Expanded(
+                    child: Container(),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1144,188 +1222,6 @@ Widget build(BuildContext context) {
             child: _buildOrdersContent(),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildOrderCard(int index) {
-    final orders = [
-      {
-        "customer": "আহমেদ সাহেব",
-        "item": "চাল সরু",
-        "quantity": 5,
-        "time": "10:30 AM",
-        "status": "Pending"
-      },
-      {
-        "customer": "ফাতিমা বেগম",
-        "item": "সয়াবিন তেল",
-        "quantity": 2,
-        "time": "11:15 AM",
-        "status": "Confirmed"
-      },
-      {
-        "customer": "করিম উদ্দিন",
-        "item": "মসুর ডাল",
-        "quantity": 3,
-        "time": "12:00 PM",
-        "status": "Pending"
-      },
-      {
-        "customer": "রহিমা খাতুন",
-        "item": "পেঁয়াজ",
-        "quantity": 10,
-        "time": "01:30 PM",
-        "status": "Delivered"
-      },
-      {
-        "customer": "নাসির সাহেব",
-        "item": "গমের আটা",
-        "quantity": 2,
-        "time": "02:15 PM",
-        "status": "Rejected"
-      },
-    ];
-
-    final order = orders[index];
-    final status = order["status"] as String;
-
-    // Define colors and background for different statuses
-    Color statusColor;
-    Color backgroundColor;
-    IconData statusIcon;
-
-    switch (status) {
-      case "Pending":
-        statusColor = Colors.orange[700]!;
-        backgroundColor = Colors.orange[50]!;
-        statusIcon = Icons.access_time;
-        break;
-      case "Confirmed":
-        statusColor = Colors.blue[700]!;
-        backgroundColor = Colors.blue[50]!;
-        statusIcon = Icons.check_circle;
-        break;
-      case "Delivered":
-        statusColor = Colors.green[700]!;
-        backgroundColor = Colors.green[50]!;
-        statusIcon = Icons.delivery_dining;
-        break;
-      case "Rejected":
-        statusColor = Colors.red[700]!;
-        backgroundColor = Colors.red[50]!;
-        statusIcon = Icons.cancel;
-        break;
-      default:
-        statusColor = Colors.grey[700]!;
-        backgroundColor = Colors.grey[50]!;
-        statusIcon = Icons.help;
-    }
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      color: backgroundColor,
-      elevation: status == "Pending" ? 3 : 1,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: statusColor.withValues(alpha: 0.2),
-          child: Icon(
-            Icons.person,
-            color: statusColor,
-          ),
-        ),
-        title: Text(
-          order["customer"] as String,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("${order["item"]} × ${order["quantity"]} units"),
-            Text("Time: ${order["time"]}"),
-            const SizedBox(height: 4),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: statusColor,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    statusIcon,
-                    color: Colors.white,
-                    size: 14,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    status,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        trailing: status == "Pending"
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.check, color: Colors.white),
-                      onPressed: () {
-                        _showConfirmOrderDialog(
-                            order["customer"] as String, order);
-                      },
-                      tooltip: "Confirm Order",
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () {
-                        _showRejectOrderDialog(
-                            order["customer"] as String, order);
-                      },
-                      tooltip: "Reject Order",
-                    ),
-                  ),
-                ],
-              )
-            : status == "Confirmed"
-                ? Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[100],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue[300]!),
-                    ),
-                    child: const Text(
-                      "Processing",
-                      style: TextStyle(
-                        color: Colors.blue,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                : null,
       ),
     );
   }
@@ -2006,243 +1902,6 @@ Widget build(BuildContext context) {
         SnackBar(content: Text("$action $productName - Coming Soon!")),
       );
     }
-  }
-
-  void _showConfirmOrderDialog(String customer, Map<String, dynamic> order) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.green[600]),
-            const SizedBox(width: 8),
-            const Text("Confirm Order"),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Are you sure you want to confirm this order?",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue[200]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Customer: $customer",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text("Item: ${order["item"]} × ${order["quantity"]} units"),
-                  Text("Order Time: ${order["time"]}"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "This action will notify the customer that their order has been confirmed.",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              _confirmOrder(customer, order);
-            },
-            icon: const Icon(Icons.check, color: Colors.white),
-            label: const Text(
-              "Confirm Order",
-              style: TextStyle(color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[600],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showRejectOrderDialog(String customer, Map<String, dynamic> order) {
-    final TextEditingController reasonController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.cancel, color: Colors.red[600]),
-            const SizedBox(width: 8),
-            const Text("Reject Order"),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Are you sure you want to reject this order?",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[800],
-              ),
-            ),
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red[200]!),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Customer: $customer",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text("Item: ${order["item"]} × ${order["quantity"]} units"),
-                  Text("Order Time: ${order["time"]}"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              "Reason for rejection (optional):",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: reasonController,
-              decoration: InputDecoration(
-                hintText: "e.g., Out of stock, Store closed, etc.",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                isDense: true,
-              ),
-              maxLines: 2,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              "The customer will be notified about the rejection.",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(context);
-              _rejectOrder(customer, order, reasonController.text);
-            },
-            icon: const Icon(Icons.cancel, color: Colors.white),
-            label: const Text(
-              "Reject Order",
-              style: TextStyle(color: Colors.white),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _confirmOrder(String customer, Map<String, dynamic> order) {
-    setState(() {
-      pendingOrders = (pendingOrders - 1).clamp(0, double.infinity).toInt();
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text("Order confirmed for $customer"),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.green[600],
-        behavior: SnackBarBehavior.floating,
-        action: SnackBarAction(
-          label: "View Details",
-          textColor: Colors.white,
-          onPressed: () {
-            // TODO: Navigate to order details
-          },
-        ),
-      ),
-    );
-  }
-
-  void _rejectOrder(
-      String customer, Map<String, dynamic> order, String reason) {
-    setState(() {
-      pendingOrders = (pendingOrders - 1).clamp(0, double.infinity).toInt();
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.cancel, color: Colors.white),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Order rejected for $customer"),
-                  if (reason.isNotEmpty)
-                    Text(
-                      "Reason: $reason",
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.red[600],
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 4),
-      ),
-    );
   }
 
   void _openWholesalerChat() {

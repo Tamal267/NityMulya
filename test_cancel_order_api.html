@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Cancel Order API</title>
+  </head>
+  <body>
+    <h1>Test Cancel Order API</h1>
+    <div>
+      <h2>Cancel Order</h2>
+      <label>Order ID:</label>
+      <input
+        type="text"
+        id="orderId"
+        placeholder="Enter order ID"
+        value="ORD001"
+      />
+      <br /><br />
+      <label>Cancellation Reason:</label>
+      <input
+        type="text"
+        id="reason"
+        placeholder="Reason for cancellation"
+        value="Change my mind"
+      />
+      <br /><br />
+      <button onclick="cancelOrder()">Cancel Order</button>
+      <br /><br />
+      <div id="result"></div>
+    </div>
+
+    <script>
+      async function cancelOrder() {
+        const orderId = document.getElementById("orderId").value;
+        const reason = document.getElementById("reason").value;
+
+        try {
+          const response = await fetch(
+            "http://localhost:5001/customer/orders/cancel",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer test_token", // You might need a real token
+              },
+              body: JSON.stringify({
+                order_id: orderId,
+                cancellation_reason: reason,
+              }),
+            }
+          );
+
+          const result = await response.json();
+          document.getElementById("result").innerHTML =
+            "<h3>Response:</h3><pre>" +
+            JSON.stringify(result, null, 2) +
+            "</pre>";
+        } catch (error) {
+          document.getElementById("result").innerHTML =
+            "<h3>Error:</h3><p>" + error.message + "</p>";
+        }
+      }
+    </script>
+  </body>
+</html>
