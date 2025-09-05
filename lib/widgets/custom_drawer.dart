@@ -8,7 +8,7 @@ import '../screens/customers/price_alert_screen.dart';
 import '../screens/customers/profile_screen.dart';
 import '../screens/customers/reviews_screen.dart';
 import '../screens/customers/rewarded_shops_screen.dart';
-import '../screens/shop_owner/on_going_orders_screen.dart';
+import '../screens/shop_owner/shop_owner_on_going_orders_screen.dart';
 
 class CustomDrawer extends StatelessWidget {
   final String userName;
