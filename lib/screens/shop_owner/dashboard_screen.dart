@@ -2,12 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:nitymulya/models/location_models.dart';
 import 'package:nitymulya/network/shop_owner_api.dart';
 import 'package:nitymulya/screens/shop_owner/add_product_screen.dart';
+import 'package:nitymulya/screens/shop_owner/shop_owner_cancelled_order_screen.dart';
+import 'package:nitymulya/screens/shop_owner/shop_owner_delivered_shop_owner.dart';
+import 'package:nitymulya/screens/shop_owner/shop_owner_on_going_orders_screen.dart';
+import 'package:nitymulya/screens/shop_owner/shop_owner_pending_orders_screen.dart';
 import 'package:nitymulya/screens/shop_owner/update_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_chat_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_list_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_search_screen.dart';
 import 'package:nitymulya/utils/user_session.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
+
+import '../../services/message_api_service.dart';
 
 class ShopOwnerDashboard extends StatefulWidget {
   const ShopOwnerDashboard({super.key});
@@ -24,6 +30,11 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
   int totalProducts = 25;
   int stockAlerts = 3;
   String vatRewardStatus = "Eligible";
+
+  // User session data
+  String userName = "Shop Owner";
+  String userEmail = "owner@example.com";
+  String userRole = "shop_owner";
 
   // Shop owner data state
   ShopOwner? currentShopOwner;
@@ -656,7 +667,16 @@ Widget build(BuildContext context) {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        debugPrint("Tapped Pending Orders");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PendingOrdersScreen(
+                              userName: userName,
+                              userEmail: userEmail,
+                              userRole: userRole,
+                            ),
+                          ),
+                        );
                       },
                       child: _buildSummaryCard(
                         "Pending Orders",
@@ -705,7 +725,16 @@ Widget build(BuildContext context) {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        debugPrint("Tapped On Going Orders");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OnGoingOrdersScreen(
+                              userName: userName,
+                              userEmail: userEmail,
+                              userRole: userRole,
+                            ),
+                          ),
+                        );
                       },
                       child: _buildSummaryCard(
                         "On Going",
@@ -719,7 +748,16 @@ Widget build(BuildContext context) {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        debugPrint("Tapped Delivered Orders");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DeliveredOrdersScreen(
+                              userName: userName,
+                              userEmail: userEmail,
+                              userRole: userRole,
+                            ),
+                          ),
+                        );
                       },
                       child: _buildSummaryCard(
                         "Delivered",
@@ -733,7 +771,16 @@ Widget build(BuildContext context) {
                   Expanded(
                     child: GestureDetector(
                       onTap: () {
-                        debugPrint("Tapped Cancelled Orders");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CancelledOrdersScreen(
+                              userName: userName,
+                              userEmail: userEmail,
+                              userRole: userRole,
+                            ),
+                          ),
+                        );
                       },
                       child: _buildSummaryCard(
                         "Cancelled",
@@ -1205,9 +1252,9 @@ Widget build(BuildContext context) {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: _showOrderStats,
-                  icon: const Icon(Icons.analytics),
-                  label: const Text("Order Stats"),
+                  onPressed: _showCustomerMessages,
+                  icon: const Icon(Icons.message),
+                  label: const Text("Customer Messages"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green[600],
                     foregroundColor: Colors.white,
@@ -1937,54 +1984,134 @@ Widget build(BuildContext context) {
     );
   }
 
-  void _showOrderStats() {
+  void _showCustomerMessages() {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Row(
           children: [
-            Icon(Icons.analytics, color: Colors.green[600]),
+            Icon(Icons.message, color: Colors.blue[600]),
             const SizedBox(width: 8),
-            const Text("Order Statistics"),
+            const Text("Customer Messages"),
           ],
         ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildStatRow(
-                "Pending Orders", "3", Colors.orange, Icons.access_time),
-            _buildStatRow(
-                "Confirmed Orders", "1", Colors.blue, Icons.check_circle),
-            _buildStatRow(
-                "Delivered Orders", "1", Colors.green, Icons.delivery_dining),
-            _buildStatRow("Rejected Orders", "1", Colors.red, Icons.cancel),
-            const Divider(),
-            _buildStatRow("Total Today", "6", Colors.purple, Icons.today),
-            _buildStatRow(
-                "Success Rate", "83%", Colors.green, Icons.trending_up),
-          ],
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 400,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Recent Messages List
+              Expanded(
+                child: ListView.builder(
+                  itemCount: 5,
+                  itemBuilder: (context, index) {
+                    final customers = [
+                      {
+                        "name": "আহমেদ সাহেব",
+                        "message": "Delivery time problem",
+                        "unread": true
+                      },
+                      {
+                        "name": "ফাতেমা খাতুন",
+                        "message": "Product quality question",
+                        "unread": true
+                      },
+                      {
+                        "name": "করিম উদ্দিন",
+                        "message": "Order confirmation needed",
+                        "unread": false
+                      },
+                      {
+                        "name": "রহিমা বেগম",
+                        "message": "Thank you for the service",
+                        "unread": false
+                      },
+                      {
+                        "name": "নাসির সাহেব",
+                        "message": "Price inquiry",
+                        "unread": true
+                      },
+                    ];
+
+                    final customer = customers[index];
+                    final isUnread = customer["unread"] as bool;
+
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 4),
+                      color: isUnread ? Colors.blue[50] : Colors.grey[50],
+                      child: ListTile(
+                        dense: true,
+                        leading: CircleAvatar(
+                          radius: 16,
+                          backgroundColor:
+                              isUnread ? Colors.blue[100] : Colors.grey[300],
+                          child: Icon(
+                            Icons.person,
+                            size: 16,
+                            color:
+                                isUnread ? Colors.blue[600] : Colors.grey[600],
+                          ),
+                        ),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                customer["name"] as String,
+                                style: TextStyle(
+                                  fontWeight: isUnread
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            if (isUnread)
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.blue,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                          ],
+                        ),
+                        subtitle: Text(
+                          customer["message"] as String,
+                          style: const TextStyle(fontSize: 12),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _openCustomerChat(customer["name"] as String,
+                              customer["message"] as String);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text("Close"),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Navigate to detailed analytics
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text("Detailed analytics - Coming Soon!")),
-              );
+              _composeNewMessage();
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[600],
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
             ),
-            child: const Text(
-              "View Details",
-              style: TextStyle(color: Colors.white),
-            ),
+            icon: const Icon(Icons.edit, size: 16),
+            label: const Text("Compose"),
           ),
         ],
       ),
@@ -2013,6 +2140,220 @@ Widget build(BuildContext context) {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Customer messaging helper methods
+  void _openCustomerChat(String customerName, String lastMessage) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.blue[100],
+              child: Icon(
+                Icons.person,
+                size: 16,
+                color: Colors.blue[600],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                customerName,
+                style: const TextStyle(fontSize: 16),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, size: 20),
+              onPressed: () => Navigator.pop(context),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          height: 300,
+          child: Column(
+            children: [
+              // Chat messages area
+              Expanded(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ListView(
+                    padding: const EdgeInsets.all(12),
+                    children: [
+                      // Customer message
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: Text(lastMessage),
+                        ),
+                      ),
+                      // Sample shop owner response
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          margin: const EdgeInsets.only(bottom: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                              'Thank you for your message. We are checking on this.'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Message input
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Type your message...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('💬 Message sent!'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.send),
+                    style: IconButton.styleFrom(
+                      backgroundColor: Colors.blue[600],
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        contentPadding: const EdgeInsets.all(16),
+      ),
+    );
+  }
+
+  void _composeNewMessage() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.edit, color: Colors.blue),
+            SizedBox(width: 8),
+            Text("Compose New Message"),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text("Customer:",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              DropdownButtonFormField<String>(
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+                items: [
+                  "আহমেদ সাহেব",
+                  "ফাতেমা খাতুন",
+                  "করিম উদ্দিন",
+                  "রহিমা বেগম",
+                  "নাসির সাহেব"
+                ].map((String customer) {
+                  return DropdownMenuItem<String>(
+                    value: customer,
+                    child: Text(customer),
+                  );
+                }).toList(),
+                onChanged: (String? value) {},
+                hint: const Text("Select customer"),
+              ),
+              const SizedBox(height: 16),
+              const Text("Message:",
+                  style: TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              TextField(
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: 'Type your message here...',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('💬 Message sent successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.send, size: 16),
+            label: const Text("Send"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _markAllAsRead() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('✅ All messages marked as read'),
+        backgroundColor: Colors.green,
       ),
     );
   }
@@ -2217,13 +2558,13 @@ Widget build(BuildContext context) {
                   const SizedBox(width: 8),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.red[100],
+                      color: Colors.blue[100],
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
-                      icon: Icon(Icons.close, color: Colors.red[700]),
-                      tooltip: "Reject Order",
-                      onPressed: () => _rejectRealOrder(order),
+                      icon: Icon(Icons.message, color: Colors.blue[700]),
+                      tooltip: "Send Message",
+                      onPressed: () => _sendMessageToCustomer(order),
                     ),
                   ),
                 ],
@@ -2499,51 +2840,197 @@ Widget build(BuildContext context) {
     }
   }
 
-  void _rejectRealOrder(Map<String, dynamic> order) async {
-    final orderId = order['id']?.toString();
-    if (orderId == null) return;
+  Future<void> _sendMessageToCustomer(Map<String, dynamic> order) async {
+    final TextEditingController messageController = TextEditingController();
+    final customerName =
+        order['customer_name']?.toString() ?? 'Unknown Customer';
+    final productName = order['product_name']?.toString() ?? 'Unknown Product';
+    final quantity = order['quantity_ordered']?.toString() ?? '0';
+    final orderNumber = order['order_number']?.toString() ?? 'Unknown';
 
-    try {
-      final result = await ShopOwnerApiService.updateOrderStatus(
-        orderId: orderId,
-        status: 'rejected',
-        rejectionReason: 'Rejected by shop owner',
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.message, color: Colors.blue),
+            const SizedBox(width: 8),
+            const Text('💬 Send Message'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Order Context
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order Details:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('Order #: $orderNumber'),
+                    Text('Customer: $customerName'),
+                    Text('Product: $productName × $quantity'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Message Input
+              Text(
+                'Your Message:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: messageController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText:
+                      'Type your message to the customer...\nExample: "Product is available, but delivery will be delayed by 1 day. Is that okay?"',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              if (messageController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('💬 Please enter a message'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.send, size: 18),
+            label: const Text('Send Message'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && messageController.text.trim().isNotEmpty) {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(width: 20),
+              Text('Sending message...'),
+            ],
+          ),
+        ),
       );
 
-      if (result['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.cancel, color: Colors.white),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text("Order ${order['order_number']} rejected"),
-                ),
-              ],
-            ),
-            backgroundColor: Colors.red[600],
-            behavior: SnackBarBehavior.floating,
-          ),
+      try {
+        // Get shop owner ID from user session
+        final userData = await UserSession.getCurrentUserData();
+        final shopOwnerId = userData?['id']?.toString() ?? 'unknown_shop';
+
+        debugPrint(
+            '📧 Dashboard - Sending message from shop owner: $shopOwnerId');
+        debugPrint('📧 Dashboard - To customer: ${order['customer_id']}');
+        debugPrint(
+            '📧 Dashboard - Order: ${order['order_id'] ?? order['order_number']}');
+
+        // Send message using real API
+        final apiResult = await MessageApiService.sendMessage(
+          orderId: order['order_id']?.toString() ??
+              order['order_number']?.toString() ??
+              'unknown',
+          senderType: 'shop_owner',
+          senderId: shopOwnerId,
+          receiverType: 'customer',
+          receiverId: order['customer_id']?.toString() ?? 'unknown_customer',
+          messageText: messageController.text.trim(),
         );
 
-        // Refresh orders to get updated status
-        _loadOrders();
-      } else {
+        Navigator.pop(context); // Close loading dialog
+
+        if (apiResult['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.message, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child:
+                        Text('💬 Message sent to $customerName successfully!'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green[600],
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.error, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                        '💬 Failed to send message: ${apiResult['message']}'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.red[600],
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+
+        // Log the message for debugging
+        debugPrint(
+            '💬 Message sent to $customerName: ${messageController.text}');
+      } catch (e) {
+        Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(result['message'] ?? 'Failed to reject order'),
+            content: Text('💬 Error sending message: $e'),
             backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error rejecting order: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 }

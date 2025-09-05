@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Browser Messaging</title>
+  </head>
+  <body>
+    <h2>Test Message Sending from Browser</h2>
+    <button onclick="sendTestMessage()">Send Test Message</button>
+    <button onclick="getCustomerMessages()">Get Customer Messages</button>
+    <div id="result"></div>
+
+    <script>
+      async function sendTestMessage() {
+        try {
+          const response = await fetch(
+            "http://localhost:3005/api/messages/send",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                order_id: "ORD-2025-000031",
+                sender_type: "shop_owner",
+                sender_id: "6e25c880-75cb-4582-9821-31cdcae5335c",
+                receiver_type: "customer",
+                receiver_id: "a4e43c54-30b7-4e5a-8d84-276071423e30",
+                message_text: "Browser test message - আপনার অর্ডার প্রস্তুত!",
+              }),
+            }
+          );
+
+          const data = await response.json();
+          document.getElementById(
+            "result"
+          ).innerHTML = `<pre>Send Result: ${JSON.stringify(
+            data,
+            null,
+            2
+          )}</pre>`;
+        } catch (error) {
+          document.getElementById(
+            "result"
+          ).innerHTML = `<pre>Send Error: ${error.message}</pre>`;
+        }
+      }
+
+      async function getCustomerMessages() {
+        try {
+          const response = await fetch(
+            "http://localhost:3005/api/messages/customer/a4e43c54-30b7-4e5a-8d84-276071423e30"
+          );
+          const data = await response.json();
+          document.getElementById(
+            "result"
+          ).innerHTML = `<pre>Get Result: ${JSON.stringify(
+            data,
+            null,
+            2
+          )}</pre>`;
+        } catch (error) {
+          document.getElementById(
+            "result"
+          ).innerHTML = `<pre>Get Error: ${error.message}</pre>`;
+        }
+      }
+    </script>
+  </body>
+</html>

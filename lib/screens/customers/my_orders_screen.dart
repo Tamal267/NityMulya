@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:nitymulya/utils/user_session.dart';
 
 import '../../network/customer_api.dart';
+import '../../services/message_api_service.dart';
 import '../../services/order_service.dart';
 import 'cancel_order_screen.dart';
+import 'customer_chat_screen.dart';
 import 'main_customer_screen.dart';
 
 class MyOrdersScreen extends StatefulWidget {
@@ -35,21 +40,38 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
   bool isLoading = true;
   late TabController _tabController;
 
+  // Messages state
+  List<Map<String, dynamic>> messages = [];
+  bool isLoadingMessages = false;
+  Timer? _messageTimer; // Timer for real-time updates
+
   @override
   void initState() {
     super.initState();
     _tabController = TabController(
-        length: 5,
+        length: 6,
         vsync: this,
         initialIndex: widget
-            .initialTabIndex); // All, Pending, Ongoing, Delivered, Cancelled
+            .initialTabIndex); // All, Pending, Ongoing, Delivered, Cancelled, Messages
     _loadOrders();
+    _loadMessages(); // Load messages when screen initializes
+    _startMessageTimer(); // Start real-time message updates
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _messageTimer?.cancel(); // Cancel timer
     super.dispose();
+  }
+
+  // Start timer for real-time message updates
+  void _startMessageTimer() {
+    _messageTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      if (mounted) {
+        _loadMessages(); // Refresh messages every 10 seconds
+      }
+    });
   }
 
   // Load orders from both database and local storage
@@ -913,6 +935,319 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
     );
   }
 
+  // Build messages tab
+  Widget _buildMessagesTab() {
+    return Scaffold(
+      body: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.indigo[50],
+              border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.message, color: Colors.indigo, size: 24),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Chat with Shop Owners',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.indigo[700],
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: _loadMessages,
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Refresh Messages',
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: isLoadingMessages
+                ? const Center(child: CircularProgressIndicator())
+                : messages.isEmpty
+                    ? _buildEmptyMessagesState()
+                    : _buildMessagesList(),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _composeNewMessage,
+        backgroundColor: Colors.indigo,
+        child: const Icon(Icons.add_comment, color: Colors.white),
+        tooltip: 'New Message',
+      ),
+    );
+  }
+
+  Widget _buildEmptyMessagesState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 80,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No messages yet',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.grey[600],
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Start a conversation with shop owners',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[500],
+            ),
+          ),
+          const SizedBox(height: 24),
+          ElevatedButton.icon(
+            onPressed: _composeNewMessage,
+            icon: const Icon(Icons.message),
+            label: const Text('Start Messaging'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.indigo,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessagesList() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: messages.length,
+      itemBuilder: (context, index) {
+        final message = messages[index];
+        return _buildMessageCard(message);
+      },
+    );
+  }
+
+  Widget _buildMessageCard(Map<String, dynamic> message) {
+    final bool isFromCustomer = message['sender_type'] == 'customer';
+    final bool isUnread = message['is_read'] != true;
+
+    // Map the correct fields from API response
+    final shopName = message['shop_name'] ?? 'Unknown Shop';
+    final messageText = message['message_text'] ?? 'No message content';
+    final messageTime = message['updated_at'] ?? message['created_at'];
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: isUnread ? 4 : 2,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          border: isUnread
+              ? Border.all(color: Colors.indigo, width: 2)
+              : Border.all(color: Colors.grey[300]!, width: 1),
+        ),
+        child: ListTile(
+          contentPadding: const EdgeInsets.all(16),
+          leading: CircleAvatar(
+            backgroundColor: isFromCustomer ? Colors.indigo : Colors.green,
+            child: Icon(
+              isFromCustomer ? Icons.person : Icons.store,
+              color: Colors.white,
+            ),
+          ),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  shopName,
+                  style: TextStyle(
+                    fontWeight: isUnread ? FontWeight.bold : FontWeight.w500,
+                  ),
+                ),
+              ),
+              if (isUnread)
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                messageText,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: isUnread ? Colors.black87 : Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _formatMessageTime(messageTime),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[500],
+                ),
+              ),
+            ],
+          ),
+          trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          onTap: () => {},
+        ),
+      ),
+    );
+  }
+
+  String _formatMessageTime(dynamic timestamp) {
+    if (timestamp == null) return 'Unknown time';
+
+    DateTime time;
+    if (timestamp is DateTime) {
+      time = timestamp;
+    } else if (timestamp is String) {
+      time = DateTime.tryParse(timestamp) ?? DateTime.now();
+    } else {
+      return 'Unknown time';
+    }
+
+    final now = DateTime.now();
+    final difference = now.difference(time);
+
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h ago';
+    } else {
+      return '${difference.inDays}d ago';
+    }
+  }
+
+  Future<void> _loadMessages() async {
+    setState(() {
+      isLoadingMessages = true;
+    });
+
+    try {
+      // Get customer ID from user session
+      final userData = await UserSession.getCurrentUserData();
+      final customerId = userData?['id']?.toString() ??
+          widget.customerId ??
+          'unknown_customer';
+
+      debugPrint('📧 Loading messages for customer: $customerId');
+
+      // Load messages using real API
+      final result = await MessageApiService.getCustomerMessages(
+        customerId: customerId,
+      );
+
+      debugPrint('📧 Messages API result: ${result['success']}');
+      debugPrint('📧 Messages count: ${result['data']?.length ?? 0}');
+
+      if (result['success'] == true) {
+        setState(() {
+          messages = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          isLoadingMessages = false;
+        });
+
+        debugPrint('📧 Messages loaded successfully: ${messages.length}');
+      } else {
+        setState(() {
+          messages = [];
+          isLoadingMessages = false;
+        });
+
+        debugPrint('❌ Failed to load messages: ${result['message']}');
+
+        // Show error message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(result['message'] ?? 'Failed to load messages'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ Error loading messages: $e');
+      setState(() {
+        messages = [];
+        isLoadingMessages = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load messages: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _composeNewMessage() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('New Message'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Select a shop from your recent orders to start messaging.'),
+            SizedBox(height: 16),
+            Text(
+              'You can also message shops directly from your order details.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _openChatScreen(Map<String, dynamic> message) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => CustomerChatScreen(
+          shopName: message['shop_name'] ?? 'Unknown Shop',
+          shopId: message['sender_id'] ?? message['receiver_id'] ?? '',
+          orderId: message['order_id'],
+          customerId: widget.customerId,
+          customerName: widget.userName ?? 'Customer',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -990,6 +1325,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
               icon: Icon(Icons.cancel),
               text: 'Cancelled (${_getOrdersByStatus(['cancelled']).length})',
             ),
+            Tab(
+              icon: Icon(Icons.message),
+              text: 'Messages',
+            ),
           ],
         ),
       ),
@@ -1009,6 +1348,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
                 _buildOrdersList(_getOrdersByStatus(['delivered'])),
                 // Cancelled Orders Tab (with special UI)
                 _buildCancelledOrdersList(_getOrdersByStatus(['cancelled'])),
+                // Messages Tab
+                _buildMessagesTab(),
               ],
             ),
     );

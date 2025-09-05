@@ -1,9 +1,10 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
-class ApiService {
-  static const String baseUrl = 'http://localhost:3001';
+import '../config/api_config.dart';
 
+class ApiService {
   static Future<Map<String, dynamic>> get(String endpoint) async {
     try {
       // URL encode the endpoint to handle Bengali characters

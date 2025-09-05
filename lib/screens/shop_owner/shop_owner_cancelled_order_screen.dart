@@ -65,180 +65,6 @@ class _CancelledOrdersScreenState extends State<CancelledOrdersScreen> {
     }
   }
 
-  Future<void> _reactivateOrder(Map<String, dynamic> order) async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('🔄 Reactivate Order'),
-        content: Text(
-            'Reactivate this order from ${order['customer_name'] ?? 'Unknown Customer'} and mark it as pending?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.green),
-            child: const Text('Reactivate'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed != true) return;
-
-    try {
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const AlertDialog(
-          content: Row(
-            children: [
-              CircularProgressIndicator(),
-              SizedBox(width: 20),
-              Text('Reactivating order...'),
-            ],
-          ),
-        ),
-      );
-
-      final result = await ShopOwnerApiService.updateOrderStatus(
-        orderId: order['id'].toString(),
-        status: 'pending',
-      );
-
-      Navigator.pop(context); // Close loading dialog
-
-      if (result['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('🔄 Order reactivated and marked as pending!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        _loadCancelledOrders(); // Reload to update the list
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content:
-                Text('❌ ${result['message'] ?? 'Failed to reactivate order'}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      Navigator.pop(context); // Close loading dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('❌ Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-  void _viewOrderDetails(Map<String, dynamic> order) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('📋 Cancelled Order Details'),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildDetailRow('Order ID', order['id']?.toString() ?? 'N/A'),
-              _buildDetailRow(
-                  'Customer', order['customer_name']?.toString() ?? 'Unknown'),
-              _buildDetailRow(
-                  'Product', order['subcat_name']?.toString() ?? 'Unknown'),
-              _buildDetailRow(
-                  'Category', order['cat_name']?.toString() ?? 'Unknown'),
-              _buildDetailRow('Quantity', order['quantity']?.toString() ?? '0'),
-              _buildDetailRow(
-                  'Unit Price', '৳${order['unit_price']?.toString() ?? '0'}'),
-              _buildDetailRow(
-                  'Total Price', '৳${order['total_price']?.toString() ?? '0'}'),
-              _buildDetailRow(
-                  'Status', order['status']?.toString() ?? 'Unknown'),
-              _buildDetailRow(
-                  'Order Date',
-                  order['created_at']?.toString().substring(0, 16) ??
-                      'Unknown'),
-              _buildDetailRow(
-                  'Cancelled Date',
-                  order['updated_at']?.toString().substring(0, 16) ??
-                      'Unknown'),
-              const SizedBox(height: 8),
-              Text(
-                'Delivery Address:',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[700],
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                order['delivery_address']?.toString() ?? 'No address provided',
-                style: TextStyle(color: Colors.grey[600]),
-              ),
-              if (order['rejection_reason'] != null) ...[
-                const SizedBox(height: 8),
-                Text(
-                  'Cancellation Reason:',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.red[700],
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  order['rejection_reason'].toString(),
-                  style: TextStyle(color: Colors.red[600]),
-                ),
-              ],
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 100,
-            child: Text(
-              '$label:',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[700],
-              ),
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -357,7 +183,16 @@ class _CancelledOrdersScreenState extends State<CancelledOrdersScreen> {
     final cancelledDate = order['updated_at']?.toString() ?? '';
     final address =
         order['delivery_address']?.toString() ?? 'No address provided';
-    final rejectionReason = order['rejection_reason']?.toString();
+
+    // Check multiple possible field names for cancellation reason
+    final rejectionReason = order['rejection_reason']?.toString() ??
+        order['cancellation_reason']?.toString() ??
+        order['cancel_reason']?.toString() ??
+        order['reason']?.toString();
+
+    // Debug print to see what fields we have
+    print('Order fields: ${order.keys.toList()}');
+    print('Rejection reason: $rejectionReason');
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -463,58 +298,77 @@ class _CancelledOrdersScreenState extends State<CancelledOrdersScreen> {
             ),
 
             // Rejection Reason if available
-            if (rejectionReason != null) ...[
+            if (rejectionReason != null && rejectionReason.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.info_outline, color: Colors.red[600], size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Reason: $rejectionReason',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.red[600],
-                        fontStyle: FontStyle.italic,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red[200]!),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.cancel, color: Colors.red[600], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cancellation Reason:',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.red[800],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            rejectionReason,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.red[700],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+            ] else ...[
+              // Show default message if no reason is provided
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[300]!),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.info_outline, color: Colors.grey[600], size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'No cancellation reason provided',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
-
-            const SizedBox(height: 16),
-
-            // Action Buttons
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => _viewOrderDetails(order),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red[600],
-                      side: BorderSide(color: Colors.red[300]!),
-                    ),
-                    icon: const Icon(Icons.visibility, size: 18),
-                    label: const Text('View Details'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _reactivateOrder(order),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[50],
-                      foregroundColor: Colors.green[600],
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.refresh, size: 18),
-                    label: const Text('Reactivate'),
-                  ),
-                ),
-              ],
-            ),
           ],
         ),
       ),

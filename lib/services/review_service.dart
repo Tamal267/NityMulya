@@ -1,9 +1,10 @@
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
-class ReviewService {
-  static const String baseUrl = 'http://localhost:3005';
+import '../config/api_config.dart';
 
+class ReviewService {
   // ====================================
   // PRODUCT REVIEW METHODS
   // ====================================
@@ -24,7 +25,7 @@ class ReviewService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/reviews/product'),
+        Uri.parse('${ApiConfig.baseUrl}/api/reviews/product'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -78,7 +79,7 @@ class ReviewService {
     String? shopOwnerId,
   }) async {
     try {
-      String url = '$baseUrl/reviews/product/$subcatId';
+      String url = '${ApiConfig.baseUrl}/reviews/product/$subcatId';
       if (shopOwnerId != null) {
         url += '?shopOwnerId=$shopOwnerId';
       }
@@ -104,7 +105,7 @@ class ReviewService {
     String? shopOwnerId,
   }) async {
     try {
-      String url = '$baseUrl/reviews/product/$subcatId/average';
+      String url = '${ApiConfig.baseUrl}/reviews/product/$subcatId/average';
       if (shopOwnerId != null) {
         url += '?shopOwnerId=$shopOwnerId';
       }
@@ -135,7 +136,7 @@ class ReviewService {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/reviews/product/$reviewId'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/product/$reviewId'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -172,7 +173,7 @@ class ReviewService {
       String reviewId) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/reviews/product/$reviewId'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/product/$reviewId'),
       );
 
       if (response.statusCode == 200) {
@@ -217,7 +218,7 @@ class ReviewService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl/api/reviews/shop'),
+        Uri.parse('${ApiConfig.baseUrl}/api/reviews/shop'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -271,7 +272,7 @@ class ReviewService {
       String shopOwnerId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/reviews/shop/$shopOwnerId'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/shop/$shopOwnerId'),
       );
 
       if (response.statusCode == 200) {
@@ -292,7 +293,7 @@ class ReviewService {
       String shopOwnerId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/reviews/shop/$shopOwnerId/average'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/shop/$shopOwnerId/average'),
       );
 
       if (response.statusCode == 200) {
@@ -333,7 +334,7 @@ class ReviewService {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl/reviews/shop/$reviewId'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/shop/$reviewId'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -371,7 +372,7 @@ class ReviewService {
   static Future<Map<String, dynamic>> deleteShopReview(String reviewId) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/reviews/shop/$reviewId'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/shop/$reviewId'),
       );
 
       if (response.statusCode == 200) {
@@ -404,7 +405,7 @@ class ReviewService {
       String customerId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/reviews/customer/$customerId/products'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/customer/$customerId/products'),
       );
 
       if (response.statusCode == 200) {
@@ -425,7 +426,7 @@ class ReviewService {
       String customerId) async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/reviews/customer/$customerId/shops'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/customer/$customerId/shops'),
       );
 
       if (response.statusCode == 200) {
@@ -552,7 +553,7 @@ class ReviewService {
   static Future<Map<String, dynamic>> getAllReviews() async {
     try {
       final response = await http.get(
-        Uri.parse('$baseUrl/api/reviews/all'),
+        Uri.parse('${ApiConfig.baseUrl}/api/reviews/all'),
       );
 
       if (response.statusCode == 200) {
@@ -587,7 +588,7 @@ class ReviewService {
   static Future<Map<String, dynamic>> clearAllReviews() async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/reviews/all'),
+        Uri.parse('${ApiConfig.baseUrl}/reviews/all'),
       );
 
       if (response.statusCode == 200) {
@@ -690,12 +691,14 @@ class ReviewService {
     try {
       // Get both product and shop reviews for the customer
       final productReviewsResponse = await http.get(
-        Uri.parse('$baseUrl/api/reviews/customer/$customerId/products'),
+        Uri.parse(
+            '${ApiConfig.baseUrl}/api/reviews/customer/$customerId/products'),
         headers: {'Content-Type': 'application/json'},
       );
 
       final shopReviewsResponse = await http.get(
-        Uri.parse('$baseUrl/api/reviews/customer/$customerId/shops'),
+        Uri.parse(
+            '${ApiConfig.baseUrl}/api/reviews/customer/$customerId/shops'),
         headers: {'Content-Type': 'application/json'},
       );
 

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/network/shop_owner_api.dart';
+import 'package:nitymulya/utils/user_session.dart';
+
+import '../../services/message_api_service.dart';
 
 class PendingOrdersScreen extends StatefulWidget {
   final String userName;
@@ -98,7 +101,8 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ ${result['message'] ?? 'Failed to accept order'}'),
+            content:
+                Text('💬 ${result['message'] ?? 'Failed to accept order'}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -107,38 +111,118 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
       Navigator.pop(context); // Close loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('❌ Error: $e'),
+          content: Text('💬 Error: $e'),
           backgroundColor: Colors.red,
         ),
       );
     }
   }
 
-  Future<void> _rejectOrder(Map<String, dynamic> order) async {
-    // Show confirmation dialog
-    final confirmed = await showDialog<bool>(
+  Future<void> _sendMessageToCustomer(Map<String, dynamic> order) async {
+    final TextEditingController messageController = TextEditingController();
+    final customerName =
+        order['customer_name']?.toString() ?? 'Unknown Customer';
+    final productName = order['product_name']?.toString() ??
+        order['subcat_name']?.toString() ??
+        'Unknown Product';
+    final quantity = order['quantity_ordered']?.toString() ??
+        order['quantity']?.toString() ??
+        '0';
+
+    final result = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('❌ Reject Order'),
-        content: Text(
-            'Are you sure you want to reject this order from ${order['customer_name'] ?? 'Unknown Customer'}?'),
+        title: Row(
+          children: [
+            const Icon(Icons.message, color: Colors.blue),
+            const SizedBox(width: 8),
+            const Text('💬 Send Message'),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Order Context
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Order Details:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text('Customer: $customerName'),
+                    Text('Product: $productName × $quantity'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Message Input
+              Text(
+                'Your Message:',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[700],
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: messageController,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText:
+                      'Type your message to the customer...\nExample: "Product is available, but delivery will be delayed by 1 day. Is that okay?"',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+              ),
+            ],
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Reject'),
+          ElevatedButton.icon(
+            onPressed: () {
+              if (messageController.text.trim().isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('💬 Please enter a message'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                return;
+              }
+              Navigator.pop(context, true);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue[600],
+              foregroundColor: Colors.white,
+            ),
+            icon: const Icon(Icons.send, size: 18),
+            label: const Text('Send Message'),
           ),
         ],
       ),
     );
 
-    if (confirmed != true) return;
-
-    try {
+    if (result == true && messageController.text.trim().isNotEmpty) {
       // Show loading dialog
       showDialog(
         context: context,
@@ -148,43 +232,63 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
             children: [
               CircularProgressIndicator(),
               SizedBox(width: 20),
-              Text('Rejecting order...'),
+              Text('Sending message...'),
             ],
           ),
         ),
       );
 
-      final result = await ShopOwnerApiService.updateOrderStatus(
-        orderId: order['id'].toString(),
-        status: 'cancelled',
-      );
+      try {
+        // Get shop owner ID from user session
+        final userData = await UserSession.getCurrentUserData();
+        final shopOwnerId = userData?['id']?.toString() ?? 'unknown_shop';
 
-      Navigator.pop(context); // Close loading dialog
+        debugPrint('📧 Sending message from shop owner: $shopOwnerId');
+        debugPrint('📧 To customer: ${order['customer_id']}');
+        debugPrint('📧 Order: ${order['order_id'] ?? order['order_number']}');
 
-      if (result['success'] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Order rejected successfully!'),
-            backgroundColor: Colors.orange,
-          ),
+        // Send message using real API
+        final result = await MessageApiService.sendMessage(
+          orderId: order['order_id']?.toString() ??
+              order['order_number']?.toString() ??
+              'unknown',
+          senderType: 'shop_owner',
+          senderId: shopOwnerId,
+          receiverType: 'customer',
+          receiverId: order['customer_id']?.toString() ?? 'unknown_customer',
+          messageText: messageController.text.trim(),
         );
-        _loadPendingOrders(); // Reload to update the list
-      } else {
+
+        Navigator.pop(context); // Close loading dialog
+
+        if (result['success'] == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('💬 Message sent to $customerName successfully!'),
+              backgroundColor: Colors.green,
+            ),
+          );
+
+          // Log the message for debugging
+          debugPrint(
+              '💬 Message sent to $customerName: ${messageController.text}');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('💬 Failed to send message: ${result['message']}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } catch (e) {
+        Navigator.pop(context); // Close loading dialog
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('❌ ${result['message'] ?? 'Failed to reject order'}'),
+            content: Text('💬 Error sending message: $e'),
             backgroundColor: Colors.red,
           ),
         );
       }
-    } catch (e) {
-      Navigator.pop(context); // Close loading dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('❌ Error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
     }
   }
 
@@ -418,14 +522,14 @@ class _PendingOrdersScreenState extends State<PendingOrdersScreen> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _rejectOrder(order),
+                    onPressed: () => _sendMessageToCustomer(order),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red[50],
-                      foregroundColor: Colors.red[600],
+                      backgroundColor: Colors.blue[50],
+                      foregroundColor: Colors.blue[600],
                       elevation: 0,
                     ),
-                    icon: const Icon(Icons.cancel, size: 18),
-                    label: const Text('Reject'),
+                    icon: const Icon(Icons.message, size: 18),
+                    label: const Text('Message'),
                   ),
                 ),
                 const SizedBox(width: 12),
