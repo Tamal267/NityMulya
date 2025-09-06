@@ -358,8 +358,8 @@ export const getChatMessages = async (c: any) => {
                            ELSE w.full_name
                        END as sender_name
                 FROM chat_messages cm
-                LEFT JOIN shop_owners so ON cm.sender_id = so.id AND cm.sender_type = 'shop_owner'
-                LEFT JOIN wholesalers w ON cm.sender_id = w.id AND cm.sender_type = 'wholesaler'
+                LEFT JOIN shop_owners so ON cm.sender_id::uuid = so.id AND cm.sender_type = 'shop_owner'
+                LEFT JOIN wholesalers w ON cm.sender_id::uuid = w.id AND cm.sender_type = 'wholesaler'
                 WHERE (cm.sender_id = ${shop_owner_id} AND cm.receiver_id = ${partnerId})
                    OR (cm.sender_id = ${partnerId} AND cm.receiver_id = ${shop_owner_id})
                 ORDER BY cm.created_at ASC
@@ -373,8 +373,8 @@ export const getChatMessages = async (c: any) => {
                            ELSE w.full_name
                        END as sender_name
                 FROM chat_messages cm
-                LEFT JOIN shop_owners so ON cm.sender_id = so.id AND cm.sender_type = 'shop_owner'
-                LEFT JOIN wholesalers w ON cm.sender_id = w.id AND cm.sender_type = 'wholesaler'
+                LEFT JOIN shop_owners so ON cm.sender_id::uuid = so.id AND cm.sender_type = 'shop_owner'
+                LEFT JOIN wholesalers w ON cm.sender_id::uuid = w.id AND cm.sender_type = 'wholesaler'
                 WHERE cm.receiver_id = ${shop_owner_id} AND cm.receiver_type = 'shop_owner'
                    OR cm.sender_id = ${shop_owner_id} AND cm.sender_type = 'shop_owner'
                 ORDER BY cm.created_at DESC

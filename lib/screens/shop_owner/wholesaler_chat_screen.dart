@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/utils/user_session.dart';
+
+import '../../../network/wholesaler_api.dart';
 
 class WholesalerChatScreen extends StatefulWidget {
-  final String wholesalerName;
-  final String wholesalerInitial;
+  final String contactId;
+  final String contactType;
+  final String contactName;
+  final String? contactPhone;
 
   const WholesalerChatScreen({
     super.key,
-    required this.wholesalerName,
-    required this.wholesalerInitial,
+    required this.contactId,
+    required this.contactType,
+    required this.contactName,
+    this.contactPhone,
   });
 
   @override
@@ -17,12 +24,16 @@ class WholesalerChatScreen extends StatefulWidget {
 class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<Map<String, dynamic>> _messages = [];
+  List<Map<String, dynamic>> _messages = [];
+  bool _isLoading = false;
+  String? _error;
+  String? _currentUserId;
+  String? _currentUserType;
 
   @override
   void initState() {
     super.initState();
-    _loadInitialMessages();
+    _loadCurrentUser();
   }
 
   @override
@@ -32,84 +43,130 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
     super.dispose();
   }
 
-  void _loadInitialMessages() {
-    // Sample conversation based on wholesaler
-    Map<String, List<Map<String, dynamic>>> initialChats = {
-      'রহমান ট্রেডার্স': [
-        {
-          'message': 'আপনার দোকানের জন্য নতুন দামের তালিকা পাঠাচ্ছি',
-          'isFromMe': false,
-          'timestamp': DateTime.now().subtract(const Duration(hours: 2)),
-          'type': 'text'
-        },
-        {
-          'message': 'চাল সরু: ৭৮ টাকা কেজি\nসয়াবিন তেল: ১৬৫ টাকা লিটার\nমসুর ডাল: ১১৫ টাকা কেজি',
-          'isFromMe': false,
-          'timestamp': DateTime.now().subtract(const Duration(hours: 2, minutes: 1)),
-          'type': 'price_list'
-        },
-        {
-          'message': 'ধন্যবাদ! এই দামে ১০০ কেজি চাল দরকার',
-          'isFromMe': true,
-          'timestamp': DateTime.now().subtract(const Duration(hours: 1, minutes: 30)),
-          'type': 'text'
-        },
-        {
-          'message': 'আগামীকাল সকালে ডেলিভারি দিতে পারবো',
-          'isFromMe': false,
-          'timestamp': DateTime.now().subtract(const Duration(hours: 1)),
-          'type': 'text'
-        }
-      ],
-      'করিম এন্টারপ্রাইজ': [
-        {
-          'message': 'আপনার অর্ডার কনফার্ম করেছি। আজ বিকেলে ডেলিভারি দেব।',
-          'isFromMe': false,
-          'timestamp': DateTime.now().subtract(const Duration(hours: 3)),
-          'type': 'text'
-        },
-        {
-          'message': 'অসাধারণ! ধন্যবাদ ভাই',
-          'isFromMe': true,
-          'timestamp': DateTime.now().subtract(const Duration(hours: 2, minutes: 45)),
-          'type': 'text'
-        }
-      ],
-      'আলম ইমপোর্ট': [
-        {
-          'message': 'সব পণ্য স্টক আভেইলেবল আছে। কী পরিমাণ লাগবে?',
-          'isFromMe': false,
-          'timestamp': DateTime.now().subtract(const Duration(minutes: 45)),
-          'type': 'text'
-        }
-      ],
-      'নিউ সুন্দরবন': [
-        {
-          'message': 'আগামীকাল সকাল ১০টায় আপনার দোকানে ডেলিভারি দেব',
-          'isFromMe': false,
-          'timestamp': DateTime.now().subtract(const Duration(hours: 1)),
-          'type': 'text'
-        },
-        {
-          'message': 'মাল পৌঁছানোর সময় ফোন করবেন',
-          'isFromMe': false,
-          'timestamp': DateTime.now().subtract(const Duration(minutes: 55)),
-          'type': 'text'
-        },
-        {
-          'message': 'অবশ্যই! গেট দিয়ে ঢুকে ডান পাশে আমাদের দোকান',
-          'isFromMe': true,
-          'timestamp': DateTime.now().subtract(const Duration(minutes: 50)),
-          'type': 'text'
-        }
-      ],
+  Future<void> _loadCurrentUser() async {
+    try {
+      final userId = await UserSession.getCurrentUserId();
+      final userType = await UserSession.getCurrentUserType();
+
+      if (userId != null && userType != null) {
+        setState(() {
+          _currentUserId = userId;
+          _currentUserType = userType;
+        });
+        await _loadMessages();
+      } else {
+        setState(() {
+          _error = 'Unable to identify current user';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Error loading user session: $e';
+      });
+    }
+  }
+
+  Future<void> _loadMessages() async {
+    if (_currentUserId == null || _currentUserType == null) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final result = await WholesalerApiService.getConversationMessages(
+        user1Id: _currentUserId!,
+        user1Type: _currentUserType!,
+        user2Id: widget.contactId,
+        user2Type: widget.contactType,
+      );
+
+      if (result['success'] == true) {
+        setState(() {
+          _messages = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          _isLoading = false;
+        });
+        _scrollToBottom();
+      } else {
+        setState(() {
+          _error = result['message'] ?? 'Failed to load messages';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = 'Error loading messages: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _sendMessage() async {
+    if (_messageController.text.trim().isEmpty) return;
+    if (_currentUserId == null || _currentUserType == null) return;
+
+    final messageText = _messageController.text.trim();
+    _messageController.clear();
+
+    // Add message optimistically to UI
+    final tempMessage = {
+      'id': 'temp_${DateTime.now().millisecondsSinceEpoch}',
+      'message_text': messageText,
+      'sender_id': _currentUserId,
+      'sender_type': _currentUserType,
+      'receiver_id': widget.contactId,
+      'receiver_type': widget.contactType,
+      'created_at': DateTime.now().toIso8601String(),
+      'is_read': false,
     };
 
     setState(() {
-      _messages.addAll(initialChats[widget.wholesalerName] ?? []);
+      _messages.add(tempMessage);
     });
+    _scrollToBottom();
 
-    // Scroll to bottom after loading messages
+    try {
+      final result = await WholesalerApiService.sendMessage(
+        senderId: _currentUserId!,
+        senderType: _currentUserType!,
+        receiverId: widget.contactId,
+        receiverType: widget.contactType,
+        message: messageText,
+      );
+
+      if (result['success'] == true) {
+        // Replace temp message with real one
+        await _loadMessages();
+      } else {
+        // Remove temp message on failure
+        setState(() {
+          _messages.removeWhere((msg) => msg['id'] == tempMessage['id']);
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to send message: ${result['message']}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Remove temp message on error
+      setState(() {
+        _messages.removeWhere((msg) => msg['id'] == tempMessage['id']);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error sending message: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
         _scrollController.animateTo(
@@ -121,160 +178,133 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
     });
   }
 
-  void _sendMessage() {
-    final messageText = _messageController.text.trim();
-    if (messageText.isNotEmpty) {
-      setState(() {
-        _messages.add({
-          'message': messageText,
-          'isFromMe': true,
-          'timestamp': DateTime.now(),
-          'type': 'text'
-        });
-      });
-      _messageController.clear();
-      
-      // Scroll to bottom
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
+  Widget _buildMessage(Map<String, dynamic> message) {
+    final isFromMe = message['sender_id'] == _currentUserId;
+    final messageText = message['message_text'] ?? '';
+    final timestamp =
+        DateTime.tryParse(message['created_at'] ?? '') ?? DateTime.now();
 
-      // Simulate wholesaler response after 2 seconds
-      Future.delayed(const Duration(seconds: 2), () {
-        _simulateWholesalerResponse(messageText);
-      });
-    }
-  }
-
-  void _simulateWholesalerResponse(String userMessage) {
-    String response = "ধন্যবাদ! আপনার বার্তা পেয়েছি।";
-    
-    if (userMessage.contains('দাম') || userMessage.contains('price')) {
-      response = "আপডেট দাম পাঠাচ্ছি। একটু অপেক্ষা করুন।";
-    } else if (userMessage.contains('অর্ডার') || userMessage.contains('order')) {
-      response = "অর্ডার কনফার্ম! আগামীকাল ডেলিভারি দেব।";
-    } else if (userMessage.contains('ডেলিভারি') || userMessage.contains('delivery')) {
-      response = "ডেলিভারির সময় জানিয়ে দেব। ধন্যবাদ!";
-    } else if (userMessage.contains('স্টক') || userMessage.contains('stock')) {
-      response = "সব পণ্য স্টক আছে। কোন পণ্য লাগবে?";
-    }
-
-    if (mounted) {
-      setState(() {
-        _messages.add({
-          'message': response,
-          'isFromMe': false,
-          'timestamp': DateTime.now(),
-          'type': 'text'
-        });
-      });
-
-      // Scroll to bottom
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_scrollController.hasClients) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOut,
-          );
-        }
-      });
-    }
-  }
-
-  void _showQuickActions() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              "Quick Messages",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        mainAxisAlignment:
+            isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isFromMe) ...[
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.green[100],
+              child: Text(
+                widget.contactName.isNotEmpty
+                    ? widget.contactName[0].toUpperCase()
+                    : 'W',
+                style: TextStyle(
+                  color: Colors.green[600],
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: const Icon(Icons.price_check, color: Colors.green),
-              title: const Text("Request Price List"),
-              onTap: () {
-                Navigator.pop(context);
-                _sendQuickMessage("আজকের দামের তালিকা পাঠান");
-              },
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isFromMe ? Colors.green[600] : Colors.white,
+                borderRadius: BorderRadius.circular(16).copyWith(
+                  bottomLeft: isFromMe
+                      ? const Radius.circular(16)
+                      : const Radius.circular(4),
+                  bottomRight: isFromMe
+                      ? const Radius.circular(4)
+                      : const Radius.circular(16),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withValues(alpha: 0.2),
+                    blurRadius: 3,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    messageText,
+                    style: TextStyle(
+                      color: isFromMe ? Colors.white : Colors.black87,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatTime(timestamp),
+                    style: TextStyle(
+                      color: isFromMe ? Colors.white70 : Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.shopping_cart, color: Colors.blue),
-              title: const Text("Place Order"),
-              onTap: () {
-                Navigator.pop(context);
-                _sendQuickMessage("নতুন অর্ডার দিতে চাই");
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.inventory, color: Colors.orange),
-              title: const Text("Check Stock"),
-              onTap: () {
-                Navigator.pop(context);
-                _sendQuickMessage("পণ্যের স্টক আছে কিনা জানান");
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.delivery_dining, color: Colors.purple),
-              title: const Text("Delivery Status"),
-              onTap: () {
-                Navigator.pop(context);
-                _sendQuickMessage("ডেলিভারির অবস্থা জানতে চাই");
-              },
+          ),
+          if (isFromMe) ...[
+            const SizedBox(width: 8),
+            CircleAvatar(
+              radius: 16,
+              backgroundColor: Colors.blue[100],
+              child: const Icon(
+                Icons.person,
+                color: Colors.blue,
+                size: 16,
+              ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
 
-  void _sendQuickMessage(String message) {
-    _messageController.text = message;
-    _sendMessage();
-  }
-
-  String _formatTime(DateTime timestamp) {
+  String _formatTime(DateTime dateTime) {
     final now = DateTime.now();
-    final difference = now.difference(timestamp);
-    
-    if (difference.inMinutes < 1) {
-      return "এখনই";
-    } else if (difference.inHours < 1) {
-      return "${difference.inMinutes} মিনিট আগে";
-    } else if (difference.inDays < 1) {
-      return "${difference.inHours} ঘণ্টা আগে";
+    final today = DateTime(now.year, now.month, now.day);
+    final messageDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
+
+    if (messageDate == today) {
+      // Today - show time
+      final hour = dateTime.hour.toString().padLeft(2, '0');
+      final minute = dateTime.minute.toString().padLeft(2, '0');
+      return '$hour:$minute';
+    } else if (messageDate == today.subtract(const Duration(days: 1))) {
+      // Yesterday
+      return 'Yesterday';
     } else {
-      return "${timestamp.day}/${timestamp.month}";
+      // Other dates
+      return '${dateTime.day}/${dateTime.month}';
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
+        backgroundColor: Colors.green[600],
+        foregroundColor: Colors.white,
+        elevation: 0,
         title: Row(
           children: [
             CircleAvatar(
-              backgroundColor: Colors.purple[100],
+              backgroundColor: Colors.white,
               child: Text(
-                widget.wholesalerInitial,
+                widget.contactName.isNotEmpty
+                    ? widget.contactName[0].toUpperCase()
+                    : 'W',
                 style: TextStyle(
-                  color: Colors.purple[600],
+                  color: Colors.green[600],
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -285,44 +315,31 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.wholesalerName,
+                    widget.contactName,
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-                  Text(
-                    "অনলাইন",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.green[600],
+                  if (widget.contactPhone != null)
+                    Text(
+                      widget.contactPhone!,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
           ],
         ),
-        backgroundColor: Colors.purple[600],
-        foregroundColor: Colors.white,
-        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.phone),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Calling ${widget.wholesalerName}..."),
-                  backgroundColor: Colors.green[600],
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              _showQuickActions();
-            },
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadMessages,
+            tooltip: "Refresh",
           ),
         ],
       ),
@@ -330,17 +347,64 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
         children: [
           // Messages List
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return _buildMessageBubble(message);
-              },
-            ),
+            child: _isLoading && _messages.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null && _messages.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline,
+                                size: 64, color: Colors.red[300]),
+                            const SizedBox(height: 16),
+                            Text(
+                              _error!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadMessages,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _messages.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.chat_bubble_outline,
+                                    size: 64, color: Colors.grey[400]),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No messages yet',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Start the conversation with ${widget.contactName}',
+                                  style: TextStyle(
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.all(16),
+                            itemCount: _messages.length,
+                            itemBuilder: (context, index) {
+                              return _buildMessage(_messages[index]);
+                            },
+                          ),
           ),
-          
+
           // Message Input
           Container(
             padding: const EdgeInsets.all(16),
@@ -349,43 +413,41 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withValues(alpha: 0.2),
-                  spreadRadius: 1,
-                  blurRadius: 3,
+                  blurRadius: 5,
                   offset: const Offset(0, -1),
                 ),
               ],
             ),
             child: Row(
               children: [
-                IconButton(
-                  icon: Icon(Icons.add, color: Colors.purple[600]),
-                  onPressed: _showQuickActions,
-                ),
                 Expanded(
                   child: TextField(
                     controller: _messageController,
                     decoration: InputDecoration(
-                      hintText: "বার্তা লিখুন...",
+                      hintText: 'Type a message...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
+                        borderSide: BorderSide(color: Colors.grey[300]!),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey[100],
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide(color: Colors.green[600]!),
+                      ),
                       contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
+                        horizontal: 20,
+                        vertical: 10,
                       ),
                     ),
                     maxLines: null,
+                    textCapitalization: TextCapitalization.sentences,
                     onSubmitted: (_) => _sendMessage(),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.purple[600],
-                    borderRadius: BorderRadius.circular(25),
+                    color: Colors.green[600],
+                    shape: BoxShape.circle,
                   ),
                   child: IconButton(
                     icon: const Icon(Icons.send, color: Colors.white),
@@ -395,121 +457,6 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMessageBubble(Map<String, dynamic> message) {
-    final isFromMe = message['isFromMe'] as bool;
-    final messageType = message['type'] as String;
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isFromMe) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.purple[100],
-              child: Text(
-                widget.wholesalerInitial,
-                style: TextStyle(
-                  color: Colors.purple[600],
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isFromMe ? Colors.purple[600] : Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: const Radius.circular(20),
-                  topRight: const Radius.circular(20),
-                  bottomLeft: Radius.circular(isFromMe ? 20 : 4),
-                  bottomRight: Radius.circular(isFromMe ? 4 : 20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withValues(alpha: 0.1),
-                    spreadRadius: 1,
-                    blurRadius: 3,
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (messageType == 'price_list')
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isFromMe ? Colors.purple[700] : Colors.green[50],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.price_check,
-                            size: 16,
-                            color: isFromMe ? Colors.white : Colors.green[600],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            "Price List",
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: isFromMe ? Colors.white : Colors.green[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  
-                  Text(
-                    message['message'] as String,
-                    style: TextStyle(
-                      color: isFromMe ? Colors.white : Colors.black87,
-                      fontSize: 16,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatTime(message['timestamp'] as DateTime),
-                    style: TextStyle(
-                      color: isFromMe ? Colors.purple[200] : Colors.grey[600],
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          if (isFromMe) ...[
-            const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.green[100],
-              child: Icon(
-                Icons.person,
-                size: 16,
-                color: Colors.green[600],
-              ),
-            ),
-          ],
         ],
       ),
     );

@@ -9,6 +9,7 @@ import 'package:nitymulya/screens/wholesaler/shop_owner_search_screen.dart';
 import 'package:nitymulya/screens/wholesaler/shop_reviews_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
+import 'package:nitymulya/services/chat_api_service.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
 
 class WholesalerDashboardScreen extends StatefulWidget {
@@ -52,6 +53,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   bool isLoadingShopOwners = false;
   String? shopOwnersError;
   bool showSearchDropdown = false;
+  List<Map<String, dynamic>> chatConversations = [];
+  bool isLoadingChats = false;
+  String? chatError;
 
   // Stock Monitor state (additional variables)
   List<Map<String, dynamic>> lowStockProductsList = [];
@@ -64,6 +68,11 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   bool isLoadingHistory = false;
   String? historyError;
   List<Map<String, dynamic>> categoryList = [];
+
+  // Profile state
+  Map<String, dynamic>? profileData;
+  bool isLoadingProfile = false;
+  String? profileError;
 
   // TODO: Remove this hardcoded ID - now using token-based authentication
   // final String currentWholesalerId = 'cdb69b0f-27bc-41b5-9ce3-525f54e1f316';
@@ -85,6 +94,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 5, vsync: this);
+    _loadProfile(); // Load user profile data
     _loadInventory(); // Load inventory on startup
     _loadOffers(); // Load offers on startup
     _loadCategories(); // Load categories for filters
@@ -92,6 +102,40 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     _loadProductsFromDatabase(); // Load products for the filter
     _loadOrderHistory(); // Load order history on startup
     _loadShopOwners(); // Load shop owners for chat search
+    _loadChatConversations(); // Load chat conversations
+  }
+
+  Future<void> _loadProfile() async {
+    setState(() {
+      isLoadingProfile = true;
+      profileError = null;
+    });
+
+    try {
+      final result = await WholesalerApiService.getProfile();
+
+      if (result['success']) {
+        setState(() {
+          profileData = result['data'];
+          isLoadingProfile = false;
+        });
+      } else {
+        setState(() {
+          profileError = result['message'] ?? 'Failed to load profile';
+          isLoadingProfile = false;
+        });
+
+        // Handle token expiration or authentication errors
+        if (result['requiresLogin'] == true) {
+          _handleAuthError();
+        }
+      }
+    } catch (e) {
+      setState(() {
+        profileError = 'Error loading profile: $e';
+        isLoadingProfile = false;
+      });
+    }
   }
 
   Future<void> _loadProductsFromDatabase() async {
@@ -312,6 +356,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           filteredShopOwners = shopOwners;
           isLoadingShopOwners = false;
         });
+        // Also load chat conversations after shop owners are loaded
+        _loadChatConversations();
       } else {
         setState(() {
           shopOwnersError = result['message'] ?? 'Failed to load shop owners';
@@ -335,19 +381,80 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
       } else {
         filteredShopOwners = shopOwners.where((shopOwner) {
           final name = shopOwner['shop_name']?.toString().toLowerCase() ?? '';
-          final fullName = shopOwner['full_name']?.toString().toLowerCase() ?? '';
+          final fullName =
+              shopOwner['full_name']?.toString().toLowerCase() ?? '';
           final phone = shopOwner['phone']?.toString().toLowerCase() ?? '';
-          final location = shopOwner['location']?.toString().toLowerCase() ?? '';
+          final location =
+              shopOwner['location']?.toString().toLowerCase() ?? '';
           final searchQuery = query.toLowerCase();
-          
+
           return name.contains(searchQuery) ||
-                 fullName.contains(searchQuery) ||
-                 phone.contains(searchQuery) ||
-                 location.contains(searchQuery);
+              fullName.contains(searchQuery) ||
+              phone.contains(searchQuery) ||
+              location.contains(searchQuery);
         }).toList();
         showSearchDropdown = filteredShopOwners.isNotEmpty && query.isNotEmpty;
       }
     });
+  }
+
+  Future<void> _loadChatConversations() async {
+    setState(() {
+      isLoadingChats = true;
+      chatError = null;
+    });
+
+    try {
+      // Load real chat conversations from the API
+      final result = await ChatApiService.getConversations();
+
+      if (result['success']) {
+        final conversations = result['conversations'] as List<dynamic>;
+        setState(() {
+          chatConversations = List<Map<String, dynamic>>.from(conversations);
+          isLoadingChats = false;
+        });
+      } else {
+        // Fallback to shop owners list if no conversations
+        if (shopOwners.isNotEmpty) {
+          final fallbackConversations = shopOwners.map((shopOwner) {
+            return {
+              'contact_id': shopOwner['id'],
+              'contact_name': shopOwner['shop_name'] ??
+                  shopOwner['full_name'] ??
+                  'Unknown Shop',
+              'contact_type': 'shop_owner',
+              'last_message': 'Start a conversation',
+              'last_message_time': DateTime.now().toIso8601String(),
+              'unread_count': 0,
+              'phone': shopOwner['phone'],
+            };
+          }).toList();
+
+          setState(() {
+            chatConversations = fallbackConversations;
+            isLoadingChats = false;
+          });
+        } else {
+          setState(() {
+            chatConversations = [];
+            isLoadingChats = false;
+          });
+        }
+
+        // Handle token expiration or authentication errors
+        if (result['requiresLogin'] == true) {
+          _handleAuthError();
+        }
+      }
+    } catch (e) {
+      setState(() {
+        chatError = 'Error loading chat conversations: $e';
+        chatConversations = [];
+        isLoadingChats = false;
+      });
+      print('Error loading chat conversations: $e');
+    }
   }
 
   @override
@@ -361,9 +468,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      drawer: const CustomDrawer(
-        userName: "Wholesaler Name",
-        userEmail: "wholesaler@example.com",
+      drawer: CustomDrawer(
+        userName: profileData?['full_name'] ?? "Loading...",
+        userEmail: profileData?['email'] ?? "loading@example.com",
         userRole: "Wholesaler",
       ),
       appBar: AppBar(
@@ -821,6 +928,57 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
           const SizedBox(height: 12),
 
+          // Quick Action Summary Card
+          if (lowStockProductsList.isNotEmpty)
+            Card(
+              elevation: 2,
+              color: Colors.orange[50],
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.orange[100],
+                      child: Icon(Icons.chat_bubble_outline,
+                          color: Colors.orange[700]),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Quick Action",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange[800],
+                            ),
+                          ),
+                          Text(
+                            "${lowStockProductsList.length} shops need stock - Click 💬 to chat",
+                            style: TextStyle(
+                                fontSize: 12, color: Colors.orange[700]),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _messageAllShops,
+                      icon: const Icon(Icons.message, size: 16),
+                      label: const Text("Message All"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange[600],
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (lowStockProductsList.isNotEmpty) const SizedBox(height: 12),
+
           // Results List
           Expanded(
             child: isLoadingLowStock
@@ -964,32 +1122,57 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
           ],
         ),
-        trailing: Container(
-          decoration: BoxDecoration(
-            color: Colors.blue[600],
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => WholesalerChatScreen(
-                  contactId: shopName.toLowerCase().replaceAll(' ', '_'),
-                  contactType: 'shop_owner',
-                  contactName: shopName,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Stock Refill Button
+            Tooltip(
+              message: "Refill Stock for $shopName",
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue[600],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: GestureDetector(
+                  onTap: () => _showStockRefillDialog(productData),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    child: const Icon(Icons.add_box,
+                        color: Colors.white, size: 16),
+                  ),
                 ),
               ),
             ),
-            onLongPress: () => _contactShop(shopName),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              constraints: const BoxConstraints(
-                minWidth: 32,
-                minHeight: 32,
+            const SizedBox(width: 8),
+            // Chat Button
+            Tooltip(
+              message: "Chat with $shopName",
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.green[600],
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: GestureDetector(
+                  onTap: () =>
+                      _openChatWithShopOwnerFromMonitoring(productData),
+                  onLongPress: () => _contactShop(shopName),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
+                    child:
+                        const Icon(Icons.chat, color: Colors.white, size: 16),
+                  ),
+                ),
               ),
-              child: const Icon(Icons.chat, color: Colors.white, size: 16),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -1004,29 +1187,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           Row(
             children: [
               Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const WholesalerAddProductScreen(),
-                      ),
-                    ).then((_) {
-                      // Refresh inventory when returning from add product screen
-                      _loadInventory();
-                    });
-                  },
-                  icon: const Icon(Icons.add, color: Colors.white),
-                  label: const Text("Add Product",
-                      style: TextStyle(color: Colors.white)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green[800],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
+                flex: 2,
                 child: ElevatedButton.icon(
                   onPressed: isLoadingInventory ? null : _loadInventory,
                   icon: isLoadingInventory
@@ -1043,18 +1204,21 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange[600],
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               Expanded(
+                flex: 2,
                 child: ElevatedButton.icon(
-                  onPressed: () => _uploadCatalog(),
-                  icon: const Icon(Icons.upload, color: Colors.white),
-                  label: const Text("Upload",
+                  onPressed: _addProduct,
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text("Add Product",
                       style: TextStyle(color: Colors.white)),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[600],
+                    backgroundColor: Colors.green[600],
+                    padding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -1280,15 +1444,17 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                   ],
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Search Box with Dropdown
                 Stack(
                   children: [
                     TextField(
                       controller: _chatSearchController,
                       decoration: InputDecoration(
-                        hintText: "Search shop owners by name, phone, or location...",
-                        prefixIcon: Icon(Icons.search, color: Colors.green[600]),
+                        hintText:
+                            "Search shop owners by name, phone, or location...",
+                        prefixIcon:
+                            Icon(Icons.search, color: Colors.green[600]),
                         suffixIcon: _chatSearchController.text.isNotEmpty
                             ? IconButton(
                                 icon: const Icon(Icons.clear),
@@ -1304,14 +1470,15 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.green[600]!, width: 2),
+                          borderSide:
+                              BorderSide(color: Colors.green[600]!, width: 2),
                         ),
                         filled: true,
                         fillColor: Colors.white,
                       ),
                       onChanged: _filterShopOwners,
                     ),
-                    
+
                     // Dropdown suggestions
                     if (showSearchDropdown)
                       Positioned(
@@ -1332,7 +1499,9 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                                   leading: CircleAvatar(
                                     backgroundColor: Colors.green[100],
                                     child: Text(
-                                      (shopOwner['shop_name']?.toString() ?? 'S')[0].toUpperCase(),
+                                      (shopOwner['shop_name']?.toString() ??
+                                              'S')[0]
+                                          .toUpperCase(),
                                       style: TextStyle(
                                         color: Colors.green[600],
                                         fontWeight: FontWeight.bold,
@@ -1340,11 +1509,14 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                                     ),
                                   ),
                                   title: Text(
-                                    shopOwner['shop_name']?.toString() ?? 'Unknown Shop',
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    shopOwner['shop_name']?.toString() ??
+                                        'Unknown Shop',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
                                   ),
                                   subtitle: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       if (shopOwner['phone'] != null)
                                         Text('📞 ${shopOwner['phone']}'),
@@ -1364,11 +1536,16 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => WholesalerChatScreen(
-                                          contactId: shopOwner['id']?.toString() ?? '',
+                                        builder: (context) =>
+                                            WholesalerChatScreen(
+                                          contactId:
+                                              shopOwner['id']?.toString() ?? '',
                                           contactType: 'shop_owner',
-                                          contactName: shopOwner['shop_name']?.toString() ?? 'Unknown Shop',
-                                          contactPhone: shopOwner['phone']?.toString(),
+                                          contactName: shopOwner['shop_name']
+                                                  ?.toString() ??
+                                              'Unknown Shop',
+                                          contactPhone:
+                                              shopOwner['phone']?.toString(),
                                         ),
                                       ),
                                     );
@@ -1381,7 +1558,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                       ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -1407,7 +1584,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             ),
           ),
           const SizedBox(height: 20),
-          
+
           Text(
             "Recent Conversations",
             style: TextStyle(
@@ -1418,12 +1595,55 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           ),
           const SizedBox(height: 16),
           Expanded(
-            child: ListView.builder(
-              itemCount: 6,
-              itemBuilder: (context, index) {
-                return _buildChatItem(index);
-              },
-            ),
+            child: isLoadingChats
+                ? const Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : chatError != null
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.error_outline,
+                                size: 64, color: Colors.red[300]),
+                            const SizedBox(height: 16),
+                            Text(
+                              chatError!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: _loadChatConversations,
+                              child: const Text("Retry"),
+                            ),
+                          ],
+                        ),
+                      )
+                    : chatConversations.isEmpty
+                        ? const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.chat_bubble_outline,
+                                    size: 64, color: Colors.grey),
+                                SizedBox(height: 16),
+                                Text(
+                                  "No shop owners available for chat",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            itemCount: chatConversations.length,
+                            itemBuilder: (context, index) {
+                              return _buildChatItem(index);
+                            },
+                          ),
           ),
         ],
       ),
@@ -1431,47 +1651,16 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   Widget _buildChatItem(int index) {
-    final chats = [
-      {
-        "shop": "আহমেদ স্টোর",
-        "message": "চাল সরু (নাজির/মিনিকেট) এর দাম কত?",
-        "time": "২ মিনিট আগে",
-        "unread": 2,
-      },
-      {
-        "shop": "করিম ট্রেডার্স",
-        "message": "সয়াবিন তেল (বোতল) এর স্টক আছে?",
-        "time": "১৫ মিনিট আগে",
-        "unread": 0,
-      },
-      {
-        "shop": "রহিম মার্ট",
-        "message": "অর্ডার কনফার্ম",
-        "time": "৩০ মিনিট আগে",
-        "unread": 1,
-      },
-      {
-        "shop": "ফাতিমা স্টোর",
-        "message": "ডেলিভারি কবে?",
-        "time": "১ ঘণ্টা আগে",
-        "unread": 3,
-      },
-      {
-        "shop": "নাসির এন্টারপ্রাইজ",
-        "message": "নতুন দামের তালিকা চাই",
-        "time": "২ ঘণ্টা আগে",
-        "unread": 0,
-      },
-      {
-        "shop": "সালমা ট্রেডিং",
-        "message": "বাল্ক অর্ডার দিতে চাই",
-        "time": "৩ ঘণ্টা আগে",
-        "unread": 1,
-      },
-    ];
+    if (index >= chatConversations.length) {
+      return const SizedBox.shrink();
+    }
 
-    final chat = chats[index];
-    final unreadCount = chat["unread"] as int;
+    final conversation = chatConversations[index];
+    final unreadCount = conversation['unread_count'] as int? ?? 0;
+    final contactName =
+        conversation['contact_name'] as String? ?? 'Unknown Shop';
+    final lastMessage =
+        conversation['last_message'] as String? ?? 'No messages yet';
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
@@ -1479,7 +1668,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         leading: CircleAvatar(
           backgroundColor: Colors.green[100],
           child: Text(
-            (chat["shop"] as String)[0],
+            contactName.isNotEmpty ? contactName[0] : 'S',
             style: TextStyle(
               color: Colors.green[700],
               fontWeight: FontWeight.bold,
@@ -1490,7 +1679,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           children: [
             Expanded(
               child: Text(
-                chat["shop"] as String,
+                contactName,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),
@@ -1516,20 +1705,21 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              chat["message"] as String,
+              lastMessage,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Text(
-              chat["time"] as String,
+              _formatChatTime(
+                  conversation['last_message_time'] as String? ?? ''),
               style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),
         trailing: IconButton(
           icon: Icon(Icons.chat, color: Colors.green[800]),
-          onPressed: () => _openChatWithShop(chat["shop"] as String),
+          onPressed: () => _openChatWithShopOwner(conversation),
           tooltip: "Open Chat",
         ),
       ),
@@ -2227,56 +2417,17 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   // Inventory Management Methods
-  void _uploadCatalog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Upload Product Catalog"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-                "Upload an Excel or CSV file with your product catalog."),
-            const SizedBox(height: 16),
-            Container(
-              width: double.infinity,
-              height: 100,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.cloud_upload, size: 40, color: Colors.grey),
-                  Text("Click to select file or drag and drop"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              "Supported formats: .xlsx, .xls, .csv",
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Catalog upload started!")),
-              );
-            },
-            child: const Text("Upload"),
-          ),
-        ],
+  void _addProduct() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const WholesalerAddProductScreen(),
       ),
-    );
+    ).then((result) {
+      if (result == true) {
+        _loadInventory(); // Reload inventory if product was added
+      }
+    });
   }
 
   void _handleInventoryAction(String action, String productName,
@@ -3023,15 +3174,243 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     }
   }
 
-  void _openChatWithShop(String shopName) {
+  String _formatChatTime(String timestamp) {
+    try {
+      final dateTime = DateTime.parse(timestamp);
+      final now = DateTime.now();
+      final difference = now.difference(dateTime);
+
+      if (difference.inMinutes < 1) {
+        return "এখনই";
+      } else if (difference.inHours < 1) {
+        return "${difference.inMinutes} মিনিট আগে";
+      } else if (difference.inDays < 1) {
+        return "${difference.inHours} ঘণ্টা আগে";
+      } else {
+        return "${dateTime.day}/${dateTime.month}";
+      }
+    } catch (e) {
+      return "Unknown";
+    }
+  }
+
+  void _openChatWithShopOwner(Map<String, dynamic> conversation) {
+    final contactId = conversation['contact_id'] as String?;
+    final contactName =
+        conversation['contact_name'] as String? ?? 'Unknown Shop';
+    final contactType = conversation['contact_type'] as String? ?? 'shop_owner';
+    final contactPhone = conversation['phone'] as String?;
+
+    if (contactId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid shop owner information'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => WholesalerChatScreen(
-          contactId: shopName.toLowerCase().replaceAll(' ', '_'),
+          contactId: contactId,
+          contactType: contactType,
+          contactName: contactName,
+          contactPhone: contactPhone,
+        ),
+      ),
+    );
+  }
+
+  // Open chat with shop owner from monitoring section
+  void _openChatWithShopOwnerFromMonitoring(Map<String, dynamic> productData) {
+    final shopOwnerId = productData['shop_owner_id'] as String?;
+    final shopName = productData['shop_name'] as String? ?? 'Unknown Shop';
+    final shopContact = productData['shop_contact'] as String?;
+
+    // Show loading feedback
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Opening chat with $shopName...'),
+        duration: const Duration(seconds: 1),
+        backgroundColor: Colors.green[600],
+      ),
+    );
+
+    if (shopOwnerId == null) {
+      // Fallback: Find shop owner by name if ID is not available
+      final matchingShopOwner = shopOwners.firstWhere(
+        (owner) =>
+            owner['shop_name'] == shopName || owner['full_name'] == shopName,
+        orElse: () => <String, dynamic>{},
+      );
+
+      if (matchingShopOwner.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Unable to find chat information for $shopName'),
+            backgroundColor: Colors.orange,
+            action: SnackBarAction(
+              label: 'Retry',
+              onPressed: () {
+                _loadShopOwners(); // Reload shop owners data
+              },
+            ),
+          ),
+        );
+        return;
+      }
+
+      // Use the found shop owner data
+      final contactId = matchingShopOwner['id'] as String?;
+      if (contactId != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => WholesalerChatScreen(
+              contactId: contactId,
+              contactType: 'shop_owner',
+              contactName: shopName,
+              contactPhone: matchingShopOwner['phone'] as String?,
+            ),
+          ),
+        );
+        return;
+      }
+    }
+
+    // Use the shop owner ID from product data if available
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WholesalerChatScreen(
+          contactId: shopOwnerId!,
           contactType: 'shop_owner',
           contactName: shopName,
+          contactPhone: shopContact,
         ),
+      ),
+    );
+  }
+
+  // Message all low stock shops
+  void _messageAllShops() {
+    if (lowStockProductsList.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No low stock shops to message'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        maxChildSize: 0.9,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (context, scrollController) {
+          // Get unique shop owners
+          final uniqueShops = <String, Map<String, dynamic>>{};
+          for (var product in lowStockProductsList) {
+            final shopId = product['shop_owner_id'] as String?;
+            final shopName = product['shop_name'] as String?;
+            if (shopId != null && shopName != null) {
+              uniqueShops[shopId] = product;
+            }
+          }
+
+          return Container(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Handle bar
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Icon(Icons.chat_bubble_outline, color: Colors.orange[700]),
+                    const SizedBox(width: 8),
+                    Text(
+                      "Message Low Stock Shops",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange[800],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  "${uniqueShops.length} unique shops with low stock products",
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    itemCount: uniqueShops.length,
+                    itemBuilder: (context, index) {
+                      final shopData = uniqueShops.values.elementAt(index);
+                      final shopName = shopData['shop_name'] ?? 'Unknown Shop';
+                      final shopLocation =
+                          shopData['shop_location'] ?? 'Unknown Location';
+
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: Colors.orange[100],
+                            child: Icon(Icons.store, color: Colors.orange[700]),
+                          ),
+                          title: Text(
+                            shopName,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(shopLocation),
+                          trailing: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(context); // Close bottom sheet
+                              _openChatWithShopOwnerFromMonitoring(shopData);
+                            },
+                            icon: const Icon(Icons.chat, size: 14),
+                            label: const Text("Chat"),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green[600],
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -3420,5 +3799,328 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         backgroundColor: Colors.green[800],
       ),
     );
+  }
+
+  // Stock Refill Dialog
+  Future<void> _showStockRefillDialog(Map<String, dynamic> productData) async {
+    final shopName = productData['shop_name'] ?? 'Unknown Shop';
+    final productName = productData['product_name'] ?? 'Unknown Product';
+    final currentStock = productData['stock_quantity'] ?? 0;
+    final shopOwnerId = productData['shop_owner_id'] ?? '';
+    final productId = productData['product_id'] ?? '';
+    final subcatId = productData['subcat_id'] ?? '';
+
+    final TextEditingController quantityController = TextEditingController();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.add_box, color: Colors.blue[600]),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  "Stock Refill",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Shop and Product Info
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.blue[200]!),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.store, color: Colors.blue[700], size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              shopName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.blue[800],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.inventory_2,
+                              color: Colors.orange[700], size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(child: Text(productName)),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.analytics,
+                              color: Colors.red[700], size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            "Current Stock: $currentStock units",
+                            style: TextStyle(
+                              color: Colors.red[700],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Quantity Input Form
+                Form(
+                  key: formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        "Refill Quantity:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: quantityController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: "Enter quantity to supply",
+                          hintText: "e.g., 100",
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          prefixIcon: const Icon(Icons.add_circle_outline),
+                          suffixText: "units",
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter quantity';
+                          }
+                          final quantity = int.tryParse(value);
+                          if (quantity == null || quantity <= 0) {
+                            return 'Please enter a valid positive number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Info message
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.green[200]!),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info,
+                                color: Colors.green[700], size: 16),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                "This will check your inventory and send refill notification to the shop owner",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green[700],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isLoading ? null : () => Navigator.pop(context),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton.icon(
+              onPressed: isLoading
+                  ? null
+                  : () async {
+                      if (formKey.currentState!.validate()) {
+                        setDialogState(() => isLoading = true);
+
+                        final quantity = int.parse(quantityController.text);
+                        await _processStockRefill(
+                          productData: productData,
+                          refillQuantity: quantity,
+                          shopOwnerId: shopOwnerId,
+                          productId: productId,
+                          subcatId: subcatId,
+                          shopName: shopName,
+                          productName: productName,
+                        );
+
+                        Navigator.pop(context);
+                      }
+                    },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue[600],
+                foregroundColor: Colors.white,
+              ),
+              icon: isLoading
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Icon(Icons.send, size: 16),
+              label: Text(isLoading ? "Processing..." : "Send Refill"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Process Stock Refill
+  Future<void> _processStockRefill({
+    required Map<String, dynamic> productData,
+    required int refillQuantity,
+    required String shopOwnerId,
+    required String productId,
+    required String subcatId,
+    required String shopName,
+    required String productName,
+  }) async {
+    try {
+      // 1. First check if wholesaler has sufficient stock in inventory
+      final inventoryCheckResult = await _checkWholesalerInventory(
+        subcatId: subcatId,
+        requiredQuantity: refillQuantity,
+      );
+
+      if (!inventoryCheckResult['hasStock']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Insufficient stock! You have only ${inventoryCheckResult['availableStock']} units of $productName in your inventory.',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+        return;
+      }
+
+      // 2. Send refill notification via chat
+      final chatResult = await ChatApiService.sendMessage(
+        receiverId: shopOwnerId,
+        receiverType: 'shop_owner',
+        messageText: '''📦 Stock Refill Notification
+
+🏪 Shop: $shopName
+📦 Product: $productName
+📊 Refill Quantity: $refillQuantity units
+
+Your stock refill request has been approved! We will deliver $refillQuantity units of $productName to your shop soon.
+
+Please confirm receipt when the products arrive.
+
+- Your Wholesaler''',
+      );
+
+      if (chatResult['success']) {
+        // 3. Reduce from wholesaler inventory (optional - you may want to do this after delivery)
+        // await _reduceWholesalerInventory(subcatId: subcatId, quantity: refillQuantity);
+
+        // 4. Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Refill notification sent to $shopName for $refillQuantity units of $productName!',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+
+        // 5. Reload data
+        await _loadLowStockProducts();
+        await _loadChatConversations();
+      } else {
+        throw Exception(
+            'Failed to send chat message: ${chatResult['message']}');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error processing refill: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Check Wholesaler Inventory
+  Future<Map<String, dynamic>> _checkWholesalerInventory({
+    required String subcatId,
+    required int requiredQuantity,
+  }) async {
+    try {
+      // Find the product in wholesaler's inventory
+      final inventoryItem = inventoryItems.firstWhere(
+        (item) => item['subcat_id'].toString() == subcatId.toString(),
+        orElse: () => {},
+      );
+
+      if (inventoryItem.isEmpty) {
+        return {
+          'hasStock': false,
+          'availableStock': 0,
+          'message': 'Product not found in your inventory',
+        };
+      }
+
+      final availableStock = inventoryItem['stock_quantity'] ?? 0;
+      final hasStock = availableStock >= requiredQuantity;
+
+      return {
+        'hasStock': hasStock,
+        'availableStock': availableStock,
+        'message': hasStock
+            ? 'Stock available'
+            : 'Insufficient stock. Available: $availableStock, Required: $requiredQuantity',
+      };
+    } catch (e) {
+      return {
+        'hasStock': false,
+        'availableStock': 0,
+        'message': 'Error checking inventory: $e',
+      };
+    }
   }
 }

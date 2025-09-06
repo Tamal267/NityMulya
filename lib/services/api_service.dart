@@ -10,7 +10,7 @@ class ApiService {
       // URL encode the endpoint to handle Bengali characters
       final encodedEndpoint = Uri.encodeFull(endpoint);
       final response = await http.get(
-        Uri.parse('$baseUrl$encodedEndpoint'),
+        Uri.parse('${ApiConfig.baseUrl}$encodedEndpoint'),
         headers: {'Content-Type': 'application/json'},
       );
       return json.decode(response.body);
@@ -23,7 +23,7 @@ class ApiService {
       String endpoint, Map<String, dynamic> data) async {
     try {
       final response = await http.post(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('${ApiConfig.baseUrl}$endpoint'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(data),
       );
@@ -37,7 +37,7 @@ class ApiService {
       [Map<String, dynamic>? data]) async {
     try {
       final response = await http.put(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('${ApiConfig.baseUrl}$endpoint'),
         headers: {'Content-Type': 'application/json'},
         body: data != null ? json.encode(data) : null,
       );
@@ -50,7 +50,7 @@ class ApiService {
   static Future<Map<String, dynamic>> delete(String endpoint) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl$endpoint'),
+        Uri.parse('${ApiConfig.baseUrl}$endpoint'),
         headers: {'Content-Type': 'application/json'},
       );
       return json.decode(response.body);
