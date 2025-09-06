@@ -6,13 +6,16 @@ import 'package:nitymulya/screens/shop_owner/shop_owner_cancelled_order_screen.d
 import 'package:nitymulya/screens/shop_owner/shop_owner_delivered_shop_owner.dart';
 import 'package:nitymulya/screens/shop_owner/shop_owner_on_going_orders_screen.dart';
 import 'package:nitymulya/screens/shop_owner/shop_owner_pending_orders_screen.dart';
+import 'package:nitymulya/screens/shop_owner/shop_owner_refill_screen.dart';
 import 'package:nitymulya/screens/shop_owner/update_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_chat_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_list_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_search_screen.dart';
 import 'package:nitymulya/utils/user_session.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
+import 'package:uuid/uuid.dart';
 
+import '../../services/chat_api_service.dart';
 import '../../services/message_api_service.dart';
 
 class ShopOwnerDashboard extends StatefulWidget {
@@ -29,6 +32,7 @@ class _ShopOwnerDashboardState extends State<ShopOwnerDashboard>
   int pendingOrders = 5;
   int totalProducts = 25;
   int stockAlerts = 3;
+  int pendingRefills = 2; // This represents "receiving" refills count
   String vatRewardStatus = "Eligible";
 
   // User session data
@@ -791,9 +795,23 @@ Widget build(BuildContext context) {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  // Empty space for symmetry
+                  // Refill Card
                   Expanded(
-                    child: Container(),
+                    child: GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ShopOwnerRefillScreen(
+                              userName: userName,
+                              userEmail: userEmail,
+                              userRole: userRole,
+                            ),
+                          ),
+                        );
+                      },
+                      child: _buildRefillCard(),
+                    ),
                   ),
                 ],
               ),
@@ -983,6 +1001,76 @@ Widget build(BuildContext context) {
             title,
             style: const TextStyle(
               fontSize: 11, // slightly smaller
+              color: Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRefillCard() {
+    // Sample refill requests data - replace with real API data
+    final refillRequests = [
+      {'name': 'চাল (সরু)', 'quantity': 50, 'wholesaler': 'রহমান ট্রেডার্স'},
+      {
+        'name': 'সয়াবিন তেল',
+        'quantity': 20,
+        'wholesaler': 'করিম এন্টারপ্রাইজ'
+      },
+      {'name': 'মসুর ডাল', 'quantity': 30, 'wholesaler': 'আলম ইমপোর্ট'},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(12), // same as other cards
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10), // same as other cards
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.inventory_2,
+                  color: Colors.purple[600], size: 20), // same icon size
+              const Spacer(),
+              if (refillRequests.isNotEmpty)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: Colors.orange[600],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "NEW",
+                    style: TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 1), // same spacing as other cards
+          Text(
+            "${refillRequests.length}",
+            style: TextStyle(
+              fontSize: 15, // same size as other cards
+              fontWeight: FontWeight.bold,
+              color: Colors.purple[600],
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            "Refills",
+            style: const TextStyle(
+              fontSize: 11, // same size as other cards
               color: Colors.grey,
             ),
           ),
@@ -1385,10 +1473,55 @@ Widget build(BuildContext context) {
           const SizedBox(height: 16),
 
           Expanded(
-            child: ListView.builder(
-              itemCount: 4,
-              itemBuilder: (context, index) {
-                return _buildWholesalerCard(index);
+            child: FutureBuilder<Map<String, dynamic>>(
+              future: _loadRealConversations(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (snapshot.hasError ||
+                    !snapshot.hasData ||
+                    snapshot.data!['success'] != true) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline,
+                            size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('No conversations found'),
+                        Text('Start chatting with wholesalers!',
+                            style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  );
+                }
+
+                final conversations = snapshot.data!['conversations'] as List;
+
+                if (conversations.isEmpty) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline,
+                            size: 64, color: Colors.grey),
+                        SizedBox(height: 16),
+                        Text('No conversations yet'),
+                        Text('Start chatting with wholesalers!',
+                            style: TextStyle(color: Colors.grey)),
+                      ],
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  itemCount: conversations.length,
+                  itemBuilder: (context, index) {
+                    return _buildRealConversationCard(conversations[index]);
+                  },
+                );
               },
             ),
           ),
@@ -1958,16 +2091,135 @@ Widget build(BuildContext context) {
   }
 
   void _openChatWithWholesaler(String wholesaler) {
-    // Extract the first character for the avatar
-    final initial = wholesaler.isNotEmpty ? wholesaler[0] : 'W';
+    // Generate a proper UUID for sample wholesaler data
+    // In production, this should come from real wholesaler API
+    final uuid = const Uuid();
+    final sampleWholesalerId = uuid.v4();
 
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => WholesalerChatScreen(
-          wholesalerName: wholesaler,
-          wholesalerInitial: initial,
+          contactId: sampleWholesalerId,
+          contactType: "wholesaler",
+          contactName: wholesaler,
+          contactPhone: "+8801XXXXXXXX",
         ),
+      ),
+    );
+  }
+
+  // Load real chat conversations from API
+  Future<Map<String, dynamic>> _loadRealConversations() async {
+    return await ChatApiService.getConversations();
+  }
+
+  // Build a real conversation card from API data
+  Widget _buildRealConversationCard(Map<String, dynamic> conversation) {
+    final contactName =
+        conversation['contact_name']?.toString() ?? 'Unknown Contact';
+    final lastMessage =
+        conversation['last_message']?.toString() ?? 'No messages yet';
+    final unreadCount = conversation['unread_count'] as int? ?? 0;
+    final contactId = conversation['contact_id']?.toString() ?? '';
+    final contactType = conversation['contact_type']?.toString() ?? '';
+    final contactPhone = conversation['contact_phone']?.toString();
+
+    // Format time
+    String timeAgo = '';
+    if (conversation['last_message_time'] != null) {
+      try {
+        final messageTime =
+            DateTime.parse(conversation['last_message_time'].toString());
+        final now = DateTime.now();
+        final difference = now.difference(messageTime);
+
+        if (difference.inMinutes < 1) {
+          timeAgo = 'এখনই';
+        } else if (difference.inMinutes < 60) {
+          timeAgo = '${difference.inMinutes} মিনিট আগে';
+        } else if (difference.inHours < 24) {
+          timeAgo = '${difference.inHours} ঘন্টা আগে';
+        } else {
+          timeAgo = '${difference.inDays} দিন আগে';
+        }
+      } catch (e) {
+        timeAgo = '';
+      }
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Colors.purple[100],
+          child: Text(
+            contactName.isNotEmpty ? contactName[0].toUpperCase() : 'W',
+            style: TextStyle(
+              color: Colors.purple[600],
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                contactName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            if (unreadCount > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '$unreadCount',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              lastMessage,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (timeAgo.isNotEmpty)
+              Text(
+                timeAgo,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+          ],
+        ),
+        onTap: () {
+          if (contactId.isNotEmpty && contactType.isNotEmpty) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => WholesalerChatScreen(
+                  contactId: contactId,
+                  contactName: contactName,
+                  contactType: contactType,
+                  contactPhone: contactPhone,
+                ),
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -2112,32 +2364,6 @@ Widget build(BuildContext context) {
             ),
             icon: const Icon(Icons.edit, size: 16),
             label: const Text("Compose"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatRow(String label, String value, Color color, IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
           ),
         ],
       ),
@@ -2345,15 +2571,6 @@ Widget build(BuildContext context) {
             label: const Text("Send"),
           ),
         ],
-      ),
-    );
-  }
-
-  void _markAllAsRead() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('✅ All messages marked as read'),
-        backgroundColor: Colors.green,
       ),
     );
   }

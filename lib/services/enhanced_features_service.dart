@@ -1,23 +1,22 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
-import '../config/api_config.dart';
-
 class EnhancedFeaturesService {
+  static const String _baseUrl = 'http://localhost:3005/api/enhanced';
+  
   // ================================
   // FAVOURITES SERVICE
   // ================================
-
+  
   static Future<Map<String, dynamic>> getFavourites({
     required String customerId,
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/favourites/$customerId'),
+        Uri.parse('$_baseUrl/favourites/$customerId'),
         headers: {'Content-Type': 'application/json'},
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -37,7 +36,7 @@ class EnhancedFeaturesService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/favourites'),
+        Uri.parse('$_baseUrl/favourites'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'customer_id': customerId,
@@ -47,7 +46,7 @@ class EnhancedFeaturesService {
           'shop_name': shopName,
         }),
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -65,16 +64,14 @@ class EnhancedFeaturesService {
   }) async {
     try {
       final response = await http.delete(
-        Uri.parse(
-            '${ApiConfig.baseUrl}/favourites/$customerId/$shopId/$productId'),
+        Uri.parse('$_baseUrl/favourites/$customerId/$shopId/$productId'),
         headers: {'Content-Type': 'application/json'},
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw Exception(
-            'Failed to remove from favourites: ${response.statusCode}');
+        throw Exception('Failed to remove from favourites: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error removing from favourites: $e');
@@ -84,7 +81,7 @@ class EnhancedFeaturesService {
   // ================================
   // PRICE HISTORY SERVICE
   // ================================
-
+  
   static Future<Map<String, dynamic>> getPriceHistory({
     required String productId,
     required String shopId,
@@ -92,19 +89,17 @@ class EnhancedFeaturesService {
     int offset = 0,
   }) async {
     try {
-      String url =
-          '${ApiConfig.baseUrl}/price-history/$productId/$shopId?limit=$limit&offset=$offset';
-
+      String url = '$_baseUrl/price-history/$productId/$shopId?limit=$limit&offset=$offset';
+      
       final response = await http.get(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw Exception(
-            'Failed to fetch price history: ${response.statusCode}');
+        throw Exception('Failed to fetch price history: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error fetching price history: $e');
@@ -120,7 +115,7 @@ class EnhancedFeaturesService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/price-history'),
+        Uri.parse('$_baseUrl/price-history'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'shop_owner_id': shopOwnerId,
@@ -130,7 +125,7 @@ class EnhancedFeaturesService {
           'notes': notes,
         }),
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -144,7 +139,7 @@ class EnhancedFeaturesService {
   // ================================
   // REVIEWS SERVICE
   // ================================
-
+  
   static Future<Map<String, dynamic>> getReviews({
     required dynamic shopId, // Accept both String and int
     String? productId,
@@ -152,17 +147,16 @@ class EnhancedFeaturesService {
     int offset = 0,
   }) async {
     try {
-      String url =
-          '${ApiConfig.baseUrl}/reviews/$shopId?limit=$limit&offset=$offset';
+      String url = '$_baseUrl/reviews/$shopId?limit=$limit&offset=$offset';
       if (productId != null) {
         url += '&productId=$productId';
       }
-
+      
       final response = await http.get(
         Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -190,7 +184,7 @@ class EnhancedFeaturesService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/reviews'),
+        Uri.parse('$_baseUrl/reviews'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'customer_id': customerId,
@@ -208,7 +202,7 @@ class EnhancedFeaturesService {
           'review_comment': reviewComment,
         }),
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -222,16 +216,16 @@ class EnhancedFeaturesService {
   // ================================
   // COMPLAINTS SERVICE
   // ================================
-
+  
   static Future<Map<String, dynamic>> getComplaints({
     required String customerId,
   }) async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/complaints/$customerId'),
+        Uri.parse('$_baseUrl/complaints/$customerId'),
         headers: {'Content-Type': 'application/json'},
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -258,7 +252,7 @@ class EnhancedFeaturesService {
   }) async {
     try {
       final response = await http.post(
-        Uri.parse('${ApiConfig.baseUrl}/complaints'),
+        Uri.parse('$_baseUrl/complaints'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'customer_id': customerId,
@@ -275,7 +269,7 @@ class EnhancedFeaturesService {
           'priority': priority ?? 'medium',
         }),
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
@@ -293,19 +287,18 @@ class EnhancedFeaturesService {
   }) async {
     try {
       final response = await http.put(
-        Uri.parse('${ApiConfig.baseUrl}/complaints/$complaintId/status'),
+        Uri.parse('$_baseUrl/complaints/$complaintId/status'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'status': status,
           'admin_notes': adminNotes,
         }),
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        throw Exception(
-            'Failed to update complaint status: ${response.statusCode}');
+        throw Exception('Failed to update complaint status: ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Error updating complaint status: $e');
@@ -315,14 +308,14 @@ class EnhancedFeaturesService {
   // ================================
   // HEALTH CHECK
   // ================================
-
+  
   static Future<Map<String, dynamic>> healthCheck() async {
     try {
       final response = await http.get(
-        Uri.parse('${ApiConfig.baseUrl}/health'),
+        Uri.parse('$_baseUrl/health'),
         headers: {'Content-Type': 'application/json'},
       );
-
+      
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {

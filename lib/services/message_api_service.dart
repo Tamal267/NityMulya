@@ -89,8 +89,7 @@ class MessageApiService {
   }) async {
     try {
       final response = await http.get(
-        Uri.parse(ApiConfig.getOrderMessagesUrl(orderId) +
-            '?user_id=$userId&user_type=$userType'),
+        Uri.parse('${ApiConfig.getOrderMessagesUrl(orderId)}?user_id=$userId&user_type=$userType'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -142,7 +141,8 @@ class MessageApiService {
         final Map<String, dynamic> data = jsonDecode(response.body);
         return {
           'success': true,
-          'data': data['data'] ?? [],
+          'data':
+              data['messages'] ?? [], // Backend returns 'messages' not 'data'
         };
       } else {
         final errorData = jsonDecode(response.body);

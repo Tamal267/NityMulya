@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/network/wholesaler_api.dart';
+import 'package:nitymulya/services/chat_api_service.dart';
 
 import '../../utils/user_session.dart';
+import '../auth/login_screen.dart';
 
 class WholesalerChatScreen extends StatefulWidget {
   final String contactId;
@@ -46,29 +47,30 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
   Future<void> _loadCurrentUser() async {
     // Debug prints
     print('=== LOAD CURRENT USER DEBUG ===');
-    
+
     try {
       final userId = await UserSession.getCurrentUserId();
       final userType = await UserSession.getCurrentUserType();
-      
+
       print('UserSession.getCurrentUserId(): $userId');
       print('UserSession.getCurrentUserType(): $userType');
-      
+
       setState(() {
         // If no user session found, use test user for development
         if (userId == null) {
           print('No user session found, using test user for development');
-          _currentUserId = 'a84591d9-ed56-4449-b422-e935be019dc9'; // Test wholesaler ID (আলম ইমপোর্ট)
+          _currentUserId =
+              'a84591d9-ed56-4449-b422-e935be019dc9'; // Test wholesaler ID (আলম ইমপোর্ট)
           _currentUserType = 'wholesaler';
         } else {
           _currentUserId = userId;
           _currentUserType = userType ?? 'wholesaler';
         }
       });
-      
+
       print('Final currentUserId: $_currentUserId');
       print('Final currentUserType: $_currentUserType');
-      
+
       if (_currentUserId != null) {
         _loadMessages();
       } else {
@@ -94,19 +96,17 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
     });
 
     try {
-      final result = await WholesalerApiService.getConversationMessages(
-        user1Id: _currentUserId!,
-        user1Type: _currentUserType!,
-        user2Id: widget.contactId,
-        user2Type: widget.contactType,
+      final result = await ChatApiService.getMessages(
+        contactId: widget.contactId,
+        contactType: widget.contactType,
       );
-      
+
       if (result['success'] == true) {
         setState(() {
-          _messages = List<Map<String, dynamic>>.from(result['data'] ?? []);
+          _messages = List<Map<String, dynamic>>.from(result['messages'] ?? []);
           _isLoading = false;
         });
-        
+
         // Scroll to bottom after loading messages
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollToBottom();
@@ -116,6 +116,11 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
           _error = result['message'] ?? 'Failed to load messages';
           _isLoading = false;
         });
+
+        // Handle token expiration
+        if (result['requiresLogin'] == true) {
+          _handleAuthError();
+        }
       }
     } catch (e) {
       setState(() {
@@ -135,24 +140,23 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
     }
   }
 
+  void _handleAuthError() {
+    // Clear user session
+    UserSession.clearSession();
+
+    // Navigate back to login screen
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (Route<dynamic> route) => false,
+    );
+  }
+
   Future<void> _sendMessage() async {
     final messageText = _messageController.text.trim();
-    
-    // Debug prints
-    print('=== SEND MESSAGE DEBUG ===');
-    print('Message text: "$messageText"');
-    print('Current user ID: $_currentUserId');
-    print('Current user type: $_currentUserType');
-    print('Contact ID: ${widget.contactId}');
-    print('Contact type: ${widget.contactType}');
-    
-    if (messageText.isEmpty) {
-      print('Message is empty, returning');
-      return;
-    }
-    
+
+    if (messageText.isEmpty) return;
+
     if (_currentUserId == null) {
-      print('Current user ID is null, returning');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('User not logged in. Please login again.'),
@@ -164,7 +168,7 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
 
     // Add message to UI immediately for better UX
     final tempMessage = {
-      'message': messageText,
+      'message_text': messageText,
       'sender_id': _currentUserId,
       'sender_type': _currentUserType,
       'receiver_id': widget.contactId,
@@ -176,40 +180,35 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
     setState(() {
       _messages.add(tempMessage);
     });
-    
+
     _messageController.clear();
-    
+
     // Scroll to bottom after a brief delay to ensure the message is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToBottom();
     });
 
     try {
-      print('Sending message via API...');
-      final result = await WholesalerApiService.sendMessage(
-        senderId: _currentUserId!,
-        senderType: _currentUserType!,
+      final result = await ChatApiService.sendMessage(
         receiverId: widget.contactId,
         receiverType: widget.contactType,
-        message: messageText,
+        messageText: messageText,
       );
-
-      print('API result: $result');
 
       if (result['success'] == true) {
         // Replace temp message with actual message from server
         setState(() {
           _messages.removeLast();
-          _messages.add(result['data']);
+          _messages.add(result['message']);
         });
-        print('Message sent successfully');
+        print('✅ Message sent successfully');
       } else {
         // Remove temp message on failure
         setState(() {
           _messages.removeLast();
         });
-        
-        print('Failed to send message: ${result['message']}');
+
+        print('❌ Failed to send message: ${result['message']}');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -218,14 +217,19 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
             ),
           );
         }
+
+        // Handle token expiration
+        if (result['requiresLogin'] == true) {
+          _handleAuthError();
+        }
       }
     } catch (e) {
       // Remove temp message on error
       setState(() {
         _messages.removeLast();
       });
-      
-      print('Error sending message: $e');
+
+      print('💥 Error sending message: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -301,7 +305,7 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
       final dateTime = DateTime.parse(timestamp);
       final now = DateTime.now();
       final difference = now.difference(dateTime);
-      
+
       if (difference.inMinutes < 1) {
         return "এখনই";
       } else if (difference.inHours < 1) {
@@ -394,7 +398,7 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
           Expanded(
             child: _buildMessagesList(),
           ),
-          
+
           // Message Input
           Container(
             padding: const EdgeInsets.all(16),
@@ -445,7 +449,8 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
                     icon: const Icon(Icons.send, color: Colors.white),
                     onPressed: () {
                       print('=== SEND BUTTON PRESSED ===');
-                      print('Message controller text: "${_messageController.text}"');
+                      print(
+                          'Message controller text: "${_messageController.text}"');
                       _sendMessage();
                     },
                   ),
@@ -534,11 +539,12 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
   Widget _buildMessageBubble(Map<String, dynamic> message) {
     final isFromMe = _isFromCurrentUser(message);
     final isSending = message['sending'] == true;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Row(
-        mainAxisAlignment: isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isFromMe ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isFromMe) ...[
@@ -556,7 +562,6 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
             ),
             const SizedBox(width: 8),
           ],
-          
           Flexible(
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -586,7 +591,6 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
                       fontSize: 16,
                     ),
                   ),
-                  
                   const SizedBox(height: 4),
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -594,7 +598,8 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
                       Text(
                         _formatTime(message['created_at']?.toString() ?? ''),
                         style: TextStyle(
-                          color: isFromMe ? Colors.green[200] : Colors.grey[600],
+                          color:
+                              isFromMe ? Colors.green[200] : Colors.grey[600],
                           fontSize: 12,
                         ),
                       ),
@@ -617,7 +622,6 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
               ),
             ),
           ),
-          
           if (isFromMe) ...[
             const SizedBox(width: 8),
             CircleAvatar(

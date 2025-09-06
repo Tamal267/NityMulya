@@ -980,8 +980,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
       floatingActionButton: FloatingActionButton(
         onPressed: _composeNewMessage,
         backgroundColor: Colors.indigo,
-        child: const Icon(Icons.add_comment, color: Colors.white),
         tooltip: 'New Message',
+        child: const Icon(Icons.add_comment, color: Colors.white),
       ),
     );
   }

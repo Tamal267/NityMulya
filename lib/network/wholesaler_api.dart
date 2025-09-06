@@ -6,15 +6,17 @@ class WholesalerApiService {
   // Get wholesaler dashboard summary
   static Future<Map<String, dynamic>> getDashboardSummary() async {
     try {
-      final response = await _networkHelper.getWithToken('/wholesaler/dashboard');
-      
+      final response =
+          await _networkHelper.getWithToken('/wholesaler/dashboard');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -22,7 +24,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch dashboard data',
@@ -35,18 +37,19 @@ class WholesalerApiService {
     }
   }
 
-  // Get wholesaler inventory
-  static Future<Map<String, dynamic>> getInventory() async {
+  // Get wholesaler profile
+  static Future<Map<String, dynamic>> getProfile() async {
     try {
-      final response = await _networkHelper.getWithToken('/wholesaler/inventory');
-      
+      final response = await _networkHelper.getWithToken('/wholesaler/profile');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -54,7 +57,41 @@ class WholesalerApiService {
           };
         }
       }
-      
+
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch profile data',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching profile data: $e',
+      };
+    }
+  }
+
+  // Get wholesaler inventory
+  static Future<Map<String, dynamic>> getInventory() async {
+    try {
+      final response =
+          await _networkHelper.getWithToken('/wholesaler/inventory');
+
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch inventory',
@@ -82,8 +119,9 @@ class WholesalerApiService {
         'low_stock_threshold': lowStockThreshold ?? 10,
       };
 
-      final response = await _networkHelper.postWithToken('/wholesaler/inventory', requestData);
-      
+      final response = await _networkHelper.postWithToken(
+          '/wholesaler/inventory', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -91,7 +129,8 @@ class WholesalerApiService {
             'message': response['message'] ?? 'Product added successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -99,7 +138,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to add product',
@@ -123,7 +162,7 @@ class WholesalerApiService {
       final requestData = <String, dynamic>{
         'inventory_id': inventoryId,
       };
-      
+
       if (stockQuantity != null) {
         requestData['stock_quantity'] = stockQuantity;
       }
@@ -134,8 +173,9 @@ class WholesalerApiService {
         requestData['low_stock_threshold'] = lowStockThreshold;
       }
 
-      final response = await _networkHelper.putWithToken('/wholesaler/inventory', requestData);
-      
+      final response = await _networkHelper.putWithToken(
+          '/wholesaler/inventory', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -143,7 +183,8 @@ class WholesalerApiService {
             'message': response['message'] ?? 'Inventory updated successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -151,7 +192,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to update inventory',
@@ -175,16 +216,17 @@ class WholesalerApiService {
       if (productFilter != null) params.add('product=$productFilter');
       if (locationFilter != null) params.add('location=$locationFilter');
       if (params.isNotEmpty) url += '?${params.join('&')}';
-      
+
       final response = await _networkHelper.getWithToken(url);
-      
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -192,7 +234,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch low stock products',
@@ -212,16 +254,17 @@ class WholesalerApiService {
     try {
       String url = '/wholesaler/orders';
       if (statusFilter != null) url += '?status=$statusFilter';
-      
+
       final response = await _networkHelper.getWithToken(url);
-      
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -229,7 +272,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch orders',
@@ -259,8 +302,9 @@ class WholesalerApiService {
         'notes': notes,
       };
 
-      final response = await _networkHelper.postWithToken('/wholesaler/orders', requestData);
-      
+      final response =
+          await _networkHelper.postWithToken('/wholesaler/orders', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -268,7 +312,8 @@ class WholesalerApiService {
             'message': response['message'] ?? 'Order created successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -276,7 +321,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to create order',
@@ -300,16 +345,19 @@ class WholesalerApiService {
         'status': status,
       };
 
-      final response = await _networkHelper.putWithToken('/wholesaler/orders/status', requestData);
-      
+      final response = await _networkHelper.putWithToken(
+          '/wholesaler/orders/status', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
-            'message': response['message'] ?? 'Order status updated successfully',
+            'message':
+                response['message'] ?? 'Order status updated successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -317,7 +365,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to update order status',
@@ -334,14 +382,15 @@ class WholesalerApiService {
   static Future<Map<String, dynamic>> getOffers() async {
     try {
       final response = await _networkHelper.getWithToken('/wholesaler/offers');
-      
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -349,7 +398,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch offers',
@@ -379,8 +428,9 @@ class WholesalerApiService {
         'valid_until': validUntil,
       };
 
-      final response = await _networkHelper.postWithToken('/wholesaler/offers', requestData);
-      
+      final response =
+          await _networkHelper.postWithToken('/wholesaler/offers', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -388,7 +438,8 @@ class WholesalerApiService {
             'message': response['message'] ?? 'Offer created successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -396,7 +447,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to create offer',
@@ -430,8 +481,9 @@ class WholesalerApiService {
         'is_active': isActive,
       };
 
-      final response = await _networkHelper.putWithToken('/wholesaler/offers', requestData);
-      
+      final response =
+          await _networkHelper.putWithToken('/wholesaler/offers', requestData);
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -439,7 +491,8 @@ class WholesalerApiService {
             'message': response['message'] ?? 'Offer updated successfully',
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -447,7 +500,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to update offer',
@@ -465,15 +518,17 @@ class WholesalerApiService {
     required String offerId,
   }) async {
     try {
-      final response = await _networkHelper.deleteWithToken('/wholesaler/offers/$offerId');
-      
+      final response =
+          await _networkHelper.deleteWithToken('/wholesaler/offers/$offerId');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'message': response['message'] ?? 'Offer deleted successfully',
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -481,7 +536,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to delete offer',
@@ -501,16 +556,17 @@ class WholesalerApiService {
     try {
       String url = '/wholesaler/chat';
       if (shopOwnerId != null) url += '?shop_owner_id=$shopOwnerId';
-      
+
       final response = await _networkHelper.getWithToken(url);
-      
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -518,7 +574,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch messages',
@@ -534,15 +590,17 @@ class WholesalerApiService {
   // Get all shop owners for selection
   static Future<Map<String, dynamic>> getShopOwners() async {
     try {
-      final response = await _networkHelper.getWithToken('/wholesaler/shop-owners');
-      
+      final response =
+          await _networkHelper.getWithToken('/wholesaler/shop-owners');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -550,7 +608,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch shop owners',
@@ -566,15 +624,17 @@ class WholesalerApiService {
   // Get all categories
   static Future<Map<String, dynamic>> getCategories() async {
     try {
-      final response = await _networkHelper.getWithToken('/wholesaler/categories');
-      
+      final response =
+          await _networkHelper.getWithToken('/wholesaler/categories');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -582,7 +642,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch categories',
@@ -596,17 +656,20 @@ class WholesalerApiService {
   }
 
   // Get subcategories by category ID
-  static Future<Map<String, dynamic>> getSubcategories(String categoryId) async {
+  static Future<Map<String, dynamic>> getSubcategories(
+      String categoryId) async {
     try {
-      final response = await _networkHelper.getWithToken('/wholesaler/subcategories?category_id=$categoryId');
-      
+      final response = await _networkHelper
+          .getWithToken('/wholesaler/subcategories?category_id=$categoryId');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -614,7 +677,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch subcategories',
@@ -643,7 +706,7 @@ class WholesalerApiService {
         'receiver_type': receiverType,
         'message': message,
       });
-      
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
@@ -651,7 +714,8 @@ class WholesalerApiService {
             'data': response['data'],
             'message': response['message'] ?? 'Message sent successfully',
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -659,7 +723,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to send message',
@@ -681,16 +745,16 @@ class WholesalerApiService {
   }) async {
     try {
       final response = await _networkHelper.getWithToken(
-        '/chat/messages?user1_id=$user1Id&user1_type=$user1Type&user2_id=$user2Id&user2_type=$user2Type'
-      );
-      
+          '/chat/messages?user1_id=$user1Id&user1_type=$user1Type&user2_id=$user2Id&user2_type=$user2Type');
+
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
             'success': true,
             'data': response['data'],
           };
-        } else if (response.containsKey('error') && response['error'] == 'Unauthorized') {
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
           return {
             'success': false,
             'message': 'Please login again',
@@ -698,7 +762,7 @@ class WholesalerApiService {
           };
         }
       }
-      
+
       return {
         'success': false,
         'message': response['message'] ?? 'Failed to fetch messages',

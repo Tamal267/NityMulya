@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_chat_screen.dart';
+import 'package:uuid/uuid.dart';
 
 class WholesalerListScreen extends StatefulWidget {
   const WholesalerListScreen({super.key});
@@ -147,7 +148,7 @@ class _WholesalerListScreenState extends State<WholesalerListScreen> {
                   },
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Category Filter
                 SizedBox(
                   height: 40,
@@ -157,7 +158,7 @@ class _WholesalerListScreenState extends State<WholesalerListScreen> {
                     itemBuilder: (context, index) {
                       final category = categories[index];
                       final isSelected = selectedCategory == category;
-                      
+
                       return Container(
                         margin: const EdgeInsets.only(right: 8),
                         child: FilterChip(
@@ -179,7 +180,7 @@ class _WholesalerListScreenState extends State<WholesalerListScreen> {
               ],
             ),
           ),
-          
+
           // Quick Stats
           Container(
             padding: const EdgeInsets.all(16),
@@ -214,7 +215,7 @@ class _WholesalerListScreenState extends State<WholesalerListScreen> {
               ],
             ),
           ),
-          
+
           // Wholesaler List
           Expanded(
             child: ListView.builder(
@@ -242,7 +243,8 @@ class _WholesalerListScreenState extends State<WholesalerListScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -367,7 +369,8 @@ class _WholesalerListScreenState extends State<WholesalerListScreen> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                     color: Colors.purple[50],
                     borderRadius: BorderRadius.circular(8),
@@ -414,13 +417,15 @@ class _WholesalerListScreenState extends State<WholesalerListScreen> {
           ],
         ),
         onTap: () {
-          final initial = (wholesaler["name"] as String)[0];
+          final uuid = const Uuid();
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => WholesalerChatScreen(
-                wholesalerName: wholesaler["name"] as String,
-                wholesalerInitial: initial,
+                contactId: wholesaler["id"] as String? ?? uuid.v4(),
+                contactType: "wholesaler",
+                contactName: wholesaler["name"] as String,
+                contactPhone: wholesaler["phone"] as String? ?? "+8801XXXXXXXX",
               ),
             ),
           );
@@ -523,10 +528,9 @@ class WholesalerSearchDelegate extends SearchDelegate {
   @override
   Widget buildSuggestions(BuildContext context) {
     final results = wholesalers
-        .where((wholesaler) =>
-            (wholesaler["name"] as String)
-                .toLowerCase()
-                .contains(query.toLowerCase()))
+        .where((wholesaler) => (wholesaler["name"] as String)
+            .toLowerCase()
+            .contains(query.toLowerCase()))
         .toList();
 
     return ListView.builder(
@@ -534,7 +538,7 @@ class WholesalerSearchDelegate extends SearchDelegate {
       itemBuilder: (context, index) {
         final wholesaler = results[index];
         final initial = (wholesaler["name"] as String)[0];
-        
+
         return ListTile(
           leading: CircleAvatar(
             backgroundColor: Colors.purple[100],
@@ -550,12 +554,16 @@ class WholesalerSearchDelegate extends SearchDelegate {
           subtitle: Text(wholesaler["category"] as String),
           onTap: () {
             close(context, null);
+            final uuid = const Uuid();
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => WholesalerChatScreen(
-                  wholesalerName: wholesaler["name"] as String,
-                  wholesalerInitial: initial,
+                  contactId: wholesaler["id"] as String? ?? uuid.v4(),
+                  contactType: "wholesaler",
+                  contactName: wholesaler["name"] as String,
+                  contactPhone:
+                      wholesaler["phone"] as String? ?? "+8801XXXXXXXX",
                 ),
               ),
             );

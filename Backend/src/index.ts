@@ -27,6 +27,12 @@ import {
   signupWholesaler,
 } from "./controller/authController";
 import {
+  getChatConversations as getChatConversationsFromChat,
+  getChatMessages as getChatMessagesFromChat,
+  markMessagesAsRead,
+  sendChatMessage,
+} from "./controller/chatController";
+import {
   cancelCustomerOrder,
   createCustomerOrder,
   getCancelledOrders,
@@ -58,11 +64,11 @@ import {
   getWholesalerInventory,
   getLowStockProducts as getWholesalerLowStockProducts,
   getWholesalerOffers,
+  getWholesalerProfile,
   getShopOrders as getWholesalerShopOrders,
   updateOrderStatus,
   updateInventoryItem as updateWholesalerInventoryItem,
 } from "./controller/wholesalerController";
-import { db } from "./db";
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
 // import sql from "./db"; // Database connection for persistent storage
 
@@ -101,6 +107,7 @@ app.post("/login_shop_owner", loginShopOwner);
 // Wholesaler routes - protected with authentication
 app.use("/wholesaler/*", createAuthMiddleware(), requireRole("wholesaler"));
 app.get("/wholesaler/dashboard", getWholesalerDashboard);
+app.get("/wholesaler/profile", getWholesalerProfile);
 app.get("/wholesaler/inventory", getWholesalerInventory);
 app.post("/wholesaler/inventory", addWholesalerProduct);
 app.put("/wholesaler/inventory", updateWholesalerInventoryItem);
@@ -136,12 +143,18 @@ app.get("/customer/orders/:orderId", getCustomerOrder);
 app.post("/customer/orders/cancel", cancelCustomerOrder);
 app.get("/customer/cancelled-orders", getCancelledOrders);
 
-// Chat routes (protected - both wholesaler and shop owner)
+// Real-time Chat routes (protected - both wholesaler and shop owner)
 app.use("/chat/*", createAuthMiddleware());
+app.post("/chat/send", sendChatMessage);
+app.get("/chat/messages", getChatMessagesFromChat);
+app.get("/chat/conversations", getChatConversationsFromChat);
+app.post("/chat/mark-read", markMessagesAsRead);
+
+// Legacy chat routes (protected - both wholesaler and shop owner)
 app.get("/chat/wholesalers", getWholesalers);
-app.post("/chat/send", sendMessage);
-app.get("/chat/messages", getChatMessages);
-app.get("/chat/conversations", getChatConversations);
+app.post("/chat/send-old", sendMessage);
+app.get("/chat/messages-old", getChatMessages);
+app.get("/chat/conversations-old", getChatConversations);
 
 // ====================================
 // NEW PRODUCT REVIEW ROUTES
@@ -297,21 +310,49 @@ app.get(
 );
 
 // ====================================
-// UTILITY ROUTES (for debugging)
+// MESSAGING ROUTES
 // ====================================
 
-// Get all reviews (for debugging) - both with and without /api prefix
-app.get("/reviews/all", reviewController.getAllReviews.bind(reviewController));
-app.get(
-  "/api/reviews/all",
-  reviewController.getAllReviews.bind(reviewController)
-);
+// Get customer messages
+app.get("/api/messages/customer/:customerId", async (c) => {
+  try {
+    const customerId = c.req.param("customerId");
+    console.log(`📧 Getting messages for customer: ${customerId}`);
 
-// ====================================
-// MESSAGING SYSTEM ROUTES
-// ====================================
+    // Use existing database connection
+    const { default: sql } = await import("./db");
 
-// Send a message
+    const result = await sql`
+      SELECT 
+        om.*,
+        COALESCE(so.full_name, so.name, 'Unknown Shop') as shop_name
+      FROM order_messages om
+      LEFT JOIN shop_owners so ON om.sender_id::uuid = so.id
+      WHERE om.receiver_id = ${customerId}
+        AND om.receiver_type = 'customer'
+      ORDER BY om.created_at DESC
+    `;
+
+    console.log(`💬 Found ${result.length} messages`);
+
+    return c.json({
+      success: true,
+      messages: result,
+    });
+  } catch (error) {
+    console.error("❌ Error getting customer messages:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to get messages",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      500
+    );
+  }
+});
+
+// Send message
 app.post("/api/messages/send", async (c) => {
   try {
     const body = await c.req.json();
@@ -324,132 +365,48 @@ app.post("/api/messages/send", async (c) => {
       message_text,
     } = body;
 
-    console.log("📧 Sending message:", {
-      order_id,
-      sender_type,
-      sender_id,
-      receiver_type,
-      receiver_id,
-    });
+    console.log("📤 Sending message:", { order_id, sender_type, message_text });
 
-    // Insert message into database
-    const result = await db`
-      INSERT INTO order_messages (order_id, sender_type, sender_id, receiver_type, receiver_id, message_text, is_read, created_at, updated_at)
-      VALUES (${order_id}, ${sender_type}, ${sender_id}, ${receiver_type}, ${receiver_id}, ${message_text}, false, NOW(), NOW())
-      RETURNING *
+    // Use existing database connection
+    const { default: sql } = await import("./db");
+
+    const result = await sql`
+      INSERT INTO order_messages (
+        order_id, sender_type, sender_id, receiver_type, receiver_id, message_text
+      ) VALUES (${order_id}, ${sender_type}, ${sender_id}, ${receiver_type}, ${receiver_id}, ${message_text})
+      RETURNING id as message_id, created_at
     `;
 
-    console.log("✅ Message saved successfully");
+    console.log("✅ Message sent successfully:", result[0]);
 
     return c.json({
       success: true,
-      message: "Message sent successfully",
-      data: result[0],
+      message_id: result[0].message_id,
+      created_at: result[0].created_at,
     });
   } catch (error) {
     console.error("❌ Error sending message:", error);
     return c.json(
       {
         success: false,
-        message: "Failed to send message",
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Failed to send message",
+        details: error instanceof Error ? error.message : String(error),
       },
       500
     );
   }
 });
 
-// Get messages for a customer
-app.get("/api/messages/customer/:customer_id", async (c) => {
-  try {
-    const customer_id = c.req.param("customer_id");
-    console.log("📧 Fetching messages for customer:", customer_id);
+// ====================================
+// UTILITY ROUTES (for debugging)
+// ====================================
 
-    const messages = await db`
-      SELECT 
-        om.*,
-        so.full_name as shop_name
-      FROM order_messages om
-      LEFT JOIN shop_owners so ON om.sender_id::text = so.id::text
-      WHERE om.receiver_id::text = ${customer_id} OR om.sender_id::text = ${customer_id}
-      ORDER BY om.created_at DESC
-    `;
-
-    console.log("✅ Messages found:", messages.length);
-
-    return c.json({
-      success: true,
-      data: messages,
-      count: messages.length,
-    });
-  } catch (error) {
-    console.error("❌ Error fetching customer messages:", error);
-    return c.json(
-      {
-        success: false,
-        message: "Failed to fetch customer messages",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500
-    );
-  }
-});
-
-// Get messages for a shop owner
-app.get("/api/messages/shop/:shop_id", async (c) => {
-  try {
-    const shop_id = c.req.param("shop_id");
-    console.log("📧 Fetching messages for shop owner:", shop_id);
-
-    const messages = await db`
-      SELECT * FROM order_messages 
-      WHERE receiver_id::text = ${shop_id} OR sender_id::text = ${shop_id}
-      ORDER BY created_at DESC
-    `;
-
-    console.log("✅ Messages found:", messages.length);
-
-    return c.json({
-      success: true,
-      data: messages,
-      count: messages.length,
-    });
-  } catch (error) {
-    console.error("❌ Error fetching shop messages:", error);
-    return c.json(
-      {
-        success: false,
-        message: "Failed to fetch shop messages",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500
-    );
-  }
-});
-
-// Health check endpoint
-app.get("/health", async (c) => {
-  try {
-    // Test database connection
-    const result = await db`SELECT 1 as test`;
-
-    return c.json({
-      success: true,
-      message: "API is healthy",
-      timestamp: new Date().toISOString(),
-      database: "Connected",
-    });
-  } catch (error) {
-    return c.json(
-      {
-        success: false,
-        message: "Database connection failed",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      500
-    );
-  }
-});
+// Get all reviews (for debugging) - both with and without /api prefix
+app.get("/reviews/all", reviewController.getAllReviews.bind(reviewController));
+app.get(
+  "/api/reviews/all",
+  reviewController.getAllReviews.bind(reviewController)
+);
 
 export default {
   port: process.env.PORT || 5000,
