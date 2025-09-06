@@ -5,6 +5,7 @@ import 'package:nitymulya/screens/auth/signup_screen.dart';
 import 'package:nitymulya/screens/customers/main_customer_screen.dart';
 import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
+import 'package:nitymulya/screens/dncrp/dncrp_dashboard_screen.dart';
 import 'package:nitymulya/utils/user_session.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,7 +17,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   String selectedRole = 'Customer';
-  final List<String> roles = ['Customer', 'Shop Owner', 'Wholesaler'];
+  final List<String> roles = ['Customer', 'Shop Owner', 'Wholesaler', 'DNCRP-Admin'];
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
@@ -38,7 +39,55 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Call backend login function
+      // Handle DNCRP-Admin login separately
+      if (selectedRole == 'DNCRP-Admin') {
+        // Check DNCRP demo credentials
+        if (email == 'DNCRP_Demo@govt.com' && password == 'DNCRP_Demo') {
+          setState(() {
+            _isLoading = false;
+          });
+
+          // Save DNCRP admin session
+          await UserSession.saveUserSession(
+            userId: 'dncrp_admin_demo',
+            userType: 'dncrp_admin',
+            userData: {
+              'id': 'dncrp_admin_demo',
+              'name': 'DNCRP Admin Demo',
+              'email': email,
+              'role': 'dncrp_admin'
+            },
+            token: 'dncrp_demo_token',
+          );
+
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('DNCRP Admin login successful')),
+          );
+
+          // Navigate to DNCRP Dashboard
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const DNCRPDashboardScreen(),
+            ),
+          );
+          return;
+        } else {
+          setState(() {
+            _isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Invalid DNCRP credentials'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+      }
+
+      // Call backend login function for other roles
       final result = await loginUser(
         email: email,
         password: password,
@@ -200,6 +249,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       border: OutlineInputBorder(),
                     ),
                   ),
+                  
                   const SizedBox(height: 30),
 
                   // Login Button

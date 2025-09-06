@@ -17,8 +17,8 @@ class UserLocation {
 
   factory UserLocation.fromMap(Map<String, dynamic> map) {
     return UserLocation(
-      latitude: (map['latitude'] as num).toDouble(),
-      longitude: (map['longitude'] as num).toDouble(),
+      latitude: double.tryParse(map['latitude'].toString()) ?? 0.0,
+      longitude: double.tryParse(map['longitude'].toString()) ?? 0.0,
       address: map['address'],
       lastUpdated: map['last_updated'] != null
           ? DateTime.parse(map['last_updated'].toString())
@@ -95,8 +95,8 @@ class Customer {
       contact: map['contact'] ?? map['phone'] ?? '',
       permanentLocation: map['latitude'] != null && map['longitude'] != null
           ? UserLocation(
-              latitude: (map['latitude'] as num).toDouble(),
-              longitude: (map['longitude'] as num).toDouble(),
+              latitude: double.tryParse(map['latitude'].toString()) ?? 0.0,
+              longitude: double.tryParse(map['longitude'].toString()) ?? 0.0,
               address: map['address'],
               type: 'permanent',
             )
@@ -104,8 +104,8 @@ class Customer {
       currentLocation:
           map['current_latitude'] != null && map['current_longitude'] != null
               ? UserLocation(
-                  latitude: (map['current_latitude'] as num).toDouble(),
-                  longitude: (map['current_longitude'] as num).toDouble(),
+                  latitude: double.tryParse(map['current_latitude'].toString()) ?? 0.0,
+                  longitude: double.tryParse(map['current_longitude'].toString()) ?? 0.0,
                   address: map['current_address'],
                   type: 'current',
                 )
@@ -196,8 +196,8 @@ class ShopOwner {
       email: map['email'] ?? '',
       contact: map['contact'] ?? map['phone'] ?? '',
       location: UserLocation(
-        latitude: (map['latitude'] as num).toDouble(),
-        longitude: (map['longitude'] as num).toDouble(),
+        latitude: double.tryParse(map['latitude'].toString()) ?? 0.0,
+        longitude: double.tryParse(map['longitude'].toString()) ?? 0.0,
         address: map['address'],
         type: 'permanent',
       ),
@@ -261,8 +261,8 @@ class Wholesaler {
       email: map['email'] ?? '',
       contact: map['contact'] ?? map['phone'] ?? '',
       location: UserLocation(
-        latitude: (map['latitude'] as num).toDouble(),
-        longitude: (map['longitude'] as num).toDouble(),
+        latitude: double.tryParse(map['latitude'].toString()) ?? 0.0,
+        longitude: double.tryParse(map['longitude'].toString()) ?? 0.0,
         address: map['address'],
         type: 'permanent',
       ),
