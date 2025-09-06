@@ -1,11 +1,25 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Your base server URL
-final String serverUrl = dotenv.env['SERVER_URL'] ?? 'http://localhost:5001';
+// Your base server URL - Android emulator compatible
+String get serverUrl {
+  final envUrl = dotenv.env['SERVER_URL'];
+  if (envUrl != null) return envUrl;
+  
+  if (kIsWeb) {
+    return 'http://localhost:3005';
+  } else if (Platform.isAndroid) {
+    return 'http://10.0.2.2:3005';
+  } else {
+    return 'http://localhost:3005';
+  }
+}
 
 // A simple utility class to handle all API requests.
 class NetworkHelper {
@@ -20,6 +34,20 @@ class NetworkHelper {
   // Function to get the stored token from secure storage
   Future<String?> getToken() async {
     return await _secureStorage.read(key: 'token');
+  }
+
+  // Sync token from SharedPreferences (UserSession) to SecureStorage
+  Future<void> syncTokenFromUserSession() async {
+    try {
+      // Import UserSession dynamically to avoid circular dependency
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('auth_token');
+      if (token != null) {
+        await setToken(token);
+      }
+    } catch (e) {
+      print('Error syncing token: $e');
+    }
   }
 
   // A generic POST request function
@@ -84,6 +112,9 @@ class NetworkHelper {
 
   // A POST request with a token in the header
   Future<dynamic> postWithToken(String url, Map<String, dynamic> data) async {
+    // First try to sync token from UserSession
+    await syncTokenFromUserSession();
+    
     final token = await getToken();
     if (token == null) {
       return {'error': 'Unauthorized'};

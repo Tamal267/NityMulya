@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../models/shop.dart';
 import '../../services/review_service.dart';
 import '../../utils/user_session.dart';
-import 'complaint_screen.dart';
+import 'complaint_submission_screen.dart';
 import 'product_detail_screen.dart';
 import 'reviews_screen.dart';
 
@@ -574,6 +574,13 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () {
+                            print('🔥🔥🔥 BUTTON PRESSED DIRECTLY!');
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Button clicked successfully!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
                             _navigateToComplaintPage();
                           },
                           icon: const Icon(Icons.report, size: 16),
@@ -595,9 +602,15 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
 
   // Navigate to complaint page
   void _navigateToComplaintPage() async {
+    print('🔥 COMPLAINT BUTTON CLICKED!'); // Debug
+    print('🔥 Shop: ${widget.shop.name}'); // Debug
+    
     // Get user info from session
     final userInfo = await UserSession.getCurrentUser();
+    print('🔥 User info: $userInfo'); // Debug
+    
     if (userInfo == null) {
+      print('User info is null'); // Debug
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -609,19 +622,28 @@ class _ShopItemsScreenState extends State<ShopItemsScreen> {
       return;
     }
 
+    print('🔥 Navigating to complaint screen...'); // Debug
     if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ComplaintScreen(
-            shop: widget.shop,
-            customerId: userInfo['email']?.hashCode ?? 0, // Using email hashCode as ID
-            customerName: userInfo['name'] ?? 'Unknown User',
-            customerEmail: userInfo['email'] ?? '',
-            customerPhone: userInfo['phone'],
+      try {
+        print('🔥 About to navigate...'); // Debug
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ComplaintSubmissionScreen(
+              shop: widget.shop,
+            ),
           ),
-        ),
-      );
+        );
+        print('🔥 Navigation successful!'); // Debug
+      } catch (e) {
+        print('🔥 Navigation error: $e'); // Debug
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Navigation error: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }

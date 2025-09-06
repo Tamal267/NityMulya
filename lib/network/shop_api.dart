@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 
 class ShopApi {
   static String get baseUrl =>
-      dotenv.env['API_BASE_URL'] ?? 'http://localhost:5000';
+      dotenv.env['API_BASE_URL'] ?? 'http://localhost:3005';
 
   // Fetch all shops with their location data
   static Future<List<Map<String, dynamic>>> fetchShops() async {

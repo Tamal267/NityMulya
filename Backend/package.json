@@ -1,11 +1,13 @@
 {
-  "name": "Backend",
+  "name": "nitymulya-backend",
   "scripts": {
     "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@types/bcrypt": "^6.0.0",
     "@types/jsonwebtoken": "^9.0.10",
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "hono": "^4.8.12",

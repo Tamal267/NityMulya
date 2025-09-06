@@ -1,10 +1,23 @@
-import  String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:5001';'dart:convert';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
 
 class HttpClient {
-  static String get baseUrl => dotenv.env['API_BASE_URL'] ?? 'http://localhost:5000';
+  static String get baseUrl {
+    final envUrl = dotenv.env['API_BASE_URL'];
+    if (envUrl != null) return envUrl;
+    
+    if (kIsWeb) {
+      return 'http://localhost:3005';
+    } else if (Platform.isAndroid) {
+      return 'http://10.0.2.2:3005';
+    } else {
+      return 'http://localhost:3005';
+    }
+  }
   static const Duration timeout = Duration(seconds: 10);
 
   static Map<String, String> get _defaultHeaders => {

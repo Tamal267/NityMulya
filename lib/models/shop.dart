@@ -2,6 +2,7 @@ class Shop {
   final String id;
   final String name;
   final String address;
+  final String location; // Added location field for area/city (optional)
   final String phone;
   final String category;
   final double rating;
@@ -16,6 +17,7 @@ class Shop {
     required this.id,
     required this.name,
     required this.address,
+    this.location = '',
     required this.phone,
     required this.category,
     required this.rating,
@@ -32,6 +34,7 @@ class Shop {
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       address: map['address'] ?? '',
+      location: map['location'] ?? '',
       phone: map['phone'] ?? '',
       category: map['category'] ?? '',
       rating: (map['rating'] ?? 0.0).toDouble(),
@@ -49,6 +52,7 @@ class Shop {
       'id': id,
       'name': name,
       'address': address,
+      'location': location,
       'phone': phone,
       'category': category,
       'rating': rating,
