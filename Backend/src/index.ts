@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { JwtVariables } from "hono/jwt";
 import { prettyJSON } from "hono/pretty-json";
+import dotenv from "dotenv";
 import {
   getCategories,
   getChatConversations,
@@ -38,6 +39,11 @@ import {
 } from "./controller/customerOrderController";
 import { DatabaseReviewController } from "./controller/databaseReviewController";
 import {
+  createCustomerComplaint,
+  getCustomerComplaints,
+  createPublicComplaint,
+} from "./controller/customerComplaintController";
+import {
   addProductToInventory as addShopOwnerProduct,
   getChatMessages as getShopOwnerChatMessages,
   getShopOwnerDashboard,
@@ -64,7 +70,10 @@ import {
 } from "./controller/wholesalerController";
 import { db } from "./db";
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
-// import sql from "./db"; // Database connection for persistent storage
+import sql from "./db"; // Database connection for persistent storage
+
+// Load environment variables
+dotenv.config({ path: '.env.local' });
 
 const app = new Hono<{ Variables: JwtVariables }>();
 // Use database controller for persistent storage
@@ -73,8 +82,27 @@ const reviewController = new DatabaseReviewController();
 app.use(prettyJSON());
 app.use("/*", cors());
 
+// Debug middleware to log all requests
+app.use("*", async (c, next) => {
+  console.log(`🌐 ${c.req.method} ${c.req.url} - ${new Date().toISOString()}`);
+  try {
+    await next();
+  } catch (error) {
+    console.error(`❌ Error handling ${c.req.method} ${c.req.url}:`, error);
+    throw error;
+  }
+});
+
 app.get("/", (c) => {
   return c.json({ message: "Welcome to the API!" });
+});
+
+// Test route
+app.get("/test", (c) => {
+  return c.json({ 
+    message: "Server is working!",
+    timestamp: new Date().toISOString()
+  });
 });
 // Existing API routes
 app.use("/get_price", getPrice);
@@ -127,6 +155,12 @@ app.get("/shop-owner/chat", getShopOwnerChatMessages);
 app.get("/shop-owner/customer-orders", getShopOwnerCustomerOrders);
 app.put("/shop-owner/customer-orders/status", updateCustomerOrderStatus);
 
+// Public complaint submission (no auth required)
+app.post("/api/complaints/public", createPublicComplaint);
+
+// Public complaint submission (no authentication required)
+app.post("/api/complaints/public", createPublicComplaint);
+
 // Customer routes (protected)
 app.use("/customer/*", createAuthMiddleware(), requireRole("customer"));
 app.post("/customer/orders", createCustomerOrder);
@@ -134,7 +168,52 @@ app.get("/customer/orders/stats", getCustomerOrderStats);
 app.get("/customer/orders", getCustomerOrders);
 app.get("/customer/orders/:orderId", getCustomerOrder);
 app.post("/customer/orders/cancel", cancelCustomerOrder);
+app.post("/customer/orders/cancel", cancelCustomerOrder);
 app.get("/customer/cancelled-orders", getCancelledOrders);
+app.post("/customer/complaints", createCustomerComplaint);
+app.get("/customer/complaints", getCustomerComplaints);
+
+// DNCRP Admin routes
+app.get("/complaints/all", async (c) => {
+  try {
+    console.log('📋 Fetching all complaints for DNCRP admin');
+    
+    const complaints = await sql`
+      SELECT 
+        id,
+        complaint_number,
+        customer_name,
+        customer_email,
+        customer_phone,
+        shop_name,
+        product_name,
+        category,
+        priority,
+        severity,
+        description,
+        status,
+        submitted_at,
+        updated_at
+      FROM complaints
+      ORDER BY submitted_at DESC
+    `;
+
+    console.log(`✅ Found ${complaints.length} complaints`);
+
+    return c.json({
+      success: true,
+      complaints: complaints,
+      message: 'All complaints retrieved successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error fetching all complaints:', error);
+    return c.json({
+      success: false,
+      message: 'Failed to fetch complaints',
+      error: error
+    }, 500);
+  }
+});
 
 // Chat routes (protected - both wholesaler and shop owner)
 app.use("/chat/*", createAuthMiddleware());
@@ -297,6 +376,111 @@ app.get(
 );
 
 // ====================================
+// COMPLAINTS ROUTES (DNCRP Integration)
+// ====================================
+
+// Submit new complaint
+app.post("/api/complaints/submit", async (c) => {
+  try {
+    const body = await c.req.json();
+    console.log('📝 Complaint submission received:', body);
+    
+    // Generate complaint number
+    const complaintNumber = `DNCRP${Date.now()}`;
+    
+    // Save to database
+    const result = await sql`
+      INSERT INTO complaints (
+        complaint_number, 
+        customer_id, 
+        customer_name, 
+        customer_email, 
+        customer_phone,
+        shop_name, 
+        category,
+        priority,
+        severity,
+        subject, 
+        description, 
+        expected_resolution_date,
+        status, 
+        created_at
+      ) VALUES (
+        ${complaintNumber},
+        ${body.customerId || 0},
+        ${body.customerName || 'Unknown'},
+        ${body.customerEmail || 'unknown@email.com'},
+        ${body.customerPhone || ''},
+        ${body.shopName || 'DNCRP Online'},
+        ${body.category || 'সাধারণ'},
+        ${body.priority || 'মাঝারি'},
+        ${body.severity || 'মাঝারি'},
+        ${body.subject || 'DNCRP অভিযোগ'},
+        ${body.description || ''},
+        ${body.expectedDate || null},
+        'pending',
+        NOW()
+      ) RETURNING *;
+    `;
+    
+    const complaint = result[0];
+    console.log('✅ Complaint saved to database:', complaint);
+    
+    return c.json({
+      success: true,
+      data: {
+        complaint_number: complaint.complaint_number,
+        id: complaint.id,
+        status: complaint.status,
+        created_at: complaint.created_at
+      },
+      message: 'অভিযোগ সফলভাবে জমা হয়েছে!'
+    });
+  } catch (error) {
+    console.error('❌ Error submitting complaint:', error);
+    return c.json({
+      success: false,
+      message: 'অভিযোগ জমা দিতে সমস্যা হয়েছে',
+      error: error.message
+    }, 500);
+  }
+});
+
+// Get complaints by customer
+app.get("/api/complaints/customer/:customerId", async (c) => {
+  try {
+    const customerId = c.req.param('customerId');
+    console.log('📋 Fetching complaints for customer:', customerId);
+    
+    // Mock data (replace with real DB query)
+    const complaints = [
+      {
+        id: 1,
+        complaint_number: 'DNCRP123456',
+        customer_id: parseInt(customerId),
+        shop_name: 'Sample Shop',
+        complaint_type: 'পণ্যের গুণগত মান সমস্যা',
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      }
+    ];
+    
+    return c.json({
+      success: true,
+      data: complaints,
+      message: 'Complaints retrieved successfully'
+    });
+  } catch (error) {
+    console.error('❌ Error fetching complaints:', error);
+    return c.json({
+      success: false,
+      message: 'Failed to fetch complaints',
+      error: error.message
+    }, 500);
+  }
+});
+
+// ====================================
 // UTILITY ROUTES (for debugging)
 // ====================================
 
@@ -452,7 +636,15 @@ app.get("/health", async (c) => {
 });
 
 export default {
-  port: process.env.PORT || 5000,
+  port: process.env.PORT || 3005,
+  hostname: '0.0.0.0', // Listen on all network interfaces
   fetch: app.fetch,
   idleTimeout: 255,
+  error(error: Error) {
+    console.error('🚨 Server error:', error);
+  },
+  async onstart(server: any) {
+    console.log(`🚀 Server started successfully on port ${server.port}`);
+    console.log(`📡 Health check: http://localhost:${server.port}/api/health`);
+  }
 };

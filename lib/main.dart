@@ -15,6 +15,7 @@ import 'package:nitymulya/screens/customers/rewarded_shops_screen.dart';
 import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
 import 'package:nitymulya/screens/welcome_screen.dart';
 import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
+import 'package:nitymulya/screens/customers/notification_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -61,6 +62,7 @@ class NitiMulyaApp extends StatelessWidget {
         // '/': (context) => const ShopOwnerDashboard(),
         '/shop-dashboard': (context) => const ShopOwnerDashboard(),
         '/wholesaler-dashboard': (context) => const WholesalerDashboardScreen(),
+        '/notifications': (context) => const NotificationScreen(),
       },
     );
   }
