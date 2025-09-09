@@ -3,16 +3,16 @@ import sql from "./src/db";
 async function createSimpleComplaintsTable() {
   try {
     console.log("🗑️ Dropping all complaint related tables...");
-    
+
     // Drop all complaint tables
     await sql`DROP TABLE IF EXISTS complaint_history CASCADE`;
     await sql`DROP TABLE IF EXISTS complaint_files CASCADE`;
     await sql`DROP TABLE IF EXISTS complaints CASCADE`;
-    
+
     console.log("✅ Old tables dropped successfully");
 
     console.log("🏗️ Creating simple complaints table...");
-    
+
     // Create only the basic complaints table
     await sql`
       CREATE TABLE complaints (
@@ -37,7 +37,6 @@ async function createSimpleComplaintsTable() {
 
     console.log("✅ Simple complaints table created successfully");
     console.log("🎉 Database setup complete!");
-
   } catch (error) {
     console.error("❌ Error creating table:", error);
   } finally {

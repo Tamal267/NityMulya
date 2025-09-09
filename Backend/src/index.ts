@@ -72,7 +72,7 @@ import { createAuthMiddleware, requireRole } from "./utils/jwt";
 import sql from "./db"; // Database connection for persistent storage
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 const app = new Hono<{ Variables: JwtVariables }>();
 // Use database controller for persistent storage
@@ -98,9 +98,9 @@ app.get("/", (c) => {
 
 // Test route
 app.get("/test", (c) => {
-  return c.json({ 
+  return c.json({
     message: "Server is working!",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 // Existing API routes
@@ -173,8 +173,8 @@ app.get("/customer/complaints", getCustomerComplaints);
 // DNCRP Admin routes
 app.get("/complaints/all", async (c) => {
   try {
-    console.log('📋 Fetching all complaints for DNCRP admin');
-    
+    console.log("📋 Fetching all complaints for DNCRP admin");
+
     const complaints = await sql`
       SELECT 
         id,
@@ -200,15 +200,18 @@ app.get("/complaints/all", async (c) => {
     return c.json({
       success: true,
       complaints: complaints,
-      message: 'All complaints retrieved successfully'
+      message: "All complaints retrieved successfully",
     });
   } catch (error) {
-    console.error('❌ Error fetching all complaints:', error);
-    return c.json({
-      success: false,
-      message: 'Failed to fetch complaints',
-      error: error
-    }, 500);
+    console.error("❌ Error fetching all complaints:", error);
+    return c.json(
+      {
+        success: false,
+        message: "Failed to fetch complaints",
+        error: error,
+      },
+      500
+    );
   }
 });
 
@@ -380,11 +383,11 @@ app.get(
 app.post("/api/complaints/submit", async (c) => {
   try {
     const body = await c.req.json();
-    console.log('📝 Complaint submission received:', body);
-    
+    console.log("📝 Complaint submission received:", body);
+
     // Generate complaint number
     const complaintNumber = `DNCRP${Date.now()}`;
-    
+
     // Save to database
     const result = await sql`
       INSERT INTO complaints (
@@ -405,75 +408,81 @@ app.post("/api/complaints/submit", async (c) => {
       ) VALUES (
         ${complaintNumber},
         ${body.customerId || 0},
-        ${body.customerName || 'Unknown'},
-        ${body.customerEmail || 'unknown@email.com'},
-        ${body.customerPhone || ''},
-        ${body.shopName || 'DNCRP Online'},
-        ${body.category || 'সাধারণ'},
-        ${body.priority || 'মাঝারি'},
-        ${body.severity || 'মাঝারি'},
-        ${body.subject || 'DNCRP অভিযোগ'},
-        ${body.description || ''},
+        ${body.customerName || "Unknown"},
+        ${body.customerEmail || "unknown@email.com"},
+        ${body.customerPhone || ""},
+        ${body.shopName || "DNCRP Online"},
+        ${body.category || "সাধারণ"},
+        ${body.priority || "মাঝারি"},
+        ${body.severity || "মাঝারি"},
+        ${body.subject || "DNCRP অভিযোগ"},
+        ${body.description || ""},
         ${body.expectedDate || null},
         'pending',
         NOW()
       ) RETURNING *;
     `;
-    
+
     const complaint = result[0];
-    console.log('✅ Complaint saved to database:', complaint);
-    
+    console.log("✅ Complaint saved to database:", complaint);
+
     return c.json({
       success: true,
       data: {
         complaint_number: complaint.complaint_number,
         id: complaint.id,
         status: complaint.status,
-        created_at: complaint.created_at
+        created_at: complaint.created_at,
       },
-      message: 'অভিযোগ সফলভাবে জমা হয়েছে!'
+      message: "অভিযোগ সফলভাবে জমা হয়েছে!",
     });
   } catch (error) {
-    console.error('❌ Error submitting complaint:', error);
-    return c.json({
-      success: false,
-      message: 'অভিযোগ জমা দিতে সমস্যা হয়েছে',
-      error: error.message
-    }, 500);
+    console.error("❌ Error submitting complaint:", error);
+    return c.json(
+      {
+        success: false,
+        message: "অভিযোগ জমা দিতে সমস্যা হয়েছে",
+        error: error.message,
+      },
+      500
+    );
   }
 });
 
 // Get complaints by customer
 app.get("/api/complaints/customer/:customerId", async (c) => {
   try {
-    const customerId = c.req.param('customerId');
-    console.log('📋 Fetching complaints for customer:', customerId);
-    
+    const customerId = c.req.param("customerId");
+    console.log("📋 Fetching complaints for customer:", customerId);
+
     // Mock data (replace with real DB query)
     const complaints = [
       {
         id: 1,
-        complaint_number: 'DNCRP123456',
+        complaint_number: "DNCRP123456",
         customer_id: parseInt(customerId),
-        shop_name: 'Sample Shop',
-        complaint_type: 'পণ্যের গুণগত মান সমস্যা',
-        status: 'pending',
+        shop_name: "Sample Shop",
+        complaint_type: "পণ্যের গুণগত মান সমস্যা",
+        status: "pending",
         created_at: new Date().toISOString(),
-      }
+      },
     ];
-    
+
     return c.json({
       success: true,
       data: complaints,
-      message: 'Complaints retrieved successfully'
+      message: "Complaints retrieved successfully",
     });
   } catch (error) {
-    console.error('❌ Error fetching complaints:', error);
-    return c.json({
-      success: false,
-      message: 'Failed to fetch complaints',
-      error: error.message
-    }, 500);
+    console.error("❌ Error fetching complaints:", error);
+    return c.json(
+      {
+        success: false,
+        message: "Failed to fetch complaints",
+        error: error.message,
+      },
+      500
+    );
   }
 });
 
@@ -490,14 +499,14 @@ app.get(
 
 export default {
   port: process.env.PORT || 3005,
-  hostname: '0.0.0.0', // Listen on all network interfaces
+  hostname: "0.0.0.0", // Listen on all network interfaces
   fetch: app.fetch,
   idleTimeout: 255,
   error(error: Error) {
-    console.error('🚨 Server error:', error);
+    console.error("🚨 Server error:", error);
   },
   async onstart(server: any) {
     console.log(`🚀 Server started successfully on port ${server.port}`);
     console.log(`📡 Health check: http://localhost:${server.port}/api/health`);
-  }
+  },
 };

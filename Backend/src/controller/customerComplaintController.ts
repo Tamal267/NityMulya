@@ -69,7 +69,7 @@ export const createPublicComplaint = async (c: any) => {
         ${product_name || null},
         ${complaint_type},
         ${priority},
-        ${severity || 'Minor'},
+        ${severity || "Minor"},
         ${description},
         'Received',
         NOW()
@@ -107,13 +107,13 @@ export const createPublicComplaint = async (c: any) => {
 export const createCustomerComplaint = async (c: any) => {
   try {
     console.log("🚀 Starting complaint submission...");
-    
+
     const body = await c.req.json();
     console.log("📝 Raw request body:", JSON.stringify(body, null, 2));
-    
+
     const user = c.get("user");
     console.log("👤 User from context:", user);
-    
+
     const customerId = user.userId;
     console.log("🆔 Customer ID:", customerId);
 
@@ -141,7 +141,7 @@ export const createCustomerComplaint = async (c: any) => {
         shop_name: !!shop_name,
         complaint_type: !!complaint_type,
         description: !!description,
-        priority: !!priority
+        priority: !!priority,
       });
       return c.json(
         {
@@ -159,14 +159,14 @@ export const createCustomerComplaint = async (c: any) => {
       description,
       priority,
       severity,
-      product_id: product_id || 'N/A',
-      product_name: product_name || 'N/A',
-      customerId
+      product_id: product_id || "N/A",
+      product_name: product_name || "N/A",
+      customerId,
     });
 
     // Generate complaint number
     const complaintNumber = `DNCRP${Date.now()}`;
-    
+
     console.log("🔢 Generated complaint number:", complaintNumber);
 
     // Get customer details
@@ -175,9 +175,9 @@ export const createCustomerComplaint = async (c: any) => {
       FROM customers 
       WHERE id = ${customerId}
     `;
-    
+
     console.log("👤 Customer lookup result:", customerResult);
-    
+
     const customer = customerResult[0];
     if (!customer) {
       console.log("❌ Customer not found for ID:", customerId);
@@ -193,7 +193,7 @@ export const createCustomerComplaint = async (c: any) => {
     console.log("✅ Customer found:", {
       id: customerId,
       name: customer.full_name,
-      email: customer.email
+      email: customer.email,
     });
 
     // Create the complaint
@@ -225,7 +225,7 @@ export const createCustomerComplaint = async (c: any) => {
         ${product_name || null},
         ${complaint_type},
         ${priority},
-        ${severity || 'Minor'},
+        ${severity || "Minor"},
         ${description},
         'Received',
         NOW()
@@ -273,8 +273,8 @@ export const getCustomerComplaints = async (c: any) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     let whereClause = sql`WHERE customer_id = ${customerId}`;
-    
-    if (status && status !== 'all') {
+
+    if (status && status !== "all") {
       whereClause = sql`WHERE customer_id = ${customerId} AND status = ${status}`;
     }
 

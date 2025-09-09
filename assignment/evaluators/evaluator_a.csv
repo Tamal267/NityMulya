@@ -1,0 +1,6 @@
+Evaluator,Issue ID,Screen/Context,Heuristic,Severity,Description,Recommendation,Notes
+Evaluator A,H5-1,Auth Controller,H5 Error Prevention,4,Plaintext password storage,Implement bcrypt hashing immediately,Security priority
+Evaluator A,H4-1,Global Labels,H4 Consistency,3,Inconsistent role naming,Centralize role constants,Merge with taxonomy initiative
+Evaluator A,H1-1,Complaint Submission,H1 Visibility,3,No upload progress indicator,Add progress bar & disable submit,High confusion risk
+Evaluator A,H9-2,Price Fetch,H9 Recovery,3,No cached fallback on failure,Cache last successful payload,Improve resilience
+Evaluator A,H4-4,Backend Routes,H4 Consistency,3,Duplicate complaint route definitions,Deduplicate and add test,Potential security overlap

@@ -21,7 +21,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
 
   Future<void> _loadNotifications() async {
     setState(() => isLoading = true);
-    
+
     try {
       final user = await UserSession.getCurrentUser();
       if (user != null) {
@@ -65,7 +65,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: notifications.length,
-                  itemBuilder: (context, index) => _buildNotificationCard(notifications[index]),
+                  itemBuilder: (context, index) =>
+                      _buildNotificationCard(notifications[index]),
                 ),
     );
   }
@@ -136,7 +137,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     child: Text(
                       notification.title,
                       style: TextStyle(
-                        fontWeight: notification.isRead ? FontWeight.w500 : FontWeight.bold,
+                        fontWeight: notification.isRead
+                            ? FontWeight.w500
+                            : FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
@@ -173,7 +176,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   ),
                   if (notification.complaintId != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
                         color: Colors.grey[200],
                         borderRadius: BorderRadius.circular(4),
@@ -241,7 +245,8 @@ class _NotificationScreenState extends State<NotificationScreen> {
       try {
         // TODO: Implement mark as read API call
         setState(() {
-          final index = notifications.indexWhere((n) => n.id == notification.id);
+          final index =
+              notifications.indexWhere((n) => n.id == notification.id);
           if (index != -1) {
             notifications[index] = app_notification.Notification(
               id: notification.id,

@@ -1,0 +1,33 @@
+Issue ID,Heuristic,Severity,Screen/Context,Description,Recommendation,Source (HE/CW/Both),Mapped Recommendation Ref
+H1-1,H1,3,Complaint Submission,No upload progress indicator,Add progress bar & disable submit,Both,R2
+H1-2,H1,2,Inventory Save,Silent save delay,Inline saving indicator,HE,R2
+H1-3,H1,2,Login,No spinner on slow auth,Add minimal loading state,HE,R2
+H2-1,H2,2,Multi-role Labels,Mixed language in single label,Add localization structure,HE,R3
+H2-2,H2,2,Complaint Category Terminology,Severity/priority unclear,Helper tooltips,HE,R2
+H3-1,H3,3,Complaint Form Exit,No discard warning,Add confirmation + autosave,Both,R2
+H3-2,H3,2,Inventory Edit,No undo after save,Snackbar undo,HE,R6
+H3-3,H3,2,Order Cancellation,No confirmation,Add confirmation dialog,HE,R2
+H4-1,H4,3,Role Strings,Inconsistent naming,Centralize constants,Both,R3
+H4-2,H4,2,Dates,Mixed date formats,Standardize formatter,HE,R3
+H4-3,H4,2,Buttons,Inconsistent hierarchy colors,Design tokens,HE,R3
+H4-4,H4,3,Complaint Routes,Duplicate definitions,Deduplicate route,HE,R2
+H5-1,H5,4,Auth Controller,Plaintext password storage,Implement bcrypt,HE,R1
+H5-2,H5,2,Offers,Duplicate submissions possible,Debounce / disable button,HE,R2
+H5-3,H5,3,Complaint Media,No file validation,Whitelist + size check,Both,R8
+H6-1,H6,2,Signup Location,Must recapture location,Cache last known,HE,R9
+H6-2,H6,2,Official Price Recall,User must remember baseline,Readonly gov price field,HE,R7
+H7-1,H7,2,Inventory Management,No bulk update,Batch edit,HE,R6
+H7-2,H7,2,Filters,Reset after tab switch,Persist filters,HE,R5
+H8-1,H8,2,Dashboard,Overdense panels,Segment subviews,HE,R5
+H8-2,H8,2,Typography,Inconsistent scale,Apply scale ramp,HE,R5
+H9-1,H9,2,Network Errors,Generic message only,Actionable retry,HE,R2
+H9-2,H9,3,Price Fetch,No cached fallback,Cache last success,HE,R4
+H9-3,H9,3,Complaint Failure,Form cleared on fail,Retain form state,Both,R2
+H10-1,H10,2,Complaint Evidence,No guidance on file size/type,Inline microcopy,HE,R8
+H10-2,H10,1,Review Ratings,No scale explanation,Tooltip,HE,R5
+CW-T1-S7,H1/H5,3,Complaint Task Step 7,Attachment step ambiguous,Progress & validation,CW,R8
+CW-T1-S9,H1,3,Complaint Task Step 9,Submit no spinner,Async overlay,CW,R2
+CW-T1-S10,H9,2,Complaint Task Step 10,Manual refresh needed,Optimistic update,CW,R2
+CW-T2-S6,H1,2,Inventory Task Step 6,Silent save,Toast confirmation,CW,R2
+CW-T2-S7,H6,2,Inventory Task Step 7,Missing official price,Show readonly field,CW,R7
+CW-T3-S8,H1,2,Offer Task Step 8,Offer appears only after refresh,Optimistic insert + push,CW,R10

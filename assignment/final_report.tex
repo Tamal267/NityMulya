@@ -1,0 +1,227 @@
+% Final HCI Evaluation Report (LaTeX)
+% Generated on 2025-09-09
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{float}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+
+\newcommand{\sev}[1]{\textbf{#1}} % severity macro
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\title{NityMulya Usability Evaluation\\\large Heuristic Evaluation (HE) and Cognitive Walkthrough (CW)}
+\author{Project Team (SDP Group)\\Course: Human--Computer Interaction}
+\date{2025-09-09}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% --------------------------------------------------
+% 1. System Overview (from 01_system_overview.md)
+% --------------------------------------------------
+\section{System Overview}
+\subsection{Purpose}
+NityMulya enables transparent local commerce and consumer protection through multi-role interaction (Customer, Shop Owner, Wholesaler, DNCRP Admin).
+
+\subsection{Primary User Groups}
+\begin{itemize}[leftmargin=*]
+  \item \textbf{Customers}: Price lookup, shop discovery, complaints, reviews, favorites.
+  \item \textbf{Shop Owners}: Inventory and order management, communication with suppliers.
+  \item \textbf{Wholesalers}: Supply management, offers, restock negotiation.
+  \item \textbf{DNCRP Admin}: Oversight of complaints (regulatory demo).
+\end{itemize}
+
+\subsection{Core Functional Domains}
+\begin{longtable}{@{}L{3cm}L{11cm}@{}}
+\toprule
+\textbf{Domain} & \textbf{Key Functions}\\\midrule
+Pricing & Daily pricelist, (planned) government baseline tagging \\
+Inventory & CRUD for products (shop \& wholesale) + low stock alerts \\
+Orders & Customer orders; owner fulfillment lifecycle \\
+Complaints & Submission with evidence (media pipeline pending) \\
+Reviews & Product + shop ratings, aggregation (no media yet) \\
+Chat & Real-time style supply chain messaging (polling-based) \\
+Geolocation & Nearby verified shops display \\
+Rewards (Planned) & VAT honesty incentive logic \\
+\bottomrule
+\end{longtable}
+
+\subsection{Technology Stack}
+Frontend: Flutter (Dart), SharedPreferences, Geolocator, HTTP.\\
+Backend: Bun + TypeScript (Hono), Postgres, JWT.\\
+Data: Mix of role-specific tables + unified user schema variant in SQL assets.
+
+\subsection{Key Constraints}
+\begin{itemize}[leftmargin=*]
+  \item Password hashing absent (risk).
+  \item Large monolithic UI classes impede scalability.
+  \item Media upload server parsing incomplete.
+  \item Route duplication (complaints) and inconsistent naming conventions.
+\end{itemize}
+
+\subsection{Assumptions for Evaluation}
+\begin{itemize}[leftmargin=*]
+  \item Evaluated using current branch code (no production telemetry).
+  \item Government price ingestion assumed not fully implemented (future feature).
+  \item Review and complaint volumes moderate (no stress conditions modeled).
+\end{itemize}
+
+% --------------------------------------------------
+% 2. Heuristic Evaluation (from 02_heuristic_evaluation.md)
+% --------------------------------------------------
+\section{Heuristic Evaluation}
+Evaluator count: 4. Method: Independent review \textrightarrow{} consolidation workshop \textrightarrow{} severity assignment (highest credible severity kept).\\
+Severity scale: 0 None, 1 Cosmetic, 2 Minor, 3 Major, 4 Critical.
+
+\subsection{Issue Table}
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{@{}L{1.1cm}L{2.3cm}L{1.2cm}L{4.2cm}L{0.9cm}L{2.2cm}L{3.3cm}@{}}
+\toprule
+\textbf{ID} & \textbf{Context} & \textbf{H} & \textbf{Description} & \textbf{Sev} & \textbf{Rationale} & \textbf{Recommendation}\\\midrule
+H1-1 & Complaint Submission & H1 & No upload progress indicator & 3 & Double-submit risk & Add progress bar + disable submit \\
+H1-2 & Inventory Save & H1 & Silent delay on update & 2 & Unresponsiveness & Inline saving spinner + toast \\
+H1-3 & Login & H1 & No loader on slow network & 2 & Retry uncertainty & Minimal skeleton/loader \\
+H2-1 & Multi-role Labels & H2 & Mixed Bengali/English & 2 & Switching cost & Introduce localization \\
+H2-2 & Complaint Categories & H2 & Terms unexplained & 2 & Misclassification & Helper tooltips \\
+H3-1 & Complaint Form Exit & H3 & Back discards data & 3 & Data loss & Discard dialog + autosave \\
+H3-2 & Inventory Edit & H3 & No undo after change & 2 & Error propagation & Undo snackbar \\
+H3-3 & Order Cancellation & H3 & No confirmation & 2 & Accidental action & Confirm dialog \\
+H4-1 & Role Strings & H4 & Inconsistent naming & 3 & Mental model drift & Centralize constants \\
+H4-2 & Date Formats & H4 & Mixed ISO/local & 2 & Parsing confusion & Standardize formatter \\
+H4-3 & Button Styling & H4 & Inconsistent hierarchy & 2 & Diluted visual cues & Theme tokens \\
+H4-4 & Complaint Routes & H4 & Duplicate definitions & 3 & Maintenance risk & Deduplicate + test \\
+H5-1 & Password Storage & H5 & Plaintext logic & 4 & Security flaw & Implement bcrypt + migration \\
+H5-2 & Offer Submission & H5 & Duplicate taps allowed & 2 & Data noise & Disable on submit \\
+H5-3 & File Validation & H5 & No type/size check & 3 & Malicious upload risk & Whitelist + size limit \\
+H6-1 & Location Capture & H6 & Re-enter after denial & 2 & Redundant input & Cache last known \\
+H6-2 & Gov Price Ref & H6 & Must recall baseline & 2 & Cognitive load & Readonly official field \\
+H7-1 & Inventory Bulk & H7 & No batch update & 2 & Slow for catalog & Batch editor \\
+H7-2 & Saved Filters & H7 & Filters reset & 2 & Repetitive steps & Persist per tab \\
+H8-1 & Dashboard Density & H8 & Overloaded stats & 2 & Scan difficulty & Subview segmentation \\
+H8-2 & Typography & H8 & Inconsistent scale & 2 & Visual noise & Apply scale ramp \\
+H9-1 & Network Errors & H9 & Generic message & 2 & No recovery guidance & Retry CTA \\
+H9-2 & Price Fetch Fail & H9 & No cached fallback & 3 & Trust erosion & Cache last payload \\
+H9-3 & Complaint Fail & H9 & Form cleared & 3 & Re-entry burden & Retain form state \\
+H10-1 & Complaint Evidence & H10 & No file guidance & 2 & Trial-and-error & Inline microcopy \\
+H10-2 & Review Ratings & H10 & No scale explanation & 1 & Minor clarity & Tooltip / info icon \\
+\bottomrule
+\end{longtable}
+
+\subsection{Prioritized Fix Batch (Sprint 1)}
+1) H5-1 (bcrypt) \quad 2) H1-1 + H5-3 (upload robustness) \quad 3) H3-1 (draft persistence) \quad 4) H4-1 (taxonomy) \quad 5) H9-2 (pricing cache)
+
+% --------------------------------------------------
+% 3. Cognitive Walkthrough (from 03_cognitive_walkthrough.md)
+% --------------------------------------------------
+\section{Cognitive Walkthrough}
+Three representative tasks (first-time user lens) assessed action sequences, expected system feedback, and potential breakdowns.
+
+\subsection{Tasks}
+\begin{longtable}{@{}L{1.2cm}L{2.5cm}L{6.5cm}L{5cm}@{}}
+\toprule
+\textbf{ID} & \textbf{Role} & \textbf{Goal} & \textbf{Success Criteria}\\\midrule
+T1 & Customer & Submit complaint with photo evidence for nearby shop product issue & Complaint ID returned and visible in list \\
+T2 & Shop Owner & Update product stock using government price reference & Quantity saved; inventory reflects change \\
+T3 & Wholesaler & Identify low-stock shop and send restock offer & Offer acknowledged / appears in offers list \\
+\bottomrule
+\end{longtable}
+
+\subsection{Representative Step Extract}
+\begin{longtable}{@{}L{0.6cm}L{0.6cm}L{3.4cm}L{3.4cm}L{2.6cm}L{1.1cm}L{3.4cm}@{}}
+\toprule
+\textbf{T} & \textbf{#} & \textbf{Action} & \textbf{Expected} & \textbf{Observed} & \textbf{Break?} & \textbf{Recommendation}\\\midrule
+T1 & 1 & Open app \& login & Dashboard loads & Works & No & Preload session if token valid \\
+T1 & 7 & Attach photo & Show upload progress & No progress shown & Yes & Progress bar + size limit \\
+T1 & 9 & Submit complaint & Spinner + success ref & Delay, no spinner & Yes & Unified async overlay \\
+T1 & 10 & Return to list & New complaint visible & Needs manual refresh & Yes & Optimistic add + auto refresh \\
+T2 & 6 & Save changes & Confirmation & Silent & Yes & Toast ``Saved'' \\
+T2 & 7 & Cross-check gov price & Readonly field & Not present & Yes & Show official price field \\
+T3 & 8 & Send offer & Confirmation + list update & Needs refresh & Yes & Optimistic insertion \\
+\bottomrule
+\end{longtable}
+
+\subsection{Breakdown Themes}
+Feedback absence; missing persistent filters; lack of government price reference; manual refresh patterns.
+
+\subsection{Key Improvements}
+Attachment progress; optimistic updates; official price field; auto-refresh; draft retention.
+
+% --------------------------------------------------
+% 4. Comparative Analysis (from 04_comparative_analysis.md)
+% --------------------------------------------------
+\section{Comparative Analysis (HE vs CW)}
+\subsection{Issue Overlap Matrix}
+\begin{longtable}{@{}L{3.2cm}L{3cm}L{4.2cm}L{3cm}@{}}
+\toprule
+\textbf{Category} & \textbf{HE Only} & \textbf{CW Only} & \textbf{Both}\\\midrule
+Feedback / Visibility & Route duplication (structural) & Optimistic refresh, upload progress context (3) & 3 shared feedback issues \\
+Security & Plaintext password & -- & -- \\
+Consistency & Naming, date, buttons (3) & -- & Role labeling surfaced \\
+Error Recovery & Cache, generic errors (2) & Lost form state, manual refresh (2) & 1 shared recovery item \\
+Efficiency & Bulk ops, filters (2) & Distance context (1) & 1 shared efficiency issue \\
+\bottomrule
+\end{longtable}
+
+HE surfaced architectural / systemic risks; CW revealed sequential, context-sensitive friction. Overlap (~30\%) indicates complementary value.
+
+% --------------------------------------------------
+% 5. Design Recommendations (from 05_design_recommendations.md)
+% --------------------------------------------------
+\section{Design Recommendations \& Strategy}
+\subsection{Prioritized Backlog}
+\begin{longtable}{@{}L{0.7cm}L{3cm}L{0.9cm}L{1.3cm}L{1cm}L{7cm}@{}}
+\toprule
+\textbf{Ref} & \textbf{Linked Issues} & \textbf{Sprint} & \textbf{Effort} & \textbf{Impact} & \textbf{Description}\\\midrule
+R1 & H5-1 & S1 & 2d & High & Implement bcrypt + migration script + rehash existing records \\
+R2 & H1-1,H1-3,H2-2,H3-1,H9-3 & S1 & 3d & High & Unified async UX kit (LoadingOverlay, Toaster, DraftCache) \\
+R3 & H4-1,H4-2,H4-3 & S1 & 2d & Med & Taxonomy + design token standardization \\
+R4 & H9-2 & S2 & 1.5d & Med & Local price cache \& stale indicator \\
+R5 & H1-2,H7-2,H8-1 & S2 & 3d & Med & Dashboard decomposition + persistent filters \\
+R6 & H3-2,H7-1 & S2 & 2d & Med & Undo \& bulk inventory operations \\
+R7 & CW T2 S7 & S3 & 1d & Med & Official price reference field integration \\
+R8 & H5-3,CW T1 S7 & S3 & 2d & High & Robust media pipeline (validation + progress) \\
+R9 & H6-1 & S3 & 1d & Low & Last-known location reuse logic \\
+R10 & CW T3 S8 & S4 & 2d & Med & Order / supply event timeline model \\
+\bottomrule
+\end{longtable}
+
+\subsection{Architectural Enhancements}
+Provider / Riverpod state partitioning; central API client (interceptors: auth renewal, logging, exponential backoff); event bus or WebSocket for real-time updates; modularized feature directories.
+
+\subsection{Security Hardening Plan}
+\begin{enumerate}[leftmargin=*]
+  \item Bcrypt hashing \& minimum password policy.
+  \item Token expiry (short) + refresh mechanism.
+  \item Standard error envelope (no stack traces).
+  \item Upload sanitization \& MIME validation.
+\end{enumerate}
+
+\subsection{Metrics to Track}
+Complaint submission completion rate; inventory update task time; duplicate submission rate; offer response latency; crash/error frequency per 1K sessions.
+
+\subsection{Team Contribution (Narrative)}
+Security focus (Evaluator A), form resilience (Evaluator B), consistency \& taxonomy (Evaluator C), feedback timing (Evaluator D). Backlog shaped through consolidation.
+
+\subsection{Limitations and Future Work}
+No production analytics yet; media pipeline assumed; future: accessibility audit, internationalization framework, regression test harness.
+
+% --------------------------------------------------
+% End Matter
+% --------------------------------------------------
+\section*{Appendix (Optional References)}
+Raw evaluator CSVs and consolidated findings maintained alongside this report (see repository \texttt{assignment/} directory).
+
+\end{document}

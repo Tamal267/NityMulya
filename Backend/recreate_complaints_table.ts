@@ -3,16 +3,16 @@ import sql from "./src/db";
 async function recreateComplaintsTable() {
   try {
     console.log("🗑️ Dropping existing complaints table...");
-    
+
     // Drop existing complaints table
     await sql`DROP TABLE IF EXISTS complaint_history CASCADE`;
     await sql`DROP TABLE IF EXISTS complaint_files CASCADE`;
     await sql`DROP TABLE IF EXISTS complaints CASCADE`;
-    
+
     console.log("✅ Old tables dropped successfully");
 
     console.log("🏗️ Creating new complaints table...");
-    
+
     // Create new complaints table with proper structure
     await sql`
       CREATE TABLE complaints (
@@ -51,7 +51,7 @@ async function recreateComplaintsTable() {
     console.log("✅ New complaints table created successfully");
 
     console.log("🏗️ Creating complaint_files table...");
-    
+
     await sql`
       CREATE TABLE complaint_files (
         id SERIAL PRIMARY KEY,
@@ -67,7 +67,7 @@ async function recreateComplaintsTable() {
     console.log("✅ complaint_files table created");
 
     console.log("🏗️ Creating complaint_history table...");
-    
+
     await sql`
       CREATE TABLE complaint_history (
         id SERIAL PRIMARY KEY,
@@ -82,7 +82,6 @@ async function recreateComplaintsTable() {
 
     console.log("✅ complaint_history table created");
     console.log("🎉 All tables created successfully!");
-
   } catch (error) {
     console.error("❌ Error recreating tables:", error);
   } finally {

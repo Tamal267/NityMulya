@@ -43,15 +43,17 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
 
     try {
       final response = await CustomerApi.getAllComplaints();
-      
+
       if (response['success'] == true) {
         final List<dynamic> complaintsData = response['complaints'] ?? [];
-        
+
         setState(() {
           complaints = complaintsData.cast<Map<String, dynamic>>();
           totalComplaints = complaints.length;
-          pendingComplaints = complaints.where((c) => c['status'] == 'Received').length;
-          resolvedComplaints = complaints.where((c) => c['status'] == 'Solved').length;
+          pendingComplaints =
+              complaints.where((c) => c['status'] == 'Received').length;
+          resolvedComplaints =
+              complaints.where((c) => c['status'] == 'Solved').length;
           isLoadingComplaints = false;
         });
       } else {
@@ -309,7 +311,8 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Card(
       elevation: 3,
       child: Padding(
@@ -409,14 +412,16 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
   Widget _buildComplaintCard(Map<String, dynamic> complaint) {
     final status = complaint['status'] ?? 'Received';
     final priority = complaint['priority'] ?? 'Medium';
-    
+
     Color statusColor = Colors.orange;
     if (status == 'Solved') statusColor = Colors.green;
     if (status == 'Forwarded') statusColor = Colors.blue;
 
     Color priorityColor = Colors.grey;
     if (priority == 'High' || priority == 'high') priorityColor = Colors.orange;
-    if (priority == 'Urgent' || priority == 'urgent') priorityColor = Colors.red;
+    if (priority == 'Urgent' || priority == 'urgent') {
+      priorityColor = Colors.red;
+    }
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -445,7 +450,8 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -463,7 +469,7 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              
+
               // Customer Info
               Row(
                 children: [
@@ -478,7 +484,7 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              
+
               // Shop Info
               Row(
                 children: [
@@ -493,7 +499,7 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              
+
               // Description
               Text(
                 complaint['description'] ?? 'No description',
@@ -502,7 +508,7 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                 style: const TextStyle(color: Colors.black87),
               ),
               const SizedBox(height: 8),
-              
+
               // Bottom Row
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -510,7 +516,8 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: priorityColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),

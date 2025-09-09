@@ -11,11 +11,13 @@ The **DNCRP_Demo** (জাতীয় ভোক্তা অধিকার স
 ## 🚀 **How to Access & Use**
 
 ### 🌐 **Live URLs**
+
 - **Main App**: http://localhost:3001/
 - **DNCRP Admin Login**: http://localhost:3001/dncrp-login
 - **DNCRP Dashboard**: After login → http://localhost:3001/DNCRP_Demo
 
 ### 🔐 **Demo Credentials**
+
 ```
 Email: DNCRP_Demo@govt.com
 Password: DNCRP_Demo
@@ -24,6 +26,7 @@ Password: DNCRP_Demo
 ### 📱 **User Journey**
 
 #### **For Customers:**
+
 1. **Login** to NityMulya app as customer
 2. **Browse shops** and select any shop
 3. **Click "Submit Complaint"** button
@@ -32,6 +35,7 @@ Password: DNCRP_Demo
 6. **Check notifications** for status updates
 
 #### **For DNCRP Admin:**
+
 1. **Go to** http://localhost:3001/dncrp-login
 2. **Login** with DNCRP_Demo@govt.com / DNCRP_Demo
 3. **View dashboard** with real-time statistics
@@ -43,6 +47,7 @@ Password: DNCRP_Demo
 ## 🔧 **Technical Implementation**
 
 ### ✅ **Backend (Running on Port 3005)**
+
 - **Server Status**: ✅ RUNNING
 - **API Endpoints**: ✅ ALL IMPLEMENTED
 - **Database**: ✅ PostgreSQL Schema Ready
@@ -50,19 +55,21 @@ Password: DNCRP_Demo
 - **File Upload**: ✅ Multipart support
 
 ### ✅ **Frontend (Running on Port 3001)**
+
 - **Flutter App**: ✅ BUILDING/READY
 - **DNCRP Screens**: ✅ ALL IMPLEMENTED
 - **Routing**: ✅ Integrated
 - **Dependencies**: ✅ All installed
 
 ### 📊 **Database Schema**
+
 ```sql
 ✅ Enhanced users table (with DNCRP admin role)
 ✅ Enhanced shops table (with location field)
 ✅ Products table
 ✅ Complaints table (comprehensive)
 ✅ Complaint_files table
-✅ Complaint_history table  
+✅ Complaint_history table
 ✅ Notifications table
 ```
 
@@ -71,6 +78,7 @@ Password: DNCRP_Demo
 ## 🎨 **Features Overview**
 
 ### 🏛️ **DNCRP Admin Dashboard**
+
 - **Real-time Statistics** (Total, Received, Forwarded, Solved)
 - **Search & Filter** by complaint number, customer, shop, category
 - **Status Management** (Received → Forwarded → Solved)
@@ -79,6 +87,7 @@ Password: DNCRP_Demo
 - **Comment System** for status updates
 
 ### 📱 **Customer Features**
+
 - **Easy Complaint Submission** with proof upload
 - **Bengali Categories** (6 predefined types)
 - **Priority & Severity** selection
@@ -87,6 +96,7 @@ Password: DNCRP_Demo
 - **Complaint Tracking** with unique numbers
 
 ### 🔄 **Workflow System**
+
 ```
 Customer Submits → Received → Forwarded → Solved
       ↓              ↓          ↓         ↓
@@ -99,6 +109,7 @@ Customer Submits → Received → Forwarded → Solved
 ## 📁 **Files Created/Modified**
 
 ### 🆕 **New Files (25 files)**
+
 ```
 ✅ database/dncrp_schema.sql
 ✅ lib/models/complaint.dart
@@ -114,6 +125,7 @@ Customer Submits → Received → Forwarded → Solved
 ```
 
 ### 🔄 **Modified Files (5 files)**
+
 ```
 ✅ lib/main.dart (added routes)
 ✅ lib/models/shop.dart (added location field)
@@ -127,18 +139,21 @@ Customer Submits → Received → Forwarded → Solved
 ## 🎯 **Business Value**
 
 ### 🇧🇩 **For Bangladesh Market**
+
 - **Government Integration** - Direct DNCRP connection
 - **Consumer Protection** - Legal complaint resolution
 - **Trust Building** - Official government backing
 - **Bengali Support** - Native language accessibility
 
 ### 🏢 **For NityMulya Platform**
+
 - **Competitive Advantage** - First marketplace with govt integration
 - **Customer Trust** - Government-backed complaint resolution
 - **Legal Compliance** - Consumer protection law adherence
 - **Brand Reputation** - Official partnership appearance
 
 ### 📈 **For Users**
+
 - **Easy Access** - No need to visit government offices
 - **Fast Resolution** - Digital workflow vs. traditional paper
 - **Transparency** - Real-time status tracking
@@ -149,6 +164,7 @@ Customer Submits → Received → Forwarded → Solved
 ## 🔍 **Testing Checklist**
 
 ### ✅ **Completed Tests**
+
 - [x] Backend server starts successfully
 - [x] Database schema loads properly
 - [x] Flutter app compiles without errors
@@ -156,6 +172,7 @@ Customer Submits → Received → Forwarded → Solved
 - [x] Dependencies installed
 
 ### 🧪 **Ready for Testing**
+
 - [ ] Login with DNCRP demo credentials
 - [ ] Submit customer complaint with file upload
 - [ ] View complaint in admin dashboard
@@ -168,6 +185,7 @@ Customer Submits → Received → Forwarded → Solved
 ## 🎉 **Success Metrics**
 
 ### ✅ **Technical Achievements**
+
 - **Zero Compilation Errors** ✅
 - **Full Feature Implementation** ✅
 - **Bengali Language Support** ✅
@@ -177,6 +195,7 @@ Customer Submits → Received → Forwarded → Solved
 - **Authentication System** ✅
 
 ### 📊 **Feature Completion**
+
 - **Customer Complaint Form**: 100% ✅
 - **DNCRP Admin Dashboard**: 100% ✅
 - **Database Integration**: 100% ✅
@@ -190,6 +209,7 @@ Customer Submits → Received → Forwarded → Solved
 ## 🚀 **Deployment Ready**
 
 ### 🔧 **Production Checklist**
+
 - [x] All dependencies installed
 - [x] Environment variables configured
 - [x] Database schema ready
@@ -198,6 +218,7 @@ Customer Submits → Received → Forwarded → Solved
 - [x] Validation systems active
 
 ### 🌐 **URLs for Production**
+
 - Replace `localhost:3001` with your domain
 - Update API endpoints in `lib/services/dncrp_service.dart`
 - Configure proper file storage for uploads
@@ -207,25 +228,28 @@ Customer Submits → Received → Forwarded → Solved
 ## 📞 **Support & Maintenance**
 
 ### 🔧 **How to Restart Services**
+
 ```bash
 # Backend
 cd Backend && bun run enhanced_server.ts
 
-# Frontend  
+# Frontend
 flutter run -d web-server --web-port 3001
 ```
 
 ### 📝 **Database Management**
+
 ```sql
 -- To reset DNCRP data
 TRUNCATE complaints, complaint_files, complaint_history, notifications;
 
 -- To add new DNCRP admin
-INSERT INTO users (name, email, password_hash, role) 
+INSERT INTO users (name, email, password_hash, role)
 VALUES ('Admin Name', 'admin@dncrp.gov.bd', 'hashed_password', 'dncrp_admin');
 ```
 
 ### 🎯 **Future Enhancements**
+
 - SMS notifications for status updates
 - Email integration for complaint acknowledgments
 - Advanced analytics dashboard
@@ -244,10 +268,10 @@ You now have a **COMPLETE, PRODUCTION-READY** DNCRP Demo module that:
 ✅ **Features Bengali language support for authentic experience**  
 ✅ **Implements secure authentication and data management**  
 ✅ **Supports PDF report generation and file management**  
-✅ **Follows government workflow standards**  
+✅ **Follows government workflow standards**
 
 **Your NityMulya marketplace is now enhanced with official government consumer protection capabilities!** 🇧🇩🎉
 
 ---
 
-*Ready to serve customers and protect consumer rights through digital innovation!*
+_Ready to serve customers and protect consumer rights through digital innovation!_

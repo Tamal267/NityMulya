@@ -1,0 +1,6 @@
+Evaluator,Issue ID,Screen/Context,Heuristic,Severity,Description,Recommendation,Notes
+Evaluator B,H3-1,Complaint Form,H3 User Control,3,Back leaves without warning,Add discard confirmation + autosave,Draft loss
+Evaluator B,H3-2,Inventory Edit,H3 User Control,2,No undo after save,Add snackbar undo,Supports error recovery
+Evaluator B,H9-3,Complaint Failure,H9 Recovery,3,Form cleared on failure,Retain form state,Reduces rework
+Evaluator B,H1-2,Inventory Save,H1 Visibility,2,Silent save delay,Inline saving indicator,Perceived lag
+Evaluator B,H5-3,Complaint Media,H5 Error Prevention,3,No file type validation,Add whitelist + size limit,Security & UX

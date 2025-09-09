@@ -1,0 +1,6 @@
+Evaluator,Issue ID,Screen/Context,Heuristic,Severity,Description,Recommendation,Notes
+Evaluator C,H8-1,Dashboard Overview,H8 Aesthetic,2,Overdense information blocks,Segment into subviews,Improves scan speed
+Evaluator C,H4-2,Dates,H4 Consistency,2,Mixed date formats,Apply unified formatter,Consistency
+Evaluator C,H4-3,Buttons,H4 Consistency,2,Inconsistent hierarchy colors,Adopt design tokens,Visual clarity
+Evaluator C,H7-1,Inventory Management,H7 Flexibility,2,No bulk update,Add batch edit modal,Power user efficiency
+Evaluator C,H2-2,Complaint Category,H2 Match,2,Terminology unclear,Add tooltips / inline hints,Better classification

@@ -1,0 +1,6 @@
+Evaluator,Issue ID,Screen/Context,Heuristic,Severity,Description,Recommendation,Notes
+Evaluator D,H7-2,Filters,H7 Flexibility,2,Filters reset after tab switch,Persist filters per context,Efficiency
+Evaluator D,H1-3,Login,H1 Visibility,2,No spinner on slow auth,Add minimal loading state,Prevents double submission
+Evaluator D,H6-1,Signup Location,H6 Recognition,2,Must re-enter after denial,Cache last known,Reduce repetition
+Evaluator D,H6-2,Official Price Recall,H6 Recognition,2,User recalls baseline price,Readonly gov price field,Less cognitive load
+Evaluator D,H8-2,Typography,H8 Aesthetic,2,Inconsistent font scale,Apply typographic scale,Improves readability

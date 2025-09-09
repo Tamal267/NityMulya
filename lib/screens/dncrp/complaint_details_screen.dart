@@ -10,7 +10,7 @@ class ComplaintDetailsScreen extends StatelessWidget {
     final status = complaint['status'] ?? 'Received';
     final priority = complaint['priority'] ?? 'Medium';
     final severity = complaint['severity'] ?? 'Minor';
-    
+
     Color statusColor = Colors.orange;
     if (status == 'Solved') statusColor = Colors.green;
     if (status == 'Forwarded') statusColor = Colors.blue;
@@ -72,7 +72,10 @@ class ComplaintDetailsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
-                    colors: [statusColor.withOpacity(0.1), statusColor.withOpacity(0.05)],
+                    colors: [
+                      statusColor.withOpacity(0.1),
+                      statusColor.withOpacity(0.05)
+                    ],
                   ),
                 ),
                 child: Column(
@@ -90,7 +93,8 @@ class ComplaintDetailsScreen extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: statusColor,
                             borderRadius: BorderRadius.circular(20),
@@ -157,10 +161,10 @@ class ComplaintDetailsScreen extends StatelessWidget {
               Icons.report_problem,
               [
                 _buildDetailRow('Category', complaint['category'] ?? 'N/A'),
-                _buildDetailRow('Priority', priority, 
-                  valueColor: _getPriorityColor(priority)),
+                _buildDetailRow('Priority', priority,
+                    valueColor: _getPriorityColor(priority)),
                 _buildDetailRow('Severity', severity,
-                  valueColor: _getSeverityColor(severity)),
+                    valueColor: _getSeverityColor(severity)),
               ],
             ),
             const SizedBox(height: 16),

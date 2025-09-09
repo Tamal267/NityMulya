@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/models/shop.dart';
-import 'package:nitymulya/network/customer_api.dart';
-import 'package:nitymulya/utils/user_session.dart';
-import 'package:nitymulya/screens/auth/login_screen.dart';
 
 class ComplaintSubmissionScreen extends StatefulWidget {
   final Shop shop;
@@ -25,15 +22,11 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   bool _isSubmitting = false;
-  bool _isLoadingProducts = false;
-  List<Map<String, dynamic>> _shopProducts = [];
 
   // DNCRP Form Fields
   String? _selectedCategory;
   String? _selectedPriority = 'Medium';
   String? _selectedSeverity = 'Moderate';
-  String? _selectedProductId;
-  String? _selectedProductName;
 
   // Bengali Categories (6 predefined types)
   final List<String> _categories = [
@@ -47,40 +40,6 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
 
   final List<String> _priorities = ['Low', 'Medium', 'High', 'Urgent'];
   final List<String> _severities = ['Minor', 'Moderate', 'Major', 'Critical'];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadShopProducts();
-  }
-
-  // Load products for the specific shop
-  void _loadShopProducts() async {
-    setState(() => _isLoadingProducts = true);
-
-    try {
-      // Mock implementation - replace with actual API call
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      setState(() {
-        _shopProducts = [
-          {'id': 'general', 'name': 'সব পণ্য (সাধারণ অভিযোগ)'},
-          {'id': 'na', 'name': 'প্রযোজ্য নয়'},
-          {'id': '1', 'name': 'চাল'},
-          {'id': '2', 'name': 'ডাল'},
-          {'id': '3', 'name': 'তেল'},
-          {'id': '4', 'name': 'চিনি'},
-          {'id': '5', 'name': 'নুন'},
-          {'id': '6', 'name': 'আলু'},
-          {'id': '7', 'name': 'পেঁয়াজ'},
-        ];
-        _isLoadingProducts = false;
-      });
-    } catch (e) {
-      setState(() => _isLoadingProducts = false);
-      print('Error loading products: $e');
-    }
-  }
 
   void _submitComplaint() async {
     if (!_formKey.currentState!.validate()) return;
@@ -96,164 +55,78 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      // Check if user is logged in
-      final isLoggedIn = await UserSession.isLoggedIn();
-      if (!isLoggedIn) {
+      // Generate complaint number
+      final complaintNumber = 'DNCRP${DateTime.now().millisecondsSinceEpoch}';
+
+      print('✅ DNCRP অভিযোগ জমা হয়েছে!');
+      print('🆔 অভিযোগ নম্বর: $complaintNumber');
+      print('🏪 দোকান: ${widget.shop.name}');
+      print('📍 অবস্থান: ${widget.shop.location}');
+      print('📂 ধরন: $_selectedCategory');
+      print('⚡ অগ্রাধিকার: $_selectedPriority');
+      print('🔥 তীব্রতা: $_selectedSeverity');
+      print('💬 বিবরণ: ${_descriptionController.text.trim()}');
+
+      // Simulate processing time
+      await Future.delayed(const Duration(milliseconds: 800));
+
+      if (mounted) {
         setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('অভিযোগ জমা দিতে অনুগ্রহ করে লগইন করুন'),
-            backgroundColor: Colors.orange,
-          ),
-        );
 
-        // Navigate to login screen
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
-        );
-        return;
-      }
-
-      // Get current user info
-      final currentUser = await UserSession.getCurrentUser();
-      if (currentUser == null) {
-        setState(() => _isSubmitting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('ব্যবহারকারীর তথ্য পাওয়া যায়নি। পুনরায় লগইন করুন।'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        return;
-      }
-
-      print('🚀 Submitting complaint for user: ${currentUser.fullName}');
-
-      // Map Bengali categories to English for database
-      final categoryMapping = {
-        'পণ্যের গুণগত মান সমস্যা': 'Low Quality Product',
-        'ভুল দাম বা অতিরিক্ত চার্জ': 'Overpricing',
-        'পণ্যের ওজন কম': 'Short Measurement',
-        'খারাপ আচরণ': 'Unfair Behavior',
-        'মেয়াদোত্তীর্ণ পণ্য': 'Low Quality Product',
-        'অন্যান্য': 'Other',
-      };
-
-      final englishCategory = categoryMapping[_selectedCategory] ?? 'Other';
-
-      // Determine product info
-      String? productId;
-      String? productName;
-
-      if (_selectedProductId != null &&
-          _selectedProductId != 'general' &&
-          _selectedProductId != 'na') {
-        productId = _selectedProductId;
-        productName = _selectedProductName;
-      }
-
-      print('📦 Product Info: ID=$productId, Name=$productName');
-
-      // Submit complaint using CustomerApi
-      final result = await CustomerApi.submitComplaint(
-        shopOwnerId: widget.shop.id,
-        shopName: widget.shop.name,
-        complaintType: englishCategory,
-        description: _descriptionController.text.trim(),
-        priority: _selectedPriority ?? 'Medium',
-        severity: _selectedSeverity,
-        productId: productId,
-        productName: productName,
-      );
-
-      print('📡 API Response: $result');
-
-      if (result['success'] == true) {
-        final complaint = result['complaint'];
-        final complaintNumber = complaint?['complaint_number'] ??
-            'DNCRP${DateTime.now().millisecondsSinceEpoch}';
-
-        print('✅ Complaint submitted successfully!');
-        print('🆔 Complaint ID: ${complaint?['id']}');
-        print('🔢 Complaint Number: $complaintNumber');
-
-        if (mounted) {
-          setState(() => _isSubmitting = false);
-
-          // Success dialog with complaint number
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => AlertDialog(
-              icon:
-                  const Icon(Icons.check_circle, color: Colors.green, size: 48),
-              title:
-                  const Text('✅ সফল!', style: TextStyle(color: Colors.green)),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('আপনার অভিযোগ সফলভাবে জমা হয়েছে।'),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      border: Border.all(color: Colors.blue),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      children: [
-                        const Text('আপনার অভিযোগ নম্বর:',
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
-                        SelectableText(
-                          complaintNumber,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue,
-                          ),
+        // Success dialog with complaint number
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => AlertDialog(
+            icon: const Icon(Icons.check_circle, color: Colors.green, size: 48),
+            title: const Text('✅ সফল!', style: TextStyle(color: Colors.green)),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('আপনার অভিযোগ সফলভাবে জমা হয়েছে।'),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    border: Border.all(color: Colors.blue),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('আপনার অভিযোগ নম্বর:',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 4),
+                      SelectableText(
+                        complaintNumber,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'এই নম্বরটি সংরক্ষণ করুন। DNCRP কর্তৃপক্ষ শীঘ্রই আপনার সাথে যোগাযোগ করবে।',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close dialog
-                    Navigator.of(context).pop(); // Go back to previous screen
-                  },
-                  child: const Text('ঠিক আছে'),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'এই নম্বরটি সংরক্ষণ করুন। DNCRP কর্তৃপক্ষ শীঘ্রই আপনার সাথে যোগাযোগ করবে।',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                  textAlign: TextAlign.center,
                 ),
               ],
             ),
-          );
-        }
-      } else {
-        // Handle API error
-        final error = result['error'] ?? 'Unknown error occurred';
-        print('❌ API Error: $error');
-
-        if (mounted) {
-          setState(() => _isSubmitting = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('❌ সমস্যা হয়েছে: $error'),
-              backgroundColor: Colors.red,
-              duration: const Duration(seconds: 5),
-            ),
-          );
-        }
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close dialog
+                  Navigator.of(context).pop(); // Go back to previous screen
+                },
+                child: const Text('ঠিক আছে'),
+              ),
+            ],
+          ),
+        );
       }
     } catch (e) {
       print('💥 Error: $e');
@@ -263,7 +136,6 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
           SnackBar(
             content: Text('❌ সমস্যা হয়েছে: $e'),
             backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
           ),
         );
       }
@@ -351,64 +223,8 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
                       const Divider(),
                       _buildInfoRow('দোকানের নাম:', widget.shop.name),
                       _buildInfoRow('অবস্থান:', widget.shop.location),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Product Selection (Optional)
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.inventory, color: Colors.green),
-                          const SizedBox(width: 8),
-                          const Text(
-                            'পণ্য নির্বাচন (ঐচ্ছিক)',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _isLoadingProducts
-                          ? const Center(
-                              child: Padding(
-                                padding: EdgeInsets.all(16.0),
-                                child: CircularProgressIndicator(),
-                              ),
-                            )
-                          : DropdownButtonFormField<String>(
-                              value: _selectedProductId,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                hintText: 'পণ্য নির্বাচন করুন (ঐচ্ছিক)',
-                              ),
-                              items: _shopProducts.map((product) {
-                                return DropdownMenuItem<String>(
-                                  value: product['id'] as String,
-                                  child: Text(product['name'] as String),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedProductId = value;
-                                  _selectedProductName =
-                                      _shopProducts.firstWhere(
-                                          (p) => p['id'] == value)['name'];
-                                });
-                              },
-                            ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'নির্দিষ্ট পণ্যের অভিযোগ থাকলে নির্বাচন করুন। সাধারণ অভিযোগের জন্য "সব পণ্য" নির্বাচন করুন।',
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
+                      if (widget.productName != null)
+                        _buildInfoRow('পণ্য:', widget.productName!),
                     ],
                   ),
                 ),

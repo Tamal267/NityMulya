@@ -1,0 +1,14 @@
+Task,Step,Intended Action,System Expectation,Observed Outcome,Breakdown (Yes/No),Issue Mapping,Recommendation
+T1,1,Open app (logged out),Show login screen,Works,No,,Preload session if token exists
+T1,4,Open nearby shops map,Show verified shops,Works,No,,Persist last filter
+T1,6,Open complaint form,Render form with defaults,Minor delay,No (Performance),,Add skeleton
+T1,7,Attach photo,Preview + progress,No progress,Yes,H1-1,Add progress bar
+T1,8,Fill severity & priority,Dropdown clarity,Terminology confusion,Yes,H2-2,Tooltip explanations
+T1,9,Submit complaint,Spinner + success,Delay no spinner,Yes,CW-T1-S9,Async overlay
+T1,10,Return to list,New item visible,Needs manual refresh,Yes,CW-T1-S10,Optimistic insertion
+T2,2,Go to Inventory tab,Show list,Works,No,,Remember sort
+T2,6,Save quantity change,Immediate feedback,Silent save,Yes,CW-T2-S6,Toast + spinner
+T2,7,Compare gov price,Readonly reference,Not shown,Yes,CW-T2-S7,Add official price field
+T3,3,Open Low Stock view,List prioritized,Works,No,,Add distance column
+T3,5,Open shop detail,Show context,Works,No,,Show last order date
+T3,8,Send offer,Confirmation + list update,Manual refresh needed,Yes,CW-T3-S8,Optimistic + push
