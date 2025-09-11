@@ -405,42 +405,36 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     });
 
     try {
-      // Load real chat conversations from the API
-      final result = await ChatApiService.getConversations();
+      // Load real chat conversations from the wholesaler API
+      final result = await WholesalerApiService.getChatMessages();
+      print('🔍 Chat API raw result: $result');
 
-      if (result['success']) {
-        final conversations = result['conversations'] as List<dynamic>;
-        setState(() {
-          chatConversations = List<Map<String, dynamic>>.from(conversations);
-          isLoadingChats = false;
-        });
-      } else {
-        // Fallback to shop owners list if no conversations
-        if (shopOwners.isNotEmpty) {
-          final fallbackConversations = shopOwners.map((shopOwner) {
-            return {
-              'contact_id': shopOwner['id'],
-              'contact_name': shopOwner['shop_name'] ??
-                  shopOwner['full_name'] ??
-                  'Unknown Shop',
-              'contact_type': 'shop_owner',
-              'last_message': 'Start a conversation',
-              'last_message_time': DateTime.now().toIso8601String(),
-              'unread_count': 0,
-              'phone': shopOwner['phone'],
-            };
-          }).toList();
-
+      if (result['success'] == true) {
+        // Check both possible data keys from API response
+        final conversationsData = result['conversations'] ?? result['data'];
+        
+        if (conversationsData != null && conversationsData is List) {
+          final conversations = conversationsData;
           setState(() {
-            chatConversations = fallbackConversations;
+            chatConversations = List<Map<String, dynamic>>.from(conversations);
             isLoadingChats = false;
           });
+          print('✅ Loaded ${conversations.length} chat conversations from API');
         } else {
           setState(() {
+            chatError = 'No conversations found';
             chatConversations = [];
             isLoadingChats = false;
           });
+          print('⚠️ Conversations data is null or not a list: $conversationsData');
         }
+      } else {
+        setState(() {
+          chatError = result['message'] ?? 'Failed to load chat conversations';
+          chatConversations = [];
+          isLoadingChats = false;
+        });
+        print('❌ Failed to load chat conversations: ${result['message']}');
 
         // Handle token expiration or authentication errors
         if (result['requiresLogin'] == true) {
@@ -453,7 +447,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         chatConversations = [];
         isLoadingChats = false;
       });
-      print('Error loading chat conversations: $e');
+      print('💥 Exception loading chat conversations: $e');
     }
   }
 
@@ -1656,7 +1650,8 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     }
 
     final conversation = chatConversations[index];
-    final unreadCount = conversation['unread_count'] as int? ?? 0;
+    // Parse unread_count as it comes as string from API
+    final unreadCount = int.tryParse(conversation['unread_count']?.toString() ?? '0') ?? 0;
     final contactName =
         conversation['contact_name'] as String? ?? 'Unknown Shop';
     final lastMessage =
@@ -3199,7 +3194,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
     final contactName =
         conversation['contact_name'] as String? ?? 'Unknown Shop';
     final contactType = conversation['contact_type'] as String? ?? 'shop_owner';
-    final contactPhone = conversation['phone'] as String?;
+    final contactPhone = conversation['contact_phone'] as String?;
 
     if (contactId == null) {
       ScaffoldMessenger.of(context).showSnackBar(

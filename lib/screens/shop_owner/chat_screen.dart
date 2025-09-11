@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/network/shop_owner_api.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/user_session.dart';
 
@@ -82,6 +83,45 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _error = 'Error loading user session: $e';
       });
+    }
+  }
+
+  Future<void> _makePhoneCall() async {
+    if (widget.contactPhone == null || widget.contactPhone!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Phone number not available'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final phoneNumber = widget.contactPhone!;
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not launch phone dialer'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error making phone call: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -373,14 +413,8 @@ class _ChatScreenState extends State<ChatScreen> {
           if (widget.contactPhone != null)
             IconButton(
               icon: const Icon(Icons.phone),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Calling ${widget.contactName}..."),
-                    backgroundColor: Colors.green[600],
-                  ),
-                );
-              },
+              onPressed: _makePhoneCall,
+              tooltip: "Call ${widget.contactName}",
             ),
           IconButton(
             icon: const Icon(Icons.more_vert),

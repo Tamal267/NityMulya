@@ -563,7 +563,7 @@ class WholesalerApiService {
         if (response['success'] == true) {
           return {
             'success': true,
-            'data': response['data'],
+            'data': response['conversations'] ?? response['data'], // Handle both response formats
           };
         } else if (response.containsKey('error') &&
             response['error'] == 'Unauthorized') {

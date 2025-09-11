@@ -642,13 +642,16 @@ export const deleteOffer = async (c: any) => {
 // Get chat messages
 export const getChatMessages = async (c: any) => {
   try {
-    const wholesaler_id = c.req.query("wholesaler_id");
+    // Get wholesaler ID from authenticated user
+    const user = c.get("user");
+    const wholesaler_id = user.userId;
+    
     const shop_owner_id = c.req.query("shop_owner_id");
 
     if (!wholesaler_id) {
       return c.json(
-        { success: false, message: "Wholesaler ID is required" },
-        400
+        { success: false, message: "Unauthorized" },
+        401
       );
     }
 
@@ -659,8 +662,8 @@ export const getChatMessages = async (c: any) => {
                 SELECT 
                     cm.*,
                     CASE 
-                        WHEN cm.sender_type = 'wholesaler' THEN w.name
-                        ELSE so.name
+                        WHEN cm.sender_type = 'wholesaler' THEN w.full_name
+                        ELSE so.full_name
                     END as sender_name
                 FROM chat_messages cm
                 LEFT JOIN wholesalers w ON cm.sender_id::uuid = w.id AND cm.sender_type = 'wholesaler'
@@ -676,10 +679,12 @@ export const getChatMessages = async (c: any) => {
                     CASE 
                         WHEN cm.sender_type = 'shop_owner' THEN cm.sender_id
                         ELSE cm.receiver_id
-                    END as shop_owner_id,
-                    so.name as shop_name,
-                    so.shop_address,
-                    (SELECT message_text FROM chat_messages 
+                    END as contact_id,
+                    COALESCE(so.full_name, so.name, 'Unknown Shop') as contact_name,
+                    'shop_owner' as contact_type,
+                    COALESCE(so.address, 'No address') as contact_address,
+                    so.contact as contact_phone,
+                    (SELECT message FROM chat_messages 
                      WHERE ((sender_id = ${wholesaler_id} AND receiver_id = so.id)
                         OR (sender_id = so.id AND receiver_id = ${wholesaler_id}))
                      ORDER BY created_at DESC LIMIT 1) as last_message,
@@ -704,7 +709,7 @@ export const getChatMessages = async (c: any) => {
 
     return c.json({
       success: true,
-      data: messages,
+      conversations: messages,
     });
   } catch (error) {
     console.error("Error fetching chat messages:", error);

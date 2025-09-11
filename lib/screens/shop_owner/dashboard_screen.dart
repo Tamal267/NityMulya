@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nitymulya/models/location_models.dart';
 import 'package:nitymulya/network/shop_owner_api.dart';
 import 'package:nitymulya/screens/shop_owner/add_product_screen.dart';
+import 'package:nitymulya/screens/shop_owner/chat_screen.dart';
 import 'package:nitymulya/screens/shop_owner/shop_owner_cancelled_order_screen.dart';
 import 'package:nitymulya/screens/shop_owner/shop_owner_delivered_shop_owner.dart';
 import 'package:nitymulya/screens/shop_owner/shop_owner_on_going_orders_screen.dart';
@@ -2210,7 +2211,7 @@ Widget build(BuildContext context) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => WholesalerChatScreen(
+                builder: (context) => ChatScreen(
                   contactId: contactId,
                   contactName: contactName,
                   contactType: contactType,

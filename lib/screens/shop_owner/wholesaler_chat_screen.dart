@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/utils/user_session.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../network/wholesaler_api.dart';
 
@@ -63,6 +64,45 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
       setState(() {
         _error = 'Error loading user session: $e';
       });
+    }
+  }
+
+  Future<void> _makePhoneCall() async {
+    if (widget.contactPhone == null || widget.contactPhone!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Phone number not available'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    final phoneNumber = widget.contactPhone!;
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not launch phone dialer'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error making phone call: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -336,6 +376,12 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
           ],
         ),
         actions: [
+          if (widget.contactPhone != null && widget.contactPhone!.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.phone),
+              onPressed: _makePhoneCall,
+              tooltip: "Call ${widget.contactName}",
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loadMessages,

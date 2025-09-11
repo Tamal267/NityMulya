@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/services/chat_api_service.dart';
+import 'package:nitymulya/network/wholesaler_api.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../utils/user_session.dart';
 import '../auth/login_screen.dart';
@@ -96,14 +97,16 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
     });
 
     try {
-      final result = await ChatApiService.getMessages(
-        contactId: widget.contactId,
-        contactType: widget.contactType,
+      final result = await WholesalerApiService.getConversationMessages(
+        user1Id: _currentUserId!,
+        user1Type: _currentUserType!,
+        user2Id: widget.contactId,
+        user2Type: widget.contactType,
       );
 
       if (result['success'] == true) {
         setState(() {
-          _messages = List<Map<String, dynamic>>.from(result['messages'] ?? []);
+          _messages = List<Map<String, dynamic>>.from(result['data'] ?? []);
           _isLoading = false;
         });
 
@@ -189,17 +192,21 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
     });
 
     try {
-      final result = await ChatApiService.sendMessage(
+      final result = await WholesalerApiService.sendMessage(
+        senderId: _currentUserId!,
+        senderType: _currentUserType!,
         receiverId: widget.contactId,
         receiverType: widget.contactType,
-        messageText: messageText,
+        message: messageText,
       );
 
       if (result['success'] == true) {
         // Replace temp message with actual message from server
         setState(() {
           _messages.removeLast();
-          _messages.add(result['message']);
+          if (result['data'] != null) {
+            _messages.add(result['data']);
+          }
         });
         print('✅ Message sent successfully');
       } else {
@@ -234,6 +241,45 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error sending message: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _makePhoneCall() async {
+    if (widget.contactPhone == null || widget.contactPhone!.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ফোন নম্বর পাওয়া যায়নি'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final phoneNumber = widget.contactPhone!;
+    final uri = Uri(scheme: 'tel', path: phoneNumber);
+    
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ফোন কল করা যাচ্ছে না'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ফোন কল করতে সমস্যা: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -331,6 +377,7 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print(widget);
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -375,16 +422,17 @@ class _WholesalerChatScreenState extends State<WholesalerChatScreen> {
         elevation: 0,
         actions: [
           if (widget.contactPhone != null)
-            IconButton(
-              icon: const Icon(Icons.phone),
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text("Calling ${widget.contactName}..."),
-                    backgroundColor: Colors.green[600],
-                  ),
-                );
-              },
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.phone, color: Colors.white),
+                onPressed: _makePhoneCall,
+                tooltip: 'ফোন করুন (${widget.contactPhone})',
+              ),
             ),
           IconButton(
             icon: const Icon(Icons.more_vert),

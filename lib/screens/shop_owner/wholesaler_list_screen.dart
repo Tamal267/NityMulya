@@ -425,7 +425,7 @@ class _WholesalerListScreenState extends State<WholesalerListScreen> {
                 contactId: wholesaler["id"] as String? ?? uuid.v4(),
                 contactType: "wholesaler",
                 contactName: wholesaler["name"] as String,
-                contactPhone: wholesaler["phone"] as String? ?? "+8801XXXXXXXX",
+                contactPhone: wholesaler["contact"] as String? ?? "+8801XXXXXXXX",
               ),
             ),
           );
@@ -563,7 +563,7 @@ class WholesalerSearchDelegate extends SearchDelegate {
                   contactType: "wholesaler",
                   contactName: wholesaler["name"] as String,
                   contactPhone:
-                      wholesaler["phone"] as String? ?? "+8801XXXXXXXX",
+                      wholesaler["contact"] as String? ?? "+8801XXXXXXXX",
                 ),
               ),
             );
