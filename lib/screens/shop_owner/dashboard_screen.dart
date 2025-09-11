@@ -2906,6 +2906,9 @@ Widget build(BuildContext context) {
       );
 
       if (result['success'] == true) {
+        // After successful order confirmation, add product to inventory
+        await _addOrderToInventory(order);
+        
         // Success message with remaining stock info
         final message = result['message'] ?? 'Order confirmed successfully!';
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3053,6 +3056,87 @@ Widget build(BuildContext context) {
           content: Text('Error confirming order: $e'),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  Future<void> _addOrderToInventory(Map<String, dynamic> order) async {
+    try {
+      // Extract order details
+      final subcatId = order['subcat_id']?.toString();
+      final quantityRequested = order['quantity_requested'] ?? 0;
+      final unitPrice = double.tryParse(order['unit_price']?.toString() ?? '0') ?? 0.0;
+      
+      if (subcatId == null || quantityRequested <= 0 || unitPrice <= 0) {
+        print('Invalid order data for inventory addition: subcatId=$subcatId, quantity=$quantityRequested, price=$unitPrice');
+        return;
+      }
+
+      // Add product to inventory using the existing API method
+      final result = await ShopOwnerApiService.addProductToInventory(
+        subcatId: subcatId,
+        stockQuantity: quantityRequested,
+        unitPrice: unitPrice,
+        lowStockThreshold: 10, // Default threshold
+      );
+
+      if (result['success'] == true) {
+        print('✅ Product added to inventory successfully');
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.inventory, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Product added to your inventory: ${order['subcat_name'] ?? 'Product'} (${quantityRequested} units)'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green[700],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      } else {
+        print('❌ Failed to add product to inventory: ${result['message']}');
+        // Show warning if inventory addition fails, but don't block order confirmation
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(Icons.warning, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Order confirmed but failed to add to inventory: ${result['message']}'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.orange[600],
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Error adding product to inventory: $e');
+      // Show warning but don't fail the order confirmation
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(Icons.warning, color: Colors.white),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text('Order confirmed but inventory update failed: $e'),
+              ),
+            ],
+          ),
+          backgroundColor: Colors.orange[600],
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
         ),
       );
     }

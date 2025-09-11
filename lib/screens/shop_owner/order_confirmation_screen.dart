@@ -38,14 +38,38 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
       );
 
       if (result['success'] == true) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Order confirmed successfully!'),
-              backgroundColor: Colors.green,
-            ),
+        // After successful order confirmation, add product to inventory
+        try {
+          await _addOrderToInventory();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Order confirmed and product added to inventory successfully!'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.pop(context, true); // Return true to indicate success
+          }
+        } catch (e) {
+          // If inventory addition fails, rollback the order status
+          print('Inventory addition failed, rolling back order status: $e');
+          
+          // Attempt to revert order status
+          await ShopOwnerApiService.updateShopOrderStatus(
+            orderId: widget.order['id'].toString(),
+            status: 'delivered', // Revert to previous status
+            notes: 'Reverted due to inventory addition failure',
           );
-          Navigator.pop(context, true); // Return true to indicate success
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Order acceptance failed: Unable to add product to inventory. ${e.toString()}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         }
       } else {
         if (mounted) {
@@ -75,14 +99,98 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
     }
   }
 
+  Future<void> _addOrderToInventory() async {
+    try {
+      print('🔍 Debug - Full order object: ${widget.order}');
+      print('🔍 Debug - Available keys: ${widget.order.keys.toList()}');
+      
+      // Extract order details - need to handle both data structures
+      String? subcatId = widget.order['subcat_id']?.toString();
+      int quantity = 0;
+      double unitPrice = 0.0;
+      
+      // Handle different order data structures
+      if (subcatId == null) {
+        // If no subcat_id, try to find it in a different way or fetch from API
+        print('⚠️ No subcat_id found in order object. Need to fetch order details from API.');
+        
+        // Get order details from API to get subcat_id
+        final orderDetails = await ShopOwnerApiService.getShopOrders();
+        if (orderDetails['success'] == true) {
+          final orders = orderDetails['data'] as List;
+          final matchingOrder = orders.firstWhere(
+            (order) => order['id'] == widget.order['id'],
+            orElse: () => null,
+          );
+          
+          if (matchingOrder != null) {
+            subcatId = matchingOrder['subcat_id']?.toString();
+            quantity = matchingOrder['quantity_requested'] ?? 0;
+            unitPrice = double.tryParse(matchingOrder['unit_price']?.toString() ?? '0') ?? 0.0;
+          }
+        }
+      } else {
+        quantity = widget.order['quantity_requested'] ?? 0;
+        unitPrice = double.tryParse(widget.order['unit_price']?.toString() ?? '0') ?? 0.0;
+      }
+      
+      print('🔍 Final values: subcatId=$subcatId, quantity=$quantity, price=$unitPrice');
+      
+      if (subcatId == null || quantity <= 0 || unitPrice <= 0) {
+        print('❌ Invalid order data for inventory addition: subcatId=$subcatId, quantity=$quantity, price=$unitPrice');
+        throw Exception('Invalid order data: Missing required fields (subcat_id, quantity, unit_price)');
+      }
+
+      // Add/Update product inventory using the existing API method
+      final result = await ShopOwnerApiService.addProductToInventory(
+        subcatId: subcatId,
+        stockQuantity: quantity,
+        unitPrice: unitPrice,
+        lowStockThreshold: 10, // Default threshold
+      );
+
+      if (result['success'] == true) {
+        print('✅ Product added to inventory successfully');
+        // Show success message
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Icon(Icons.inventory, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text('Product added to your inventory: ${widget.order['product_name'] ?? 'Product'} ($quantity units)'),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green[700],
+              behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        print('❌ Failed to add product to inventory: ${result['message']}');
+        // Throw error to prevent order acceptance
+        throw Exception('Failed to add product to inventory: ${result['message']}');
+      }
+    } catch (e) {
+      print('❌ Error adding product to inventory: $e');
+      // Re-throw error to prevent order acceptance
+      throw e;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    print(widget.order);
     final wholesalerName = widget.order['wholesaler_name']?.toString() ?? 'Unknown Wholesaler';
     final productName = widget.order['product_name']?.toString() ?? 'Unknown Product';
-    final quantity = widget.order['quantity_requested'] ?? 0;
+    final quantity = widget.order['quantity'] ?? 0;
     final unitPrice = double.tryParse(widget.order['unit_price']?.toString() ?? '0') ?? 0.0;
     final totalAmount = double.tryParse(widget.order['total_amount']?.toString() ?? '0') ?? 0.0;
-    final deliveryDate = widget.order['updated_at']?.toString() ?? '';
+    final deliveryDate = widget.order['updated_date']?.toString() ?? '';
 
     return Scaffold(
       backgroundColor: Colors.grey[50],

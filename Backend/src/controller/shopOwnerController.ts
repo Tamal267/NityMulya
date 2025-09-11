@@ -172,7 +172,7 @@ export const addProductToInventory = async (c: any) => {
     })
             ON CONFLICT (shop_owner_id, subcat_id)
             DO UPDATE SET 
-                stock_quantity = EXCLUDED.stock_quantity,
+                stock_quantity = shop_inventory.stock_quantity + EXCLUDED.stock_quantity,
                 unit_price = EXCLUDED.unit_price,
                 low_stock_threshold = EXCLUDED.low_stock_threshold,
                 updated_at = CURRENT_TIMESTAMP
