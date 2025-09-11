@@ -311,14 +311,11 @@ export const getShopOrders = async (c: any) => {
                 so.*,
                 s.subcat_name,
                 s.unit,
-                c.cat_name,
-                s.hindi_name,
-                s.image_url,
+                s.subcat_img,
                 w.full_name as wholesaler_name,
                 w.contact as wholesaler_contact
             FROM shop_orders so
             JOIN subcategories s ON so.subcat_id = s.id
-            JOIN categories c ON s.cat_id = c.id
             JOIN wholesalers w ON so.wholesaler_id = w.id
             WHERE so.shop_owner_id = ${shop_owner_id}
             ORDER BY so.created_at DESC
@@ -331,6 +328,64 @@ export const getShopOrders = async (c: any) => {
   } catch (error) {
     console.error("Error fetching shop orders:", error);
     return c.json({ success: false, message: "Failed to fetch orders" }, 500);
+  }
+};
+
+// Update shop order status
+export const updateShopOrderStatus = async (c: any) => {
+  try {
+    // Get shop owner ID from authenticated user
+    const user = c.get("user");
+    const shop_owner_id = user.userId;
+
+    if (!shop_owner_id) {
+      return c.json({ success: false, message: "Unauthorized" }, 401);
+    }
+
+    const { order_id, status, notes } = await c.req.json();
+
+    if (!order_id || !status) {
+      return c.json(
+        { success: false, message: "order_id and status are required" },
+        400
+      );
+    }
+
+    // Verify the order belongs to the authenticated shop owner
+    const existingOrder = await sql`
+            SELECT * FROM shop_orders 
+            WHERE id = ${order_id} AND shop_owner_id = ${shop_owner_id}
+        `;
+
+    if (existingOrder.length === 0) {
+      return c.json(
+        { success: false, message: "Order not found or access denied" },
+        404
+      );
+    }
+
+    // Update the order status
+    const updatedOrder = await sql`
+            UPDATE shop_orders 
+            SET 
+                status = ${status},
+                notes = COALESCE(${notes}, notes),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = ${order_id} AND shop_owner_id = ${shop_owner_id}
+            RETURNING *
+        `;
+
+    return c.json({
+      success: true,
+      message: `Order status updated to ${status}`,
+      data: updatedOrder[0],
+    });
+  } catch (error) {
+    console.error("Error updating shop order status:", error);
+    return c.json(
+      { success: false, message: "Failed to update order status" },
+      500
+    );
   }
 };
 

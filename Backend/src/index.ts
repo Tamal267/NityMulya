@@ -1,8 +1,8 @@
+import dotenv from "dotenv";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { JwtVariables } from "hono/jwt";
 import { prettyJSON } from "hono/pretty-json";
-import dotenv from "dotenv";
 import {
   getCategories,
   getChatConversations,
@@ -28,6 +28,11 @@ import {
   signupWholesaler,
 } from "./controller/authController";
 import {
+  createCustomerComplaint,
+  createPublicComplaint,
+  getCustomerComplaints,
+} from "./controller/customerComplaintController";
+import {
   cancelCustomerOrder,
   createCustomerOrder,
   getCancelledOrders,
@@ -39,17 +44,13 @@ import {
 } from "./controller/customerOrderController";
 import { DatabaseReviewController } from "./controller/databaseReviewController";
 import {
-  createCustomerComplaint,
-  getCustomerComplaints,
-  createPublicComplaint,
-} from "./controller/customerComplaintController";
-import {
   addProductToInventory as addShopOwnerProduct,
   getChatMessages as getShopOwnerChatMessages,
   getShopOwnerDashboard,
   getShopOwnerInventory,
   getLowStockProducts as getShopOwnerLowStockProducts,
   getShopOrders as getShopOwnerOrders,
+  updateShopOrderStatus,
   updateInventoryItem as updateShopOwnerInventoryItem,
 } from "./controller/shopOwnerController";
 import {
@@ -68,9 +69,8 @@ import {
   updateOrderStatus,
   updateInventoryItem as updateWholesalerInventoryItem,
 } from "./controller/wholesalerController";
-import { db } from "./db";
+import sql, { db } from "./db"; // Database connection for persistent storage
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
-import sql from "./db"; // Database connection for persistent storage
 
 // Load environment variables
 dotenv.config({ path: '.env.local' });
@@ -151,6 +151,7 @@ app.post("/shop-owner/inventory", addShopOwnerProduct);
 app.put("/shop-owner/inventory", updateShopOwnerInventoryItem);
 app.get("/shop-owner/low-stock", getShopOwnerLowStockProducts);
 app.get("/shop-owner/orders", getShopOwnerOrders);
+app.put("/shop-owner/orders/status", updateShopOrderStatus);
 app.get("/shop-owner/chat", getShopOwnerChatMessages);
 app.get("/shop-owner/customer-orders", getShopOwnerCustomerOrders);
 app.put("/shop-owner/customer-orders/status", updateCustomerOrderStatus);

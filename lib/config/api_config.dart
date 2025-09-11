@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 
 class ApiConfig {
@@ -131,4 +132,23 @@ class ApiConfig {
   
   // Complaint submission endpoint
   static String complaintsSubmitEndpoint(String baseUrl) => '$baseUrl/api/complaints/submit';
+  
+  // Base URL - will be set dynamically
+  static String baseUrl = 'http://localhost:3005';
+  
+  // Message API endpoints
+  static String get sendMessageUrl => '$baseUrl/chat/send';
+  static String get markAsReadUrl => '$baseUrl/chat/mark-read';
+  
+  // Dynamic URL methods for messages
+  static String getOrderMessagesUrl(String orderId) => '$baseUrl/chat/messages/order/$orderId';
+  static String getCustomerMessagesUrl(String customerId) => '$baseUrl/chat/messages/customer/$customerId';
+  static String getShopMessagesUrl(String shopId) => '$baseUrl/chat/messages/shop/$shopId';
+  static String getUnreadCountUrl(String userId, String userType) => '$baseUrl/chat/unread-count?user_id=$userId&user_type=$userType';
+  
+  // Initialize the base URL dynamically
+  static Future<void> initialize() async {
+    baseUrl = await getWorkingUrl();
+    print('🔧 ApiConfig initialized with base URL: $baseUrl');
+  }
 }

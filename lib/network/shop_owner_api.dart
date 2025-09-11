@@ -490,6 +490,86 @@ class ShopOwnerApiService {
     }
   }
 
+  // Get shop orders (orders from wholesalers)
+  static Future<Map<String, dynamic>> getShopOrders() async {
+    try {
+      final response =
+          await _networkHelper.getWithToken('/shop-owner/orders');
+
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to fetch shop orders',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error fetching shop orders: $e',
+      };
+    }
+  }
+
+  // Update shop order status (for orders from wholesalers)
+  static Future<Map<String, dynamic>> updateShopOrderStatus({
+    required String orderId,
+    required String status,
+    String? notes,
+  }) async {
+    try {
+      final requestData = {
+        'order_id': orderId,
+        'status': status,
+        if (notes != null) 'notes': notes,
+      };
+
+      final response = await _networkHelper.putWithToken(
+          '/shop-owner/orders/status', requestData);
+
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'message':
+                response['message'] ?? 'Shop order status updated successfully',
+            'data': response['data'],
+          };
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
+      }
+
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to update shop order status',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': 'Error updating shop order status: $e',
+      };
+    }
+  }
+
   // Confirm order (changes status from pending to on going and decreases inventory)
   static Future<Map<String, dynamic>> confirmOrder({
     required String orderId,

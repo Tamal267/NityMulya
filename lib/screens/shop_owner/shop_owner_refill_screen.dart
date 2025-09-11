@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/network/shop_owner_api.dart';
+import 'package:nitymulya/screens/shop_owner/order_confirmation_screen.dart';
 
 class ShopOwnerRefillScreen extends StatefulWidget {
   final String userName;
@@ -37,59 +39,35 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
     });
 
     try {
-      // For now, we'll use sample data since API might not be ready
-      // In production, this should call: ShopOwnerApiService.getRefillHistory()
+      // Load real data from API
+      final result = await ShopOwnerApiService.getShopOrders();
 
-      await Future.delayed(const Duration(seconds: 1)); // Simulate API call
-
-      // Sample refill data - only showing "receiving" status
-      final sampleRefills = [
-        {
-          'id': 1,
-          'wholesaler_name': 'রহমান ট্রেডার্স',
-          'product_name': 'চাল সরু',
-          'quantity': 50,
-          'refill_date': '2025-01-20',
-          'status': 'receiving',
-          'unit_price': 78.0,
-          'total_amount': 3900.0,
-        },
-        {
-          'id': 2,
-          'wholesaler_name': 'করিম এন্টারপ্রাইজ',
-          'product_name': 'সয়াবিন তেল',
-          'quantity': 20,
-          'refill_date': '2025-01-21',
-          'status': 'receiving',
-          'unit_price': 170.0,
-          'total_amount': 3400.0,
-        },
-        {
-          'id': 3,
-          'wholesaler_name': 'আলম ইমপোর্ট',
-          'product_name': 'মসুর ডাল',
-          'quantity': 30,
-          'refill_date': '2025-01-18',
-          'status': 'receiving',
-          'unit_price': 120.0,
-          'total_amount': 3600.0,
-        },
-        {
-          'id': 4,
-          'wholesaler_name': 'নিউ সুন্দরবন',
-          'product_name': 'পেঁয়াজ (দেশি)',
-          'quantity': 25,
-          'refill_date': '2025-01-19',
-          'status': 'receiving',
-          'unit_price': 55.0,
-          'total_amount': 1375.0,
-        },
-      ];
-
-      setState(() {
-        refillItems = sampleRefills;
-        isLoadingRefills = false;
-      });
+      if (result['success'] == true) {
+        final orders = result['data'] as List<dynamic>;
+        
+        setState(() {
+          refillItems = orders.map((order) => {
+            'id': order['id'],
+            'wholesaler_name': order['wholesaler_name'],
+            'product_name': order['subcat_name'],
+            'quantity': order['quantity_requested'],
+            'refill_date': order['created_at'],
+            'updated_date': order['updated_at'],
+            'status': order['status'],
+            'unit_price': double.tryParse(order['unit_price']?.toString() ?? '0') ?? 0.0,
+            'total_amount': double.tryParse(order['total_amount']?.toString() ?? '0') ?? 0.0,
+            'wholesaler_contact': order['wholesaler_contact'],
+            'notes': order['notes'],
+            'unit': order['unit'] ?? 'units',
+          }).toList();
+          isLoadingRefills = false;
+        });
+      } else {
+        setState(() {
+          refillError = result['message'] ?? 'Failed to load refill data';
+          isLoadingRefills = false;
+        });
+      }
     } catch (e) {
       setState(() {
         refillError = 'Error loading refill history: $e';
@@ -99,46 +77,51 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
   }
 
   Future<void> _loadHistoryData() async {
-    // Sample history data - replace with real API call
-    final sampleHistory = [
-      {
-        'id': 'ref001',
-        'product_name': 'চাল (সরু)',
-        'wholesaler_name': 'রহমান ট্রেডার্স',
-        'quantity': 50,
-        'unit': 'কেজি',
-        'refill_date': '2025-01-15',
-        'taken_date': '2025-01-16',
-        'status': 'taken',
-        'total_amount': 2500.0,
-      },
-      {
-        'id': 'ref002',
-        'product_name': 'সয়াবিন তেল',
-        'wholesaler_name': 'করিম এন্টারপ্রাইজ',
-        'quantity': 20,
-        'unit': 'লিটার',
-        'refill_date': '2025-01-12',
-        'taken_date': '2025-01-13',
-        'status': 'taken',
-        'total_amount': 3200.0,
-      },
-      {
-        'id': 'ref003',
-        'product_name': 'মসুর ডাল',
-        'wholesaler_name': 'আলম ইমপোর্ট',
-        'quantity': 30,
-        'unit': 'কেজি',
-        'refill_date': '2025-01-10',
-        'taken_date': '2025-01-11',
-        'status': 'taken',
-        'total_amount': 3600.0,
-      },
-    ];
+    // Load completed orders from the same API
+    try {
+      final result = await ShopOwnerApiService.getShopOrders();
 
-    setState(() {
-      historyItems = sampleHistory;
-    });
+      if (result['success'] == true) {
+        final orders = result['data'] as List<dynamic>;
+        
+        // Filter only completed orders for history
+        final completedOrders = orders.where((order) => 
+          order['status']?.toString().toLowerCase() == 'completed'
+        ).toList();
+        
+        setState(() {
+          historyItems = completedOrders.map((order) => {
+            'id': order['id'],
+            'product_name': order['subcat_name'],
+            'wholesaler_name': order['wholesaler_name'],
+            'quantity': order['quantity_requested'],
+            'unit': order['unit'] ?? 'units',
+            'refill_date': order['created_at'],
+            'taken_date': order['updated_at'],
+            'status': 'taken',
+            'total_amount': double.tryParse(order['total_amount']?.toString() ?? '0') ?? 0.0,
+          }).toList();
+        });
+      }
+    } catch (e) {
+      // If error loading from API, keep empty list
+      setState(() {
+        historyItems = [];
+      });
+    }
+  }
+
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      final months = [
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ];
+      return "${date.day} ${months[date.month - 1]} ${date.year}";
+    } catch (e) {
+      return dateStr.split('T')[0]; // fallback to date part only
+    }
   }
 
   @override
@@ -637,29 +620,6 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
     );
   }
 
-  String _formatDate(String dateStr) {
-    try {
-      final date = DateTime.parse(dateStr);
-      final months = [
-        'Jan',
-        'Feb',
-        'Mar',
-        'Apr',
-        'May',
-        'Jun',
-        'Jul',
-        'Aug',
-        'Sep',
-        'Oct',
-        'Nov',
-        'Dec'
-      ];
-      return "${date.day} ${months[date.month - 1]} ${date.year}";
-    } catch (e) {
-      return dateStr;
-    }
-  }
-
   void _viewHistoryDetails(Map<String, dynamic> history) {
     showDialog(
       context: context,
@@ -745,26 +705,32 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
     final status = refill['status']?.toString() ?? 'unknown';
     final unitPrice = refill['unit_price'] ?? 0.0;
     final totalAmount = refill['total_amount'] ?? 0.0;
+    final unit = refill['unit']?.toString() ?? 'units';
 
     Color statusColor;
     IconData statusIcon;
     String statusText;
 
     switch (status.toLowerCase()) {
-      case 'receiving':
-        statusColor = Colors.orange;
-        statusIcon = Icons.download;
-        statusText = 'Receiving';
-        break;
-      case 'completed':
-        statusColor = Colors.green;
-        statusIcon = Icons.check_circle;
-        statusText = 'Completed';
-        break;
       case 'pending':
-        statusColor = Colors.blue;
+        statusColor = Colors.orange;
         statusIcon = Icons.schedule;
         statusText = 'Pending';
+        break;
+      case 'processing':
+        statusColor = Colors.blue;
+        statusIcon = Icons.refresh;
+        statusText = 'Processing';
+        break;
+      case 'delivered':
+        statusColor = Colors.green;
+        statusIcon = Icons.local_shipping;
+        statusText = 'Delivered';
+        break;
+      case 'completed':
+        statusColor = Colors.teal;
+        statusIcon = Icons.check_circle;
+        statusText = 'Completed';
         break;
       case 'cancelled':
         statusColor = Colors.red;
@@ -772,9 +738,9 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
         statusText = 'Cancelled';
         break;
       default:
-        statusColor = Colors.orange;
-        statusIcon = Icons.download;
-        statusText = 'Receiving';
+        statusColor = Colors.grey;
+        statusIcon = Icons.help_outline;
+        statusText = status;
     }
 
     return Card(
@@ -859,7 +825,7 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          "$quantity units",
+                          "$quantity $unit",
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -918,7 +884,7 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 12),
 
             // Date and Actions
             Row(
@@ -926,40 +892,39 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
                 Icon(Icons.calendar_today, size: 16, color: Colors.grey[600]),
                 const SizedBox(width: 4),
                 Text(
-                  refillDate,
+                  _formatDate(refillDate),
                   style: TextStyle(
                     color: Colors.grey[600],
                     fontSize: 12,
                   ),
                 ),
                 const Spacer(),
-                // Find All Button
-                ElevatedButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      showHistory = true;
-                    });
-                  },
-                  icon: const Icon(Icons.history, size: 16),
-                  label: const Text("Find All"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple[600],
-                    foregroundColor: Colors.white,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
+                
+                // Accept button for delivered orders
+                if (status.toLowerCase() == 'delivered') ...[
+                  ElevatedButton.icon(
+                    onPressed: () => _navigateToConfirmation(refill),
+                    icon: const Icon(Icons.check_circle, size: 16),
+                    label: const Text("Accept"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[600],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 8),
+                  const SizedBox(width: 8),
+                ],
+                
                 PopupMenuButton(
                   itemBuilder: (context) => [
                     const PopupMenuItem(
                         value: "details", child: Text("View Details")),
-                    if (status.toLowerCase() == 'receiving')
+                    if (status.toLowerCase() == 'pending')
                       const PopupMenuItem(
-                          value: "accept", child: Text("Accept Refill")),
+                          value: "cancel", child: Text("Cancel Order")),
                     const PopupMenuItem(
                         value: "contact", child: Text("Contact Wholesaler")),
                   ],
@@ -981,7 +946,10 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
         _showRefillDetails(refill);
         break;
       case 'accept':
-        _acceptRefill(refill);
+        _navigateToConfirmation(refill);
+        break;
+      case 'cancel':
+        _cancelOrder(refill);
         break;
       case 'contact':
         _contactWholesaler(refill);
@@ -989,34 +957,66 @@ class _ShopOwnerRefillScreenState extends State<ShopOwnerRefillScreen> {
     }
   }
 
-  void _acceptRefill(Map<String, dynamic> refill) {
+  Future<void> _navigateToConfirmation(Map<String, dynamic> refill) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OrderConfirmationScreen(order: refill),
+      ),
+    );
+
+    // If the order was confirmed, refresh the list
+    if (result == true) {
+      _loadRefillHistory();
+    }
+  }
+
+  void _cancelOrder(Map<String, dynamic> refill) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Accept Refill"),
+        title: const Text("Cancel Order"),
         content: Text(
-            "Are you sure you want to accept this refill for ${refill['product_name']}?"),
+          "Are you sure you want to cancel this order for ${refill['product_name']}?",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: const Text("No"),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Refill accepted successfully!"),
-                  backgroundColor: Colors.green,
-                ),
+              
+              // Call API to cancel order
+              final result = await ShopOwnerApiService.updateShopOrderStatus(
+                orderId: refill['id'].toString(),
+                status: 'cancelled',
+                notes: 'Cancelled by shop owner',
               );
-              // Here you can add API call to accept the refill
+
+              if (result['success'] == true) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Order cancelled successfully!"),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                _loadRefillHistory(); // Refresh the list
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result['message'] ?? "Failed to cancel order"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
+              backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
-            child: const Text("Accept"),
+            child: const Text("Yes, Cancel"),
           ),
         ],
       ),
