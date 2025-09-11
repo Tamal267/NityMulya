@@ -86,8 +86,12 @@ class ShopOwnerApiService {
         'low_stock_threshold': lowStockThreshold ?? 10,
       };
 
+      print('🔍 Request data: $requestData');
+
       final response = await _networkHelper.postWithToken(
           '/shop-owner/inventory', requestData);
+
+      print('🔍 Raw response: $response');
 
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
@@ -103,14 +107,25 @@ class ShopOwnerApiService {
             'message': 'Please login again',
             'requiresLogin': true,
           };
+        } else if (response.containsKey('error')) {
+          return {
+            'success': false,
+            'message': response['error'].toString(),
+          };
+        } else {
+          return {
+            'success': false,
+            'message': response['message'] ?? 'Failed to add product',
+          };
         }
       }
 
       return {
         'success': false,
-        'message': response['message'] ?? 'Failed to add product',
+        'message': 'Invalid response format: $response',
       };
     } catch (e) {
+      print('🔍 Exception in addProductToInventory: $e');
       return {
         'success': false,
         'message': 'Error adding product: $e',
@@ -534,7 +549,7 @@ class ShopOwnerApiService {
       final requestData = {
         'order_id': orderId,
         'status': status,
-        if (notes != null) 'notes': notes,
+        'notes': notes,
       };
 
       final response = await _networkHelper.putWithToken(

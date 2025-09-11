@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Your base server URL - Android emulator compatible
@@ -122,6 +122,11 @@ class NetworkHelper {
 
     final fullUrl = Uri.parse('$serverUrl$url');
     try {
+      // Use longer timeout for inventory operations
+      final timeoutDuration = url.contains('/inventory') 
+          ? const Duration(seconds: 10) 
+          : const Duration(seconds: 3);
+          
       final response = await http
           .post(
             fullUrl,
@@ -131,8 +136,7 @@ class NetworkHelper {
             },
             body: json.encode(data),
           )
-          .timeout(
-              const Duration(seconds: 3)); // Fast 3 second timeout for orders
+          .timeout(timeoutDuration);
 
       return _handleResponse(response);
     } catch (e) {

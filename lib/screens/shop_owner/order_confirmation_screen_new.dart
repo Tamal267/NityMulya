@@ -48,28 +48,18 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
   }
 
   void _extractOrderData() {
-    // Debug: Print the entire order object to understand its structure
-    print('📦 Full order data: ${widget.order}');
-    
     // Extract order information
     productName = widget.order['product_name']?.toString() ?? 
                  widget.order['subcat_name']?.toString() ?? 
-                 widget.order['name']?.toString() ??
                  'Unknown Product';
     
-    // Try multiple possible field names for subcategory ID
-    subcategoryId = widget.order['subcat_id']?.toString() ??
-                   widget.order['subcategory_id']?.toString() ??
-                   widget.order['product_id']?.toString() ??
-                   widget.order['subcatId']?.toString() ??
-                   widget.order['subCatId']?.toString();
+    subcategoryId = widget.order['subcat_id']?.toString();
     
     // Get order quantity
     var rawQuantity = widget.order['quantity_requested'] ?? 
                      widget.order['quantity'] ?? 
                      widget.order['order_quantity'] ?? 
                      widget.order['qty'] ?? 
-                     widget.order['amount'] ??
                      0;
     
     if (rawQuantity is String) {
@@ -79,10 +69,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
     }
     
     // Get wholesaler price
-    var rawPrice = widget.order['unit_price'] ?? 
-                  widget.order['price'] ?? 
-                  widget.order['wholesale_price'] ??
-                  0;
+    var rawPrice = widget.order['unit_price'] ?? 0;
     if (rawPrice is String) {
       wholesalerPrice = double.tryParse(rawPrice) ?? 0.0;
     } else if (rawPrice is num) {
@@ -93,15 +80,6 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
     _shopUnitPriceController.text = wholesalerPrice.toStringAsFixed(2);
     
     print('🔍 Extracted order data: productName=$productName, subcategoryId=$subcategoryId, quantity=$orderQuantity, wholesalerPrice=$wholesalerPrice');
-    print('🔍 Available order keys: ${widget.order.keys.toList()}');
-    
-    // If subcategoryId is still null, let's try to find it by examining all fields
-    if (subcategoryId == null) {
-      print('⚠️ subcategoryId is null, examining all order fields:');
-      widget.order.forEach((key, value) {
-        print('  $key: $value (${value.runtimeType})');
-      });
-    }
   }
 
   Future<void> _loadPriceValidation() async {
@@ -138,31 +116,14 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
   void _findProductPriceValidation() {
     // Find the product in price list by subcategory ID or name
     for (var item in priceList) {
-      bool isMatch = false;
-      
-      // First try to match by subcategory ID
-      if (subcategoryId != null && item['id']?.toString() == subcategoryId) {
-        isMatch = true;
-        print('🎯 Found product by subcategory ID match: ${item['id']} == $subcategoryId');
-      }
-      // If no ID match, try by product name
-      else if (item['subcat_name']?.toString().toLowerCase() == productName?.toLowerCase()) {
-        isMatch = true;
-        // If we found by name but didn't have subcategoryId, extract it
-        if (subcategoryId == null) {
-          subcategoryId = item['id']?.toString();
-          print('🎯 Found subcategory ID from name match: $subcategoryId');
-        }
-        print('🎯 Found product by name match: ${item['subcat_name']} == $productName');
-      }
-      
-      if (isMatch) {
+      if ((subcategoryId != null && item['id']?.toString() == subcategoryId) ||
+          (item['subcat_name']?.toString() == productName)) {
+        
         productPriceValidation = {
           'min_price': double.tryParse(item['min_price']?.toString() ?? '0') ?? 0.0,
           'max_price': double.tryParse(item['max_price']?.toString() ?? '0') ?? 999999.0,
           'unit': item['unit']?.toString() ?? '',
           'subcat_name': item['subcat_name']?.toString() ?? productName,
-          'id': item['id']?.toString(),
         };
         
         print('🔍 Found price validation: $productPriceValidation');
@@ -172,16 +133,6 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
     
     if (productPriceValidation == null) {
       print('⚠️ No price validation found for product: $productName (ID: $subcategoryId)');
-      print('📋 Available products in price list:');
-      for (var item in priceList.take(5)) {
-        print('  ID: ${item['id']}, Name: ${item['subcat_name']}');
-      }
-    } else {
-      // Ensure subcategoryId is set from the validation data if we found it
-      if (subcategoryId == null && productPriceValidation!['id'] != null) {
-        subcategoryId = productPriceValidation!['id'] as String?;
-        print('🔄 Updated subcategoryId from price validation: $subcategoryId');
-      }
     }
   }
 
@@ -323,22 +274,8 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
       });
 
       // Ensure we have subcategory ID
-      if (subcategoryId == null || subcategoryId!.isEmpty) {
-        print('❌ Missing subcategory ID details:');
-        print('   - subcategoryId: $subcategoryId');
-        print('   - productName: $productName');
-        print('   - productPriceValidation: $productPriceValidation');
-        print('   - Available order keys: ${widget.order.keys.toList()}');
-        
-        // Try one more time to get subcategory ID from price validation
-        if (productPriceValidation != null && productPriceValidation!['id'] != null) {
-          subcategoryId = productPriceValidation!['id'].toString();
-          print('🔄 Last attempt: Using subcategoryId from price validation: $subcategoryId');
-        }
-        
-        if (subcategoryId == null || subcategoryId!.isEmpty) {
-          throw Exception('Cannot add product to inventory: Missing subcategory ID. Please ensure the product is properly configured in the system.');
-        }
+      if (subcategoryId == null) {
+        throw Exception('Invalid order data: Missing subcategory ID');
       }
 
       // Add/Update product inventory

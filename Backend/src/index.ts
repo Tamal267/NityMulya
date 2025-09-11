@@ -145,6 +145,14 @@ app.get("/wholesaler/subcategories", getSubcategories);
 
 // Shop Owner routes (protected)
 app.use("/shop-owner/*", createAuthMiddleware(), requireRole("shop_owner"));
+
+// Add logging middleware for shop-owner routes
+app.use("/shop-owner/*", async (c, next) => {
+  console.log(`🔍 [BACKEND] Shop-owner route called: ${c.req.method} ${c.req.path}`);
+  // console.log(`🔍 [BACKEND] Headers:`, JSON.stringify(c.req.header(), null, 2));
+  await next();
+});
+
 app.get("/shop-owner/dashboard", getShopOwnerDashboard);
 app.get("/shop-owner/inventory", getShopOwnerInventory);
 app.post("/shop-owner/inventory", addShopOwnerProduct);

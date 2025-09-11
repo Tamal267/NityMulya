@@ -102,14 +102,26 @@ export const getShopOwnerInventory = async (c: any) => {
 // Add product to shop owner inventory
 export const addProductToInventory = async (c: any) => {
   try {
+    console.log("🔍 [BACKEND] Starting addProductToInventory request");
+    
     // Get shop owner ID from authenticated user
     const user = c.get("user");
     const shop_owner_id = user.userId;
+    console.log("🔍 [BACKEND] Shop owner ID:", shop_owner_id);
 
-    const { subcat_id, stock_quantity, unit_price, low_stock_threshold } =
-      await c.req.json();
+    const requestBody = await c.req.json();
+    console.log("🔍 [BACKEND] Request body:", JSON.stringify(requestBody, null, 2));
+    
+    const { subcat_id, stock_quantity, unit_price, low_stock_threshold } = requestBody;
+
+    console.log("🔍 [BACKEND] Extracted values:");
+    console.log("  - subcat_id:", subcat_id);
+    console.log("  - stock_quantity:", stock_quantity);
+    console.log("  - unit_price:", unit_price);
+    console.log("  - low_stock_threshold:", low_stock_threshold);
 
     if (!shop_owner_id || !subcat_id || !stock_quantity || !unit_price) {
+      console.log("❌ [BACKEND] Validation failed - missing required fields");
       return c.json(
         {
           success: false,
@@ -119,6 +131,7 @@ export const addProductToInventory = async (c: any) => {
       );
     }
 
+    console.log("🔍 [BACKEND] Validating price range...");
     // Validate price range against government regulations
     const priceValidation = await sql`
             SELECT min_price, max_price, subcat_name
@@ -126,7 +139,10 @@ export const addProductToInventory = async (c: any) => {
             WHERE id = ${subcat_id}
         `;
 
+    console.log("🔍 [BACKEND] Price validation query result:", priceValidation);
+
     if (priceValidation.length === 0) {
+      console.log("❌ [BACKEND] Invalid product - subcategory not found");
       return c.json(
         {
           success: false,
@@ -140,7 +156,14 @@ export const addProductToInventory = async (c: any) => {
     const minPrice = parseFloat(min_price) || 0;
     const maxPrice = parseFloat(max_price) || Infinity;
 
+    console.log("🔍 [BACKEND] Price validation:");
+    console.log("  - Product:", subcat_name);
+    console.log("  - Min price:", minPrice);
+    console.log("  - Max price:", maxPrice);
+    console.log("  - Requested price:", unit_price);
+
     if (minPrice > 0 && unit_price < minPrice) {
+      console.log("❌ [BACKEND] Price too low - validation failed");
       return c.json(
         {
           success: false,
@@ -153,6 +176,7 @@ export const addProductToInventory = async (c: any) => {
     }
 
     if (maxPrice < Infinity && unit_price > maxPrice) {
+      console.log("❌ [BACKEND] Price too high - validation failed");
       return c.json(
         {
           success: false,
@@ -164,6 +188,7 @@ export const addProductToInventory = async (c: any) => {
       );
     }
 
+    console.log("✅ [BACKEND] Price validation passed - executing database query...");
     const result = await sql`
             INSERT INTO shop_inventory 
             (shop_owner_id, subcat_id, stock_quantity, unit_price, low_stock_threshold)
@@ -179,13 +204,17 @@ export const addProductToInventory = async (c: any) => {
             RETURNING *
         `;
 
+    console.log("✅ [BACKEND] Database query successful. Result:", result);
+    console.log("✅ [BACKEND] Product added/updated successfully");
+
     return c.json({
       success: true,
       message: "Product added to inventory successfully",
       data: result[0],
     });
-  } catch (error) {
-    console.error("Error adding product to inventory:", error);
+  } catch (error: any) {
+    console.error("❌ [BACKEND] Error adding product to inventory:", error);
+    console.error("❌ [BACKEND] Error stack:", error.stack);
     return c.json(
       { success: false, message: "Failed to add product to inventory" },
       500
@@ -202,6 +231,14 @@ export const updateInventoryItem = async (c: any) => {
 
     const { id, stock_quantity, unit_price, low_stock_threshold } =
       await c.req.json();
+
+    console.log("Update Inventory Request:", {
+      shop_owner_id,
+      id,
+      stock_quantity,
+      unit_price,
+      low_stock_threshold,
+    });
 
     if (!shop_owner_id || !id) {
       return c.json(
@@ -369,7 +406,7 @@ export const updateShopOrderStatus = async (c: any) => {
             UPDATE shop_orders 
             SET 
                 status = ${status},
-                notes = COALESCE(${notes}, notes),
+                notes = ${notes || null},
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = ${order_id} AND shop_owner_id = ${shop_owner_id}
             RETURNING *
