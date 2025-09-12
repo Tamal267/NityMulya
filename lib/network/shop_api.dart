@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
+import '../config/api_config.dart';
+
 class ShopApi {
-  static String get baseUrl =>
-      dotenv.env['API_BASE_URL'] ?? 'http://localhost:3005';
+  static String get baseUrl => ApiConfig.baseUrl;
 
   // Fetch all shops with their location data
   static Future<List<Map<String, dynamic>>> fetchShops() async {

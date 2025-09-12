@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/network/auth.dart';
+import 'package:nitymulya/providers/auth_provider.dart';
 import 'package:nitymulya/screens/auth/forgot_password_screen.dart';
 import 'package:nitymulya/screens/auth/signup_screen.dart';
-import 'package:nitymulya/screens/customers/main_customer_screen.dart';
-import 'package:nitymulya/screens/shop_owner/dashboard_screen.dart';
-import 'package:nitymulya/screens/wholesaler/wholesaler_dashboard_screen.dart';
-import 'package:nitymulya/screens/dncrp/dncrp_dashboard_screen.dart';
-import 'package:nitymulya/utils/user_session.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -39,56 +35,9 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Handle DNCRP-Admin login separately
-      if (selectedRole == 'DNCRP-Admin') {
-        // Check DNCRP demo credentials
-        if (email == 'DNCRP_Demo@govt.com' && password == 'DNCRP_Demo') {
-          setState(() {
-            _isLoading = false;
-          });
-
-          // Save DNCRP admin session
-          await UserSession.saveUserSession(
-            userId: 'dncrp_admin_demo',
-            userType: 'dncrp_admin',
-            userData: {
-              'id': 'dncrp_admin_demo',
-              'name': 'DNCRP Admin Demo',
-              'email': email,
-              'role': 'dncrp_admin'
-            },
-            token: 'dncrp_demo_token',
-          );
-
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('DNCRP Admin login successful')),
-          );
-
-          // Navigate to DNCRP Dashboard
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const DNCRPDashboardScreen(),
-            ),
-          );
-          return;
-        } else {
-          setState(() {
-            _isLoading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Invalid DNCRP credentials'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
-      }
-
-      // Call backend login function for other roles
-      final result = await loginUser(
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      final result = await authProvider.login(
         email: email,
         password: password,
         role: selectedRole,
@@ -99,53 +48,18 @@ class _LoginScreenState extends State<LoginScreen> {
       });
 
       if (result['success'] == true) {
-        final userData = result['user'];
-        final userName =
-            userData?['full_name'] ?? userData?['name'] ?? email.split('@')[0];
-        final userRole = result['role'] ?? selectedRole.toLowerCase();
-        final userId = userData?['id']?.toString() ?? '';
-
-        // Save user session
-        await UserSession.saveUserSession(
-          userId: userId,
-          userType: userRole,
-          userData: userData ?? {},
-          token: result['token'],
-        );
-
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(result['message'] ?? 'Login successful')),
         );
 
-        // Redirect based on role
-        if (userRole.contains('customer') || selectedRole == 'Customer') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MainCustomerScreen(
-                userName: userName,
-                userEmail: email,
-                userRole: 'Customer',
-              ),
-            ),
-          );
-        } else if (userRole.contains('shop') || selectedRole == 'Shop Owner') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const ShopOwnerDashboard(),
-            ),
-          );
-        } else if (userRole.contains('wholesaler') ||
-            selectedRole == 'Wholesaler') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const WholesalerDashboardScreen(),
-            ),
-          );
-        }
+        // Navigate to appropriate dashboard based on role
+        final homeRoute = authProvider.getHomeRoute();
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          homeRoute,
+          (route) => false,
+        );
       } else {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -301,8 +215,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) =>
-                                const SignupScreen()), // <-- Fixed class name
+                            builder: (_) => const SignupScreen()),
                       );
                     },
                     child: const Text(

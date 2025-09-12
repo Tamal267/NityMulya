@@ -596,25 +596,33 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
               value: selectedSubcategory,
               hint: const Text('Select Product'),
               isExpanded: true,
+              isDense: false,
+              menuMaxHeight: 300,
               items: availableSubcategories.map((subcategory) {
                 return DropdownMenuItem<Map<String, dynamic>>(
                   value: subcategory,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        subcategory['name'] ?? 'N/A',
-                        style: const TextStyle(fontWeight: FontWeight.w500),
-                      ),
-                      Text(
-                        '৳${subcategory['unit_price']} per ${subcategory['unit']}',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.green[600],
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          subcategory['name'] ?? 'N/A',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 2),
+                        Text(
+                          '৳${subcategory['unit_price']} per ${subcategory['unit']}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.green[600],
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 );
               }).toList(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nitymulya/models/location_models.dart';
 import 'package:nitymulya/network/shop_owner_api.dart';
+import 'package:nitymulya/providers/auth_provider.dart';
 import 'package:nitymulya/screens/shop_owner/add_product_screen.dart';
 import 'package:nitymulya/screens/shop_owner/chat_screen.dart';
 import 'package:nitymulya/screens/shop_owner/shop_owner_cancelled_order_screen.dart';
@@ -14,6 +15,7 @@ import 'package:nitymulya/screens/shop_owner/wholesaler_list_screen.dart';
 import 'package:nitymulya/screens/shop_owner/wholesaler_search_screen.dart';
 import 'package:nitymulya/utils/user_session.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
+import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../services/chat_api_service.dart';
@@ -1936,20 +1938,47 @@ Widget build(BuildContext context) {
     );
   }
 
-  void _logout() {
-    // Clear any stored user data/tokens here
-    // For now, just navigate back to login screen
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      '/login',
-      (Route<dynamic> route) => false,
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Logged out successfully"),
-        backgroundColor: Colors.green,
+  void _logout() async {
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
       ),
     );
+
+    try {
+      // Perform logout using AuthProvider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.logout();
+
+      // Navigate to welcome screen
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/',
+        (route) => false,
+      );
+
+      // Show success message (will be shown on the new screen)
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Logged out successfully"),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      // Close loading dialog
+      Navigator.pop(context);
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Logout failed: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _showQuickActions(BuildContext context) {

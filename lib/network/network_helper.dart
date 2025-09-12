@@ -1,25 +1,13 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-// Your base server URL - Android emulator compatible
-String get serverUrl {
-  final envUrl = dotenv.env['SERVER_URL'];
-  if (envUrl != null) return envUrl;
-  
-  if (kIsWeb) {
-    return 'http://localhost:3005';
-  } else if (Platform.isAndroid) {
-    return 'http://10.0.2.2:3005';
-  } else {
-    return 'http://localhost:3005';
-  }
-}
+import '../config/api_config.dart';
+
+// Get server URL from ApiConfig
+String get serverUrl => ApiConfig.baseUrl;
 
 // A simple utility class to handle all API requests.
 class NetworkHelper {
@@ -28,12 +16,46 @@ class NetworkHelper {
 
   // Function to save the token after a successful login/auth
   Future<void> setToken(String token) async {
-    await _secureStorage.write(key: 'token', value: token);
+    try {
+      if (token.isEmpty) {
+        // If empty token, clear it
+        await _secureStorage.delete(key: 'token');
+      } else {
+        await _secureStorage.write(key: 'token', value: token);
+      }
+      print('🔑 Token updated in secure storage: ${token.isEmpty ? "cleared" : "set"}');
+    } catch (e) {
+      print('🔑 Error setting token: $e');
+    }
   }
 
   // Function to get the stored token from secure storage
   Future<String?> getToken() async {
-    return await _secureStorage.read(key: 'token');
+    try {
+      // First try to get from secure storage
+      String? token = await _secureStorage.read(key: 'token');
+      
+      // If not found in secure storage, try to sync from UserSession
+      if (token == null || token.isEmpty) {
+        await syncTokenFromUserSession();
+        token = await _secureStorage.read(key: 'token');
+      }
+      
+      return token;
+    } catch (e) {
+      print('🔑 Error getting token: $e');
+      return null;
+    }
+  }
+
+  // Clear token completely
+  Future<void> clearToken() async {
+    try {
+      await _secureStorage.delete(key: 'token');
+      print('🔑 Token cleared from secure storage');
+    } catch (e) {
+      print('🔑 Error clearing token: $e');
+    }
   }
 
   // Sync token from SharedPreferences (UserSession) to SecureStorage

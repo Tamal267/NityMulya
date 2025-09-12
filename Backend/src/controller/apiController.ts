@@ -470,7 +470,7 @@ export const getPrice = async (c: any) => {
 
 export const getPricesfromDB = async (c: any) => {
   try {
-    let pricelist = await sql`select c.cat_name, sc.* from subcategories sc
+    let pricelist = await sql`select c.cat_name, sc.id, sc.created_at AT TIME ZONE 'UTC' as created_at, sc.subcat_name, sc.unit, sc.min_price, max_price, sc.cat_id, sc.subcat_img from subcategories sc
         join categories c on sc.cat_id = c.id
         order by c.cat_name`;
 
@@ -489,8 +489,16 @@ export const getPricesfromDB = async (c: any) => {
       return c.json(pricelist);
     }
 
+    const lastUpdatedString = lastUpdated
+      ? lastUpdated.toISOString().split("T")[0]
+      : "never";
+      
+    console.log("Last updated:", lastUpdatedString, "today:", todayString);
+
+    console.log("Prices not updated today, fetching new prices");
+
     await getPrice(c);
-    pricelist = await sql`select c.cat_name, sc.* from subcategories sc
+    pricelist = await sql`select c.cat_name, sc.id, sc.created_at AT TIME ZONE 'UTC' as created_at, sc.subcat_name, sc.unit, sc.min_price, max_price, sc.cat_id, sc.subcat_img from subcategories sc
         join categories c on sc.cat_id = c.id
         order by c.cat_name`;
 

@@ -4,70 +4,71 @@ import { cors } from "hono/cors";
 import type { JwtVariables } from "hono/jwt";
 import { prettyJSON } from "hono/pretty-json";
 import {
-  getCategories,
-  getChatConversations,
-  getChatMessages,
-  getPrice,
-  getPricesfromDB,
-  getProductPriceHistory,
-  getSheetUrl,
-  getShops,
-  getShopsByProduct,
-  getShopsBySubcategoryId,
-  getWholesalers,
-  initializeSampleData,
-  sendMessage,
+    getCategories,
+    getChatConversations,
+    getChatMessages,
+    getPrice,
+    getPricesfromDB,
+    getProductPriceHistory,
+    getSheetUrl,
+    getShops,
+    getShopsByProduct,
+    getShopsBySubcategoryId,
+    getWholesalers,
+    initializeSampleData,
+    sendMessage,
 } from "./controller/apiController";
 import {
-  login,
-  loginCustomer,
-  loginShopOwner,
-  loginWholesaler,
-  signupCustomer,
-  signupShopOwner,
-  signupWholesaler,
+    login,
+    loginCustomer,
+    loginShopOwner,
+    loginWholesaler,
+    signupCustomer,
+    signupShopOwner,
+    signupWholesaler,
 } from "./controller/authController";
 import {
-  createCustomerComplaint,
-  createPublicComplaint,
-  getCustomerComplaints,
+    createCustomerComplaint,
+    createPublicComplaint,
+    getCustomerComplaints,
 } from "./controller/customerComplaintController";
 import {
-  cancelCustomerOrder,
-  createCustomerOrder,
-  getCancelledOrders,
-  getCustomerOrder,
-  getCustomerOrders,
-  getCustomerOrderStats,
-  getShopOwnerCustomerOrders,
-  updateCustomerOrderStatus,
+    cancelCustomerOrder,
+    createCustomerOrder,
+    getCancelledOrders,
+    getCustomerOrder,
+    getCustomerOrders,
+    getCustomerOrderStats,
+    getShopOwnerCustomerOrders,
+    updateCustomerOrderStatus,
 } from "./controller/customerOrderController";
 import { DatabaseReviewController } from "./controller/databaseReviewController";
 import {
-  addProductToInventory as addShopOwnerProduct,
-  getChatMessages as getShopOwnerChatMessages,
-  getShopOwnerDashboard,
-  getShopOwnerInventory,
-  getLowStockProducts as getShopOwnerLowStockProducts,
-  getShopOrders as getShopOwnerOrders,
-  updateShopOrderStatus,
-  updateInventoryItem as updateShopOwnerInventoryItem,
+    addProductToInventory as addShopOwnerProduct,
+    getChatMessages as getShopOwnerChatMessages,
+    getShopOwnerDashboard,
+    getShopOwnerInventory,
+    getLowStockProducts as getShopOwnerLowStockProducts,
+    getShopOrders as getShopOwnerOrders,
+    updateShopOrderStatus,
+    updateInventoryItem as updateShopOwnerInventoryItem,
 } from "./controller/shopOwnerController";
 import {
-  addProductToInventory as addWholesalerProduct,
-  createOffer,
-  createOrder,
-  getShopOwners,
-  getSubcategories,
-  getCategories as getWholesalerCategories,
-  getChatMessages as getWholesalerChatMessages,
-  getWholesalerDashboard,
-  getWholesalerInventory,
-  getLowStockProducts as getWholesalerLowStockProducts,
-  getWholesalerOffers,
-  getShopOrders as getWholesalerShopOrders,
-  updateOrderStatus,
-  updateInventoryItem as updateWholesalerInventoryItem,
+    addProductToInventory as addWholesalerProduct,
+    createOffer,
+    createOrder,
+    getShopOwners,
+    getSubcategories,
+    getCategories as getWholesalerCategories,
+    getChatMessages as getWholesalerChatMessages,
+    getWholesalerDashboard,
+    getWholesalerInventory,
+    getLowStockProducts as getWholesalerLowStockProducts,
+    getWholesalerOffers,
+    getWholesalerProfile,
+    getShopOrders as getWholesalerShopOrders,
+    updateOrderStatus,
+    updateInventoryItem as updateWholesalerInventoryItem,
 } from "./controller/wholesalerController";
 import sql, { db } from "./db"; // Database connection for persistent storage
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
@@ -138,6 +139,7 @@ app.post("/wholesaler/orders", createOrder);
 app.put("/wholesaler/orders/status", updateOrderStatus);
 app.get("/wholesaler/offers", getWholesalerOffers);
 app.post("/wholesaler/offers", createOffer);
+app.get("/wholesaler/profile", getWholesalerProfile);
 app.get("/wholesaler/chat", getWholesalerChatMessages);
 app.get("/wholesaler/shop-owners", getShopOwners);
 app.get("/wholesaler/categories", getWholesalerCategories);

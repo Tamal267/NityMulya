@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/network/auth.dart';
 import 'package:nitymulya/network/pricelist_api.dart';
 import 'package:nitymulya/network/wholesaler_api.dart';
-import 'package:nitymulya/screens/welcome_screen.dart';
+import 'package:nitymulya/providers/auth_provider.dart';
 import 'package:nitymulya/screens/wholesaler/add_order_screen.dart';
 import 'package:nitymulya/screens/wholesaler/order_status_update_screen.dart';
 import 'package:nitymulya/screens/wholesaler/shop_owner_search_screen.dart';
@@ -11,6 +10,7 @@ import 'package:nitymulya/screens/wholesaler/wholesaler_add_product_screen.dart'
 import 'package:nitymulya/screens/wholesaler/wholesaler_chat_screen.dart';
 import 'package:nitymulya/services/chat_api_service.dart';
 import 'package:nitymulya/widgets/custom_drawer.dart';
+import 'package:provider/provider.dart';
 
 class WholesalerDashboardScreen extends StatefulWidget {
   const WholesalerDashboardScreen({super.key});
@@ -2271,13 +2271,41 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
             child: const Text("Cancel"),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                '/login',
-                (route) => false,
+            onPressed: () async {
+              Navigator.pop(context); // Close dialog
+              
+              // Show loading indicator
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(),
+                ),
               );
+
+              try {
+                // Perform logout using AuthProvider
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                await authProvider.logout();
+
+                // Navigate to welcome screen
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/',
+                  (route) => false,
+                );
+              } catch (e) {
+                // Close loading dialog
+                Navigator.pop(context);
+                
+                // Show error message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Logout failed: $e"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: const Text("Logout", style: TextStyle(color: Colors.red)),
           ),
@@ -2287,7 +2315,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
   }
 
   // Handle authentication errors (token expired, invalid, etc.)
-  void _handleAuthError() {
+  void _handleAuthError() async {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -2297,14 +2325,15 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
         actions: [
           TextButton(
             onPressed: () async {
-              // Clear any stored token
-              await logout();
+              // Perform logout using AuthProvider
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              await authProvider.logout();
 
               // Navigate to welcome screen
               if (mounted) {
-                Navigator.of(context).pushAndRemoveUntil(
-                  MaterialPageRoute(
-                      builder: (context) => const WelcomeScreen()),
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/',
                   (route) => false,
                 );
               }

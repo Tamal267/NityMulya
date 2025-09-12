@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nitymulya/utils/user_session.dart';
-import 'package:nitymulya/screens/auth/login_screen.dart';
 import 'package:nitymulya/network/customer_api.dart';
+import 'package:nitymulya/providers/auth_provider.dart';
 import 'package:nitymulya/screens/dncrp/complaint_details_screen.dart';
+import 'package:nitymulya/utils/user_session.dart';
+import 'package:provider/provider.dart';
 
 class DNCRPDashboardScreen extends StatefulWidget {
   const DNCRPDashboardScreen({super.key});
@@ -69,12 +70,38 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
   }
 
   void _logout() async {
-    await UserSession.clearSession();
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginScreen()),
-      (route) => false,
+    // Show loading indicator
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
     );
+
+    try {
+      // Perform logout using AuthProvider
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      await authProvider.logout();
+
+      // Navigate to welcome screen
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/',
+        (route) => false,
+      );
+    } catch (e) {
+      // Close loading dialog
+      Navigator.pop(context);
+      
+      // Show error message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Logout failed: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   @override

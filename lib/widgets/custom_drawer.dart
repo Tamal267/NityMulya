@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:nitymulya/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
-import '../screens/auth/login_screen.dart';
 import '../screens/customers/complaint_form_screen.dart';
 import '../screens/customers/favorite_products_screen.dart';
 import '../screens/customers/nearby_shops_map_screen_enhanced.dart';
@@ -21,6 +22,51 @@ class CustomDrawer extends StatelessWidget {
     this.userEmail = 'guest@example.com',
     this.userRole = 'Customer',
   });
+
+  void _handleLogout(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context); // Close dialog
+                Navigator.pop(context); // Close drawer
+                
+                // Show loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+                
+                // Perform logout
+                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                await authProvider.logout();
+                
+                // Close loading indicator and navigate to welcome screen
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  '/',
+                  (route) => false,
+                );
+              },
+              child: const Text('Logout'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -276,36 +322,7 @@ class CustomDrawer extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Logout'),
-            onTap: () {
-              Navigator.pop(context);
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Logout'),
-                    content: const Text('Are you sure you want to logout?'),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const LoginScreen()),
-                            (route) => false,
-                          );
-                        },
-                        child: const Text('Logout'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
+            onTap: () => _handleLogout(context),
           ),
         ],
       ),
