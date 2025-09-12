@@ -111,6 +111,9 @@ class NetworkHelper {
 
   // A GET request with a token in the header
   Future<dynamic> getWithToken(String url) async {
+    // First try to sync token from UserSession
+    await syncTokenFromUserSession();
+    
     final token = await getToken();
     if (token == null) {
       return {'error': 'Unauthorized'};

@@ -1143,6 +1143,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
   }
 
   Future<void> _loadMessages() async {
+    if (!mounted) return; // Early return if widget is disposed
+    
     setState(() {
       isLoadingMessages = true;
     });
@@ -1163,6 +1165,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
       debugPrint('📧 Messages API result: ${result['success']}');
       debugPrint('📧 Messages count: ${result['data']?.length ?? 0}');
+
+      if (!mounted) return; // Check mounted before setState
 
       if (result['success'] == true) {
         setState(() {
@@ -1191,6 +1195,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
       }
     } catch (e) {
       debugPrint('❌ Error loading messages: $e');
+      
+      if (!mounted) return; // Check mounted before setState
+      
       setState(() {
         messages = [];
         isLoadingMessages = false;
