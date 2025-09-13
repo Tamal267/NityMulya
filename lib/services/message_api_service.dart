@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 import '../config/api_config.dart';
@@ -18,64 +17,52 @@ class MessageApiService {
     required String messageText,
   }) async {
     try {
-      final sendUrl = ApiConfig.sendMessageUrl;
+      // Use the correct order messaging endpoint
+      final sendUrl = '${ApiConfig.baseUrl}/api/messages/send';
+      
+      print('📤 Attempting to send order message to: $sendUrl');
+      print('📤 Order ID: $orderId');
+      print('📤 From: $senderType ($senderId) -> To: $receiverType ($receiverId)');
+      print('📤 Message: $messageText');
 
-      print('📤 Attempting to send message to: $sendUrl');
-      print('📤 Web platform: $kIsWeb');
-
-      final headers = <String, String>{
-        'Content-Type': 'application/json',
+      // Use NetworkHelper for proper authentication
+      final requestData = {
+        'order_id': orderId,
+        'sender_type': senderType,
+        'sender_id': senderId,
+        'receiver_type': receiverType,
+        'receiver_id': receiverId,
+        'message_text': messageText,
       };
 
-      // Add CORS headers for web
-      if (kIsWeb) {
-        headers.addAll({
-          'Accept': 'application/json',
-        });
+      // Use NetworkHelper's postWithToken method for authentication
+      final response = await _networkHelper.postWithToken('/api/messages/send', requestData);
+
+      print('💬 Send order message response: $response');
+
+      if (response is Map<String, dynamic>) {
+        if (response['success'] == true) {
+          return {
+            'success': true,
+            'data': response['data'],
+            'message': response['message'] ?? 'Message sent successfully',
+          };
+        } else if (response.containsKey('error') &&
+            response['error'] == 'Unauthorized') {
+          return {
+            'success': false,
+            'message': 'Please login again',
+            'requiresLogin': true,
+          };
+        }
       }
 
-      final response = await http.post(
-        Uri.parse(sendUrl),
-        headers: headers,
-        body: jsonEncode({
-          'order_id': orderId,
-          'sender_type': senderType,
-          'sender_id': senderId,
-          'receiver_type': receiverType,
-          'receiver_id': receiverId,
-          'message_text': messageText,
-        }),
-      );
-
-      print('💬 Send message response: ${response.statusCode}');
-      print('💬 Send message body: ${response.body}');
-
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-        return {
-          'success': true,
-          'data': data['data'],
-          'message': data['message'] ?? 'Message sent successfully',
-        };
-      } else {
-        final errorData = jsonDecode(response.body);
-        return {
-          'success': false,
-          'message': errorData['message'] ?? 'Failed to send message',
-        };
-      }
+      return {
+        'success': false,
+        'message': response['message'] ?? 'Failed to send message',
+      };
     } catch (e) {
       print('❌ Error in sendMessage: $e');
-
-      // For web, provide more specific error information
-      if (kIsWeb && e.toString().contains('Failed to fetch')) {
-        return {
-          'success': false,
-          'message':
-              'Network connection failed. Please check if backend server is running on port 3005.',
-        };
-      }
-
       return {
         'success': false,
         'message': 'Network error: $e',

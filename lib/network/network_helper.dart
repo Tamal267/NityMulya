@@ -34,11 +34,14 @@ class NetworkHelper {
     try {
       // First try to get from secure storage
       String? token = await _secureStorage.read(key: 'token');
+      print('🔑 Token from secure storage: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Not found"}');
       
       // If not found in secure storage, try to sync from UserSession
       if (token == null || token.isEmpty) {
+        print('🔑 Token not in secure storage, syncing from UserSession...');
         await syncTokenFromUserSession();
         token = await _secureStorage.read(key: 'token');
+        print('🔑 Token after sync: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Still not found"}');
       }
       
       return token;
@@ -64,11 +67,16 @@ class NetworkHelper {
       // Import UserSession dynamically to avoid circular dependency
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
+      print('🔑 Token from SharedPreferences: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Not found"}');
+      
       if (token != null) {
         await setToken(token);
+        print('🔑 Token synced to secure storage');
+      } else {
+        print('🔑 No token in SharedPreferences to sync');
       }
     } catch (e) {
-      print('Error syncing token: $e');
+      print('🔑 Error syncing token: $e');
     }
   }
 
@@ -141,11 +149,17 @@ class NetworkHelper {
     await syncTokenFromUserSession();
     
     final token = await getToken();
-    if (token == null) {
+    print('🔑 POST Token retrieved: ${token?.substring(0, 20)}...');
+    
+    if (token == null || token.isEmpty) {
+      print('🔑 No valid token found for POST request');
       return {'error': 'Unauthorized'};
     }
 
     final fullUrl = Uri.parse('$serverUrl$url');
+    print('🔑 Making POST request to: $fullUrl');
+    print('🔑 Request headers: Content-Type: application/json, Authorization: Bearer ${token.substring(0, 20)}...');
+    
     try {
       // Use longer timeout for inventory operations
       final timeoutDuration = url.contains('/inventory') 
@@ -163,8 +177,11 @@ class NetworkHelper {
           )
           .timeout(timeoutDuration);
 
+      print('🔑 Response status: ${response.statusCode}');
+      print('🔑 Response body: ${response.body}');
       return _handleResponse(response);
     } catch (e) {
+      print('🔑 Network error in postWithToken: $e');
       return {'error': 'Network error: $e'};
     }
   }
@@ -208,6 +225,9 @@ class NetworkHelper {
 
   // A PUT request with a token in the header
   Future<dynamic> putWithToken(String url, Map<String, dynamic> data) async {
+    // First try to sync token from UserSession
+    await syncTokenFromUserSession();
+    
     final token = await getToken();
     if (token == null) {
       return {'error': 'Unauthorized'};

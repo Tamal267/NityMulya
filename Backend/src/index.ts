@@ -506,6 +506,9 @@ app.get(
 // MESSAGING SYSTEM ROUTES
 // ====================================
 
+// Protect messaging routes with authentication
+app.use("/api/messages/*", createAuthMiddleware());
+
 // Send a message
 app.post("/api/messages/send", async (c) => {
   try {

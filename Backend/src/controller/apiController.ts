@@ -846,7 +846,7 @@ export const initializeSampleData = async (c: any) => {
 export const getWholesalers = async (c: any) => {
   try {
     const { search } = c.req.query();
-
+    
     let wholesalers;
     if (search) {
       wholesalers = await sql`
@@ -881,29 +881,14 @@ export const getWholesalers = async (c: any) => {
 // Send a chat message
 export const sendMessage = async (c: any) => {
   try {
-    const {
-      sender_id,
-      sender_type,
-      receiver_id,
-      receiver_type,
-      message,
-      message_type = "text",
-    } = await c.req.json();
+    const { sender_id, sender_type, receiver_id, receiver_type, message, message_type = 'text' } = await c.req.json();
 
-    if (
-      !sender_id ||
-      !sender_type ||
-      !receiver_id ||
-      !receiver_type ||
-      !message
-    ) {
+    if (!sender_id || !sender_type || !receiver_id || !receiver_type || !message) {
       return c.json({ error: "Missing required fields" }, 400);
     }
 
-    if (
-      !["shop_owner", "wholesaler"].includes(sender_type) ||
-      !["shop_owner", "wholesaler"].includes(receiver_type)
-    ) {
+    if (!['shop_owner', 'wholesaler'].includes(sender_type) || 
+        !['shop_owner', 'wholesaler'].includes(receiver_type)) {
       return c.json({ error: "Invalid sender or receiver type" }, 400);
     }
 
@@ -916,7 +901,7 @@ export const sendMessage = async (c: any) => {
     return c.json({
       success: true,
       message: "Message sent successfully",
-      data: newMessage[0],
+      data: newMessage[0]
     });
   } catch (error) {
     console.error("Error sending message:", error);
@@ -945,10 +930,10 @@ export const getChatMessages = async (c: any) => {
           WHEN cm.receiver_type = 'wholesaler' THEN w2.full_name
         END as receiver_name
       FROM chat_messages cm
-      LEFT JOIN shop_owners so ON cm.sender_id::uuid = so.id AND cm.sender_type = 'shop_owner'
-      LEFT JOIN wholesalers w ON cm.sender_id::uuid = w.id AND cm.sender_type = 'wholesaler'
-      LEFT JOIN shop_owners so2 ON cm.receiver_id::uuid = so2.id AND cm.receiver_type = 'shop_owner'
-      LEFT JOIN wholesalers w2 ON cm.receiver_id::uuid = w2.id AND cm.receiver_type = 'wholesaler'
+      LEFT JOIN shop_owners so ON cm.sender_id = so.id AND cm.sender_type = 'shop_owner'
+      LEFT JOIN wholesalers w ON cm.sender_id = w.id AND cm.sender_type = 'wholesaler'
+      LEFT JOIN shop_owners so2 ON cm.receiver_id = so2.id AND cm.receiver_type = 'shop_owner'
+      LEFT JOIN wholesalers w2 ON cm.receiver_id = w2.id AND cm.receiver_type = 'wholesaler'
       WHERE 
         (cm.sender_id = ${user1_id} AND cm.sender_type = ${user1_type} AND 
          cm.receiver_id = ${user2_id} AND cm.receiver_type = ${user2_type})
@@ -969,7 +954,7 @@ export const getChatMessages = async (c: any) => {
 
     return c.json({
       success: true,
-      data: messages,
+      data: messages
     });
   } catch (error) {
     console.error("Error fetching chat messages:", error);
@@ -1037,14 +1022,14 @@ export const getChatConversations = async (c: any) => {
         END as contact_phone
       FROM latest_messages lm
       LEFT JOIN unread_counts uc ON lm.contact_id = uc.contact_id AND lm.contact_type = uc.contact_type
-      LEFT JOIN shop_owners so ON lm.contact_id::uuid = so.id AND lm.contact_type = 'shop_owner'
-      LEFT JOIN wholesalers w ON lm.contact_id::uuid = w.id AND lm.contact_type = 'wholesaler'
+      LEFT JOIN shop_owners so ON lm.contact_id = so.id AND lm.contact_type = 'shop_owner'
+      LEFT JOIN wholesalers w ON lm.contact_id = w.id AND lm.contact_type = 'wholesaler'
       ORDER BY lm.created_at DESC
     `;
 
     return c.json({
       success: true,
-      data: conversations,
+      data: conversations
     });
   } catch (error) {
     console.error("Error fetching chat conversations:", error);
