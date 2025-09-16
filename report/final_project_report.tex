@@ -1,0 +1,199 @@
+% Final Project Report - NityMulya
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue}
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+\title{NityMulya: A Fair Market Transparency \\ & Multi-Role Commerce Platform}
+\author{Group Number: (Add) \\ Member 1 -- ID \\ Member 2 -- ID \\ Member 3 -- ID \\ Member 4 -- ID}
+\date{September 13, 2025}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Introduction}
+NityMulya is a multi-stakeholder digital marketplace platform integrating customers, shop owners, wholesalers, and a regulatory (DNCRP demo) authority. It addresses opaque pricing, inventory misalignment, slow complaint resolution, and lack of accountability. Core pillars: real-time inventory visibility, complaint workflow, order lifecycle management, role-based messaging, notifications, and review-driven trust.
+
+\section{Target Users}
+\begin{itemize}
+  \item Retail Customers
+  \item Shop Owners
+  \item Wholesalers
+  \item Regulatory / Consumer Rights Officers (DNCRP demo)
+  \item Future Policy / Analytics Stakeholders
+\end{itemize}
+
+\section{Literature Review of Existing Systems}
+Existing price tracking or e-commerce apps each solve fragments of the problem. Price listing apps expose daily rates but lack transactional depth or regulatory escalation. Large marketplaces emphasize logistics but omit government price baselines or evidence-backed overpricing complaints. Grocery apps provide breadth yet fail to connect wholesalers or enforce fair pricing norms. No surveyed solution unifies fair price transparency, supply chain continuity, complaint adjudication, and role-based accountability.
+
+\subsection*{Summary Table}
+\begin{longtable}{p{3cm} p{6cm} p{6cm}}
+\toprule
+\textbf{App} & \textbf{Key Features} & \textbf{Limitations} \\
+\midrule
+Vegetable Market Price & Daily multi-category prices; city filtering; lightweight; language support & No purchasing; no shop linkage; ads; no feedback; no proof uploads; no gov verification; update delays \\
+Shwapno Grocery & Large catalog; tracking; multiple payments; delivery network; offers & No gov price comparison; no violation reporting; weak in-app loyalty; operational issues; no wholesaler linkage \\
+Daraz & Massive inventory; chat + AI; assurance programs; seller tools & No gov price integration; no public fair pricing complaints; no fairness incentives; limited wholesaler sync; fulfillment inconsistencies \\
+Panda Mart & Quick delivery; pickup option; private label pricing leverage; subscription discounts & No gov price baseline; no violation reporting; spend-based rewards only; no wholesaler channel; reliability issues \\
+Generic Marketplace & Catalog, cart, promotions & Lacks regulatory workflow; no chain transparency; no evidence complaint loop \\
+\bottomrule
+\end{longtable}
+
+\section{Problem Statement \\ \/ Identification}
+Key identified problems:
+\begin{enumerate}
+  \item Missing integration of government price benchmarks into purchasing context.
+  \item Lack of structured, evidence-based complaint and resolution workflows.
+  \item Disconnected supply tiers creating opacity and stock inefficiencies.
+  \item Insufficient tools for transparent inventory and order status management.
+  \item Fragmented trust mechanisms across separate platforms.
+\end{enumerate}
+
+\section{Objectives}
+\begin{enumerate}
+  \item To enable transparent, fair pricing and end-to-end order lifecycle visibility.
+  \item To streamline complaint lodging and resolution tracking with regulatory oversight.
+  \item To integrate wholesaler--retailer--customer interactions for ethical, continuous supply.
+\end{enumerate}
+
+\section{Feature List}
+\begin{longtable}{p{4cm} p{10cm}}
+\toprule
+\textbf{Feature} & \textbf{Description} \\
+\midrule
+Multi-Role Authentication & Role-based login for customer, shop owner, wholesaler, DNCRP admin demo \\
+Customer Ordering & Place orders; unique order number; persistence \\
+Order Status Tracking & Historical timeline and cancellation handling \\
+Shop Inventory Management & CRUD inventory; low-stock alerts \\
+Wholesaler Supply Module & Offers, inventory, downstream order handling \\
+Complaint System (DNCRP) & Submission, status progression, oversight dashboard \\
+Messaging System & Order-context chat between roles \\
+Notifications & Status, complaint, and order update alerts \\
+Review \\ Rating & Product/shop reviews with aggregation \\
+Price \& Category APIs & Dynamic categories and price history queries \\
+Location \& Mapping & Geolocation, map visualization for shops \\
+Secure Storage & JWT, secure token persistence \\
+Dashboards & Role-specific KPIs and summaries \\
+\bottomrule
+\end{longtable}
+
+\section{Technology Stack}
+\begin{longtable}{p{3cm} p{4cm} p{8cm}}
+\toprule
+Layer & Technology & Purpose \\
+\midrule
+Frontend & Flutter (Dart), Provider & Cross-platform UI and state management \\
+Backend & Bun, Hono (TypeScript) & High-performance API server \\
+Database & PostgreSQL & Persistent relational storage \\
+Auth & JWT, bcrypt & Secure authentication and roles \\
+Mapping & flutter\_map, geolocator & Location services and visualization \\
+Config & dotenv & Environment management \\
+Storage & flutter\_secure\_storage & Secure credential storage \\
+Utilities & fl\_chart, uuid, file\_picker & Charts, IDs, file interaction \\
+\bottomrule
+\end{longtable}
+
+\section{Developed System (Key Screens)}
+Screenshots to be inserted (placeholders):
+\begin{itemize}
+  \item Login / Role Selection
+  \item Product Detail / Order Flow
+  \item Customer Orders (Profile)
+  \item Shop Owner Inventory Dashboard
+  \item Complaint Submission Form
+  \item DNCRP Admin Dashboard
+\end{itemize}
+
+\section{Ethical Concerns}
+\begin{enumerate}
+  \item Data Minimization: Only essential user and order data stored.
+  \item Location Consent: Explicit permission before geolocation retrieval.
+  \item Complaint Sensitivity: Potentially sensitive text safeguarded; future encryption planned.
+  \item Transparency: DNCRP module labeled as demonstrative, avoiding misrepresentation.
+\end{enumerate}
+
+\section{Societal Impacts}
+\begin{itemize}
+  \item Empowers consumers with fair price visibility.
+  \item Encourages ethical retail competition via transparency.
+  \item Improves supply continuity through integrated tiers.
+  \item Provides a prototype digital oversight model for regulators.
+\end{itemize}
+
+\section{Design Changes}
+\begin{enumerate}
+  \item Unified multi-role login.
+  \item Overflow handling improvements in dashboard tabs.
+  \item Simplified order confirmation workflow.
+  \item Reorganized navigation drawer for clarity.
+\end{enumerate}
+
+\section{Lifelong Learning}
+\begin{itemize}
+  \item Users practice verifying fair pricing norms.
+  \item Team gains reusable multi-role system design patterns.
+  \item Skills extend to civic-tech and compliance platforms.
+  \item Reinforces data-driven trust and transparency engineering.
+\end{itemize}
+
+\section{SUS Usability Testing \& Task Completion Time}
+Preliminary System Usability Scale (SUS) score: \textbf{(Insert Score)}. Core interaction times measured indicate efficient navigation and clarity across role-based tasks.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{p{5cm} p{3cm} p{6cm}}
+\toprule
+Task & Avg Time (s) & Notes \\
+\midrule
+Login \& Role Selection & 8 & Unified screen speed \\
+Place Customer Order & 35 & Includes product+shop choice \\
+View Order Status & 6 & Direct profile access \\
+Submit Complaint & 42 & Multi-field; optimization possible \\
+Check Complaint Status & 10 & Filtered dashboard \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Future Work}
+\begin{itemize}
+  \item WebSocket-based real-time notifications.
+  \item Government price feed integration and anomaly detection.
+  \item Media evidence attachments for complaints.
+  \item Advanced analytics dashboards (fairness scoring, volatility indices).
+  \item Full localization (Bengali + more languages).
+  \item Automated inventory/pricing anomaly alerts.
+\end{itemize}
+
+\section{Work Distribution}
+(Replace with completed distribution form.) Example:
+\begin{itemize}
+  \item Member 1: Auth \& Order Backend
+  \item Member 2: Flutter UI/Navigation \& Complaints
+  \item Member 3: Inventory, Wholesaler, Messaging
+  \item Member 4: Reviews Module \& DNCRP Dashboard
+\end{itemize}
+
+\section{References}
+\begin{thebibliography}{9}
+\bibitem{brooke} Brooke, J. (1996). SUS: A quick and dirty usability scale.
+\bibitem{flutter} Flutter Documentation. \url{https://docs.flutter.dev/}
+\bibitem{hono} Hono Framework Docs. \url{https://hono.dev/}
+\bibitem{postgres} PostgreSQL Documentation. \url{https://www.postgresql.org/docs/}
+\bibitem{apps} Observational analysis: Daraz, Shwapno, Foodpanda Panda Mart, regional price tracking apps.
+\end{thebibliography}
+
+\end{document}

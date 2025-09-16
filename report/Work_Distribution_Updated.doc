@@ -1,0 +1,32 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Arial;}{\f1 Courier New;}}
+\f0\fs24\b Work Distribution\b0\par
+\fs20\par
+\b Frontend Work Distribution\b0\par
+{\trowd\trgaph108\trleft0
+\cellx1000\cellx4000\cellx15000
+\b SL\b0\cell \b Members\b0\cell \b Frontend Pages\b0\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+1\cell Member 1 Name: Syed Mafijul Islam\line Member 1 ID: 202214105\cell 1) login_screen\line 2) dncrp_dashboard_screen\line 3) dashboard_screen\line 4) wholesaler_dashboard_screen\line 5) custom_drawer\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+2\cell Member 2 Name: Sakif Shahrear\line Member 2 ID: 202214093\cell 1) my_orders_screen\line 2) pending_orders_screen\line 3) on_going_orders_screen\line 4) cancelled_orders_screen\line 5) customer_orders_screen\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+3\cell Member 3 Name: Nahidur Zaman\line Member 3 ID: 202214075\cell 1) complaint_screen\line 2) complaint_screen_new\line 3) shop_reviews_screen\line 4) complaint_form_screen\line 5) add_review_screen\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+4\cell Member 4 Name: Khadiza Khanom Mithila\line Member 4 ID: 202114171\cell 1) complaint_submission_screen\line 2) complaint_details_screen\line 3) dncrp_complaint_list_screen\line 4) complaint_data_models\line 5) temp_dashboard\cell\row
+}\par
+\par
+\b Backend Work Distribution\b0\par
+{\trowd\trgaph108\trleft0
+\cellx1000\cellx4000\cellx15000
+\b SL\b0\cell \b Members\b0\cell \b Features\b0\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+1\cell Member 1 Name: Syed Mafijul Islam\line Member 1 ID: 202214105\cell 1) Main server setup (index.ts)\line 2) API Controller development\line 3) Shop Owner Controller\line 4) Wholesaler Controller\line 5) Authentication & JWT middleware implementation\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+2\cell Member 2 Name: Sakif Shahrear\line Member 2 ID: 202214093\cell 1) Customer order schema design\line 2) Order messages table creation\line 3) Order Message Controller\line 4) Inventory update testing (15+ test files)\line 5) Order message migration system\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+3\cell Member 3 Name: Nahidur Zaman\line Member 3 ID: 202214075\cell 1) Frontend complaint system integration\line 2) Customer complaint UI/UX design\line 3) Shop review functionality backend support\line 4) Customer service interface development\line 5) Frontend navigation & user experience optimization\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+4\cell Member 4 Name: Khadiza Khanom Mithila\line Member 4 ID: 202114171\cell 1) Simple complaints table creation\line 2) Complaints table recreation scripts\line 3) Cancelled orders API testing\line 4) Customer cancelled orders testing\line 5) Complaint data model design & validation\cell\row
+}\par
+}

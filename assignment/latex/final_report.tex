@@ -1,0 +1,439 @@
+% Final HCI Usability Evaluation Report for NityMulya
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{tabularx}
+\usepackage{threeparttable}
+\usepackage{caption}
+\usepackage{pifont}
+\usepackage{amsmath}
+\usepackage{etoolbox}
+
+% ---------------- Custom Formatting ----------------
+\definecolor{HeaderBg}{HTML}{F2F5F7}
+\definecolor{RowAlt}{HTML}{FAFCFD}
+\definecolor{Accent}{HTML}{0A4D8C}
+\definecolor{Sev0}{HTML}{E3E8ED}
+\definecolor{Sev1}{HTML}{D5EAFB}
+\definecolor{Sev2}{HTML}{FFE9B5}
+\definecolor{Sev3}{HTML}{FFC6A1}
+\definecolor{Sev4}{HTML}{FF9D9D}
+\newcommand{\sevbox}[1]{\begingroup\setlength{\fboxsep}{3pt}\colorbox{Sev#1}{\textbf{#1}}\endgroup}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{Z}{>{\raggedright\arraybackslash}p{1.1cm}}
+\newcommand{\tick}{\textcolor{green!60!black}{\ding{51}}}
+\newcommand{\cross}{\textcolor{red!70!black}{\ding{55}}}
+\captionsetup{font=small,labelfont=bf}
+\setlist[itemize]{topsep=2pt,itemsep=2pt,parsep=2pt}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+\setlength{\parskip}{6pt}
+\setlength{\parindent}{0pt}
+
+\title{NityMulya\\Human--Computer Interaction Usability Evaluation\\\large Heuristic Evaluation (HE) and Cognitive Walkthrough (CW)}
+\author{Project Team}
+\date{September 2025}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+% -------------------------------------------------
+\section{System Overview}
+NityMulya is a multi-role consumer protection and commerce platform connecting four primary roles: Customers, Shop Owners, Wholesalers, and DNCRP (regulatory) Admins. Core modules include:
+\begin{itemize}
+	\item \textbf{Pricing Transparency}: Daily product prices, intent to differentiate official vs. market rates.
+	\item \textbf{Inventory and Order Lifecycle}: Stock updates, order placement, status transitions (planned multi-stage delivery states).
+	\item \textbf{Complaint Handling}: Customer submissions with future rich media evidence, DNCRP oversight workflows.
+	\item \textbf{Review and Reputation}: Product and shop ratings; roadmap includes media attachments and moderation queue.
+	\item \textbf{Collaboration / Chat}: Role‑based (shop owner \(\leftrightarrow\) wholesaler) negotiation channel.
+	\item \textbf{Location Intelligence}: Proximity-based shop discovery and (future) geo-prioritised low‑stock alerts.
+\end{itemize}
+	extit{Design Focus:} Transparency, trust, and efficiency for multi‑stakeholder interactions under regulatory visibility.
+
+\subsection{Primary Roles}
+\begin{table}[h]
+	\centering
+	\renewcommand{\arraystretch}{1.15}
+	\caption{Primary User Roles and Capability Alignment}\label{tab:roles}
+	\begin{tabular}{|p{2.5cm}|p{4.2cm}|p{7.2cm}|}
+		\hline
+			extbf{Role} & \textbf{Goals (Outcome)} & \textbf{Key Capabilities (Current / Planned)} \\
+		\hline
+		Customer & Fair pricing insight; recourse for unfair trade; informed choice & Price browsing; favorites; map discovery; complaints (media planned); reviews (media planned) \\
+		\hline
+		Shop Owner & Efficient stock turnover; order reliability & Inventory CRUD; order fulfilment; chat wholesalers; low-stock alerts (planned refinement) \\
+		\hline
+		Wholesaler & Maximise distribution reach; responsive supply & Inventory publishing; offers; negotiation chat; supply request triage (planned) \\
+		\hline
+		DNCRP Admin & Oversight; data-driven enforcement & Complaint indexing; status dashboards (workflow escalation roadmap) \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\subsection{Current Implementation Snapshot}
+\begin{table}[h]
+	\centering
+	\renewcommand{\arraystretch}{1.15}
+	\caption{Feature Implementation Status (Legend: \tick = adequate baseline, \cross = gap)}\label{tab:impl}
+	\begin{tabular}{|p{2.8cm}|p{2.7cm}|p{7.0cm}|p{0.9cm}|}
+		\hline
+			extbf{Domain} & \textbf{Status} & \textbf{Notes} & \textbf{Gap} \\
+		\hline
+		Authentication & Partially secure & Plaintext in some flows; JWT partial & \cross \\
+		\hline
+		Complaints & Functional (demo) & Media ingestion incomplete & \cross \\
+		\hline
+		Reviews & Product/Shop ratings & Media + moderation absent & \cross \\
+		\hline
+		Pricing & Live endpoints & No official vs market separation & \cross \\
+		\hline
+		Notifications & Partial model & No trigger/push layer & \cross \\
+		\hline
+		Rewards & Not implemented & VAT incentive planned & \cross \\
+		\hline
+		Mapping & Functional & Basic distance only & \tick \\
+		\hline
+		Chat & Text channel & Lacks presence/real‑time push & \cross \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\subsection{Usability Goals}
+\begin{table}[h]
+	\centering
+	\renewcommand{\arraystretch}{1.15}
+	\caption{Primary Usability Targets}\label{tab:usability}
+	\begin{tabular}{|p{6.2cm}|p{6.2cm}|}
+		\hline
+			extbf{Goal} & \textbf{Target Metric} \\
+		\hline
+		Core task success (critical flows) & $>90\%$ first‑attempt completion \\
+		\hline
+		First-time complaint submission & $<2.5$ minutes (target stretch: $<100$ s) \\
+		\hline
+		Navigation clarity (dashboards) & SUS proxy score $>70$ \\
+		\hline
+		Error recovery path & Resolution cue in $<1$ user action \\
+		\hline
+		Perceived responsiveness & Key API feedback $<500$ ms perceived (skeleton) \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\subsection{Methodology Summary}
+	extbf{Heuristic Evaluation (HE):} Dual-pass inspection (individual then consensus) aligned with Nielsen's 10 heuristics plus three extended dimensions (Security Feedback, Feedback Latency, Accessibility). Each issue scored on a 0--4 scale (0 none, 4 catastrophe) considering frequency, impact, and persistence.
+
+	extbf{Cognitive Walkthrough (CW):} Scenario-driven analysis for representative first-time tasks. For each step we posed four canonical CW questions and flagged breakdown risk (Low/Medium/High). Success criteria anchored to clarity of intention recognition and visibility of progress feedback.
+
+	extbf{Assumptions:} Mobile-first usage; average digital literacy; no prior domain training; stable but occasionally latent network.
+
+	extbf{Limitations:} No quantitative timing instrumentation for current build (estimates derived from structured observation). Accessibility audit preliminary (color contrast spot checks only).
+
+% -------------------------------------------------
+\section{Heuristic Evaluation (HE)}
+Evaluation followed Nielsen's canonical heuristics with added lenses to surface security and performance feedback gaps. \textit{Severity} scoring incorporated user impact, business risk, and remediation complexity proxy.
+
+\subsection{Findings Summary}
+\begin{table}[h]
+	\centering
+	\renewcommand{\arraystretch}{1.12}
+	\caption{Condensed Heuristic Findings (Full list in Appendix \ref{app:he-full})}\label{tab:he-condensed}
+	\begin{tabular}{|p{1.1cm}|p{2.5cm}|p{5.2cm}|p{1.1cm}|p{5.2cm}|}
+		\hline
+			extbf{ID} & \textbf{Heuristic} & \textbf{Issue (Essence)} & \textbf{Sev.} & \textbf{Primary Recommendation} \\
+		\hline
+		HE-05 & Error Prevention & Plaintext password storage (critical) & \sevbox{4} & Bcrypt hashing + migration + policy \& audit \\
+		\hline
+		HE-04 & Consistency & Route prefix inconsistency & \sevbox{3} & Uniform /api/v1 gateway + deprecation map \\
+		\hline
+		HE-06 & Recognition & Monolithic dashboards hinder scanning & \sevbox{3} & Modular card layout + IA taxonomy \\
+		\hline
+		HE-09 & Error Recovery & Generic server error messaging & \sevbox{3} & Structured envelope (code/action_hint) \\
+		\hline
+		HE-01 & Visibility & Missing inventory load states & \sevbox{2} & Skeleton + optimistic prefetch pattern \\
+		\hline
+		HE-02 & Match Real World & Role naming inconsistency & \sevbox{2} & Role dictionary + adapter layer \\
+		\hline
+		HE-08 & Aesthetic & Overcrowded header metrics & \sevbox{2} & Group primary vs secondary metrics \\
+		\hline
+		HE-12 & Feedback Latency & No optimistic chat send state & \sevbox{2} & Pending bubble + resend affordance \\
+		\hline
+		HE-13 & Accessibility & Low contrast CTAs & \sevbox{2} & Palette adjustment + contrast tests \\
+		\hline
+		HE-03 & User Control & No complaint cancel/draft & \sevbox{2} & Draft autosave + explicit cancel CTA \\
+		\hline
+		HE-07 & Flexibility & No bulk inventory edit & \sevbox{1} & Batch select + multi-update dialog \\
+		\hline
+		HE-10 & Help & No evidence quality guidance & \sevbox{1} & Tooltip + microcopy examples \\
+		\hline
+		HE-11 & Security Feedback & No password strength meter & \sevbox{1} & Strength meter + min policy UI \\
+		\hline
+	\end{tabular}
+	\vspace{3pt}\footnotesize Severity boxes correspond to scale 0--4 (Appendix \ref{app:severity}).
+\end{table}
+
+\paragraph{Top Issue Deep Dives}
+	extbf{HE-05 (Security Catastrophe):} Storing plaintext passwords presents immediate exploit potential. \emph{Remediation path:} introduce bcrypt (cost factor 12), add migration script to re-hash existing credentials after forced password reset window, integrate strength meter + deny compromised lists.
+
+	extbf{HE-04 (Consistency):} Mixed route patterns raise cognitive and tooling overhead. Introduce API gateway or router middleware to standardise prefix versioning, produce deprecation schedule, surface auto-generated OpenAPI spec.
+
+	extbf{HE-06 (Information Architecture):} Dashboards spanning thousands of lines create high visual entropy. Refactor into domain clusters (Orders, Inventory, Insights, Messaging) with progressive disclosure and async lazy-loading.
+
+	extbf{HE-09 (Error Communication):} Flat generic strings impede self-service recovery. Adopt structured payload: \verb|{ code, message, action_hint, trace_id }| enabling localized user messaging and observability correlation.
+
+\subsection{Aggregate Metrics}
+\begin{table}[h]
+	\centering
+	\caption{Heuristic Evaluation Metrics}\label{tab:he-metrics}
+	\begin{tabular}{|p{5.2cm}|p{5.2cm}|}
+		\hline
+			extbf{Metric} & \textbf{Value} \\
+		\hline
+		Total Issues & 13 \\
+		\hline
+		Mean Severity & 2.15 \\
+		\hline
+		High ($\ge 3$) & 4 \\
+		\hline
+		Catastrophic (4) & 1 (HE-05) \\
+		\hline
+		Extended Dimensions Used & 3 (Security, Feedback Latency, Accessibility) \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\subsection{Themes}
+Security Hardening; Structural Refactor; Feedback and Status Clarity; Consistency and Language; Accessibility uplift.
+
+% -------------------------------------------------
+\section{Cognitive Walkthrough (CW)}
+The CW emphasised \emph{learnability}—whether untrained users can form correct intentions, locate relevant actions, and perceive progress feedback in critical early tasks.
+
+\subsection{Tasks Evaluated}
+1) Submit Pricing Complaint; 2) Update Inventory Quantity; 3) Respond to Low Stock (Wholesaler); 4) Add Favorite (supplemental).
+
+\subsection{Breakdown Table (Selected)}
+\begin{table}[h]
+	\centering
+	\renewcommand{\arraystretch}{1.12}
+	\caption{Representative CW Step Breakdowns}\label{tab:cw-breakdowns}
+	\begin{tabular}{|p{0.7cm}|p{1.9cm}|p{2.7cm}|p{5.4cm}|p{1.2cm}|p{3.5cm}|}
+		\hline
+			extbf{S} & \textbf{Task} & \textbf{User Intention} & \textbf{Observed Gap} & \textbf{Risk} & \textbf{Recommendation} \\
+		\hline
+		1 & Complaint & Find complaints entry & Option buried in drawer for novices & Low & Add dashboard shortcut tile \\
+		\hline
+		3 & Complaint & Select shop & No search / autocomplete & High & Searchable + recent shop picker \\
+		\hline
+		4 & Complaint & Add evidence & Weak affordance (icon-only) & High & Labeled media panel + preview grid \\
+		\hline
+		4 & Inventory & Save change & Silent success path & High & Toast + diff highlight row pulse \\
+		\hline
+		3 & Low Stock & Negotiate & Context switch to separate chat tab & High & Inline contextual chat CTA \\
+		\hline
+		2 & Favorite & Mark favorite & Small touch target; low affordance & Medium & Larger toggle + filled active state \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\subsection{CW Issue Summary}
+CW-01 Shop selection search (High); CW-02 Evidence upload affordance (High); CW-03 Silent inventory save (Medium); CW-04 Detached chat initiation (High); CW-05 Mixed taxonomy (Medium); CW-06 Missing progress cues (Medium).
+
+% -------------------------------------------------
+\section{Comparative Analysis}
+HE provided \emph{breadth} across systemic architecture and policy; CW provided \emph{depth} in micro-interaction friction. Their intersection sharpened prioritisation confidence.
+
+\subsection{Overlap Themes}
+Navigation Complexity; Feedback / Status; Consistency \& Language; Error Prevention vs Recovery; Security (HE unique); Discoverability (CW granularity).
+
+\subsection{Prioritisation (ICE Excerpt)}
+\begin{table}[h]
+	\centering
+	\caption{ICE Scoring Snapshot}\label{tab:ice}
+	\begin{tabular}{|l|c|c|c|c|}
+		\hline
+			extbf{Issue} & \textbf{Impact} & \textbf{Confidence} & \textbf{Effort (inverse)} & \textbf{ICE} \\
+		\hline
+		Plaintext Password (HE-05) & 10 & 9 & 3 & 30 \\
+		\hline
+		Dashboard Overload (HE-06) & 8 & 8 & 5 & 21 \\
+		\hline
+		Shop Search (CW-01) & 7 & 8 & 4 & 19 \\
+		\hline
+		Error Specificity (HE-09) & 7 & 7 & 5 & 17 \\
+		\hline
+		Evidence Affordance (CW-02) & 6 & 7 & 4 & 17 \\
+		\hline
+		Role Inconsistency (HE-02) & 6 & 8 & 3 & 17 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+% -------------------------------------------------
+\section{Design Recommendations}
+\subsection{Actionable Roadmap}
+\begin{longtable}{p{2.2cm}p{5.2cm}p{4.2cm}p{1.2cm}p{1.2cm}}
+\toprule
+Area & Change & Rationale & Effort & Priority \\
+\midrule
+Security & Bcrypt hashing + migration & Eliminate catastrophic risk & M & P0 \\
+Dashboards & Modular refactor & Reduce overload & H & P1 \\
+Complaints & Searchable shop + evidence panel & Remove high-risk friction & M & P1 \\
+Errors & Structured envelope (code/message/action) & Aid recovery/localization & M & P1 \\
+Inventory & Inline edit feedback & Confirm success & L & P2 \\
+Chat & Contextual CTA & Reduce task switching & L & P2 \\
+Terminology & Central dictionary + i18n & Consistency & M & P2 \\
+Progress & Form stepper/progress bar & User control perception & M & P2 \\
+Accessibility & Contrast + semantics & Inclusive access & M & P2 \\
+Reviews & Media attachments + moderation & Trust/signals & H & P3 \\
+Notifications & Push/poll + categories & Visibility/status & M & P3 \\
+\bottomrule
+\end{longtable}
+
+\subsection{Success Metrics}
+\begin{table}[h]
+	\centering
+	\caption{Post-Remediation KPI Targets}\label{tab:kpis}
+	\renewcommand{\arraystretch}{1.12}
+	\begin{tabular}{|p{5.2cm}|p{2.4cm}|p{6.2cm}|}
+		\hline
+			extbf{Metric} & \textbf{Target} & \textbf{Measurement Approach} \\
+		\hline
+		Complaint abandonment rate & <10\% & Funnel instrumentation (start vs submit) \\
+		\hline
+		Inventory update confirmation latency & <5 s perceived & Timestamp diff (edit action to feedback) \\
+		\hline
+		Strong password adoption & >85\% & Server-side policy compliance logs \\
+		\hline
+		First complaint completion time & <100 s median & On-device timing (entry to submit) \\
+		\hline
+		Dashboard inventory discoverability & <5 s & UX telemetry (time-to-first click) \\
+		\hline
+		Error recovery single-action success & >80\% & Error event followed by resolution event ratio \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\subsection{Risk if Deferred}
+Security exposure, retention erosion, scaling friction, inaccessible experience.
+
+\section*{Conclusion}
+The dual-method evaluation surfaces a balanced mandate: \emph{(1)} eliminate foundational security and consistency risks that erode trust and operational scalability; \emph{(2)} streamline early-path interactions to accelerate user competence and reduce abandonment. Sequenced remediation—security gate, structural UI decomposition, complaint and inventory UX refinements, consistency and accessibility uplift, then engagement expansions—establishes a sustainable improvement flywheel.
+
+\appendix
+\section{Severity Scale Definition}\label{app:severity}
+\begin{table}[h]
+	\centering
+	\caption{Severity Scale (0--4)}
+	\begin{tabular}{|p{1cm}|p{2.6cm}|p{9cm}|}
+		\hline
+			extbf{Code} & \textbf{Label} & \textbf{Definition / Example} \\
+		\hline
+		0 & None & No observable usability degradation. \\
+		\hline
+		1 & Cosmetic & Minor polish issue; defer until after core fixes. \\
+		\hline
+		2 & Minor & Usability friction; workaround obvious; address soon. \\
+		\hline
+		3 & Major & Significant efficiency or comprehension impact; prioritize. \\
+		\hline
+		4 & Catastrophic & Blocks task or undermines trust/security; immediate fix. \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{Full Heuristic Issue Table}\label{app:he-full}
+\begin{longtable}{|p{1.1cm}|p{2.3cm}|p{3.6cm}|p{2.3cm}|p{0.9cm}|p{4.1cm}|}
+	\hline
+		extbf{ID} & \textbf{Heuristic} & \textbf{Issue Detail} & \textbf{Context} & \textbf{Sev.} & \textbf{Recommendation} \\
+	\hline
+	HE-01 & Visibility & Missing loading state & Shop Owner Inventory & 2 & Skeleton loaders + retry toast \\
+	\hline
+	HE-02 & Match Real World & Mixed role naming & Auth / Dashboards & 2 & Role dictionary + mapping adapter \\
+	\hline
+	HE-03 & User Control & No complaint cancel/draft & Complaint Form & 2 & Draft autosave + Cancel CTA \\
+	\hline
+	HE-04 & Consistency & Inconsistent route prefixes & API Layer & 3 & Uniform /api/v1 gateway \\
+	\hline
+	HE-05 & Error Prevention & Plaintext password storage & Auth Backend & 4 & Bcrypt + forced reset cycle \\
+	\hline
+	HE-06 & Recognition & Monolithic dashboards & Dashboards & 3 & Modular segmentation + lazy load \\
+	\hline
+	HE-07 & Flexibility & No bulk inventory edit & Inventory & 1 & Batch selection tool \\
+	\hline
+	HE-08 & Aesthetic & Overcrowded metrics & Wholesaler Header & 2 & Group + collapse secondary \\
+	\hline
+	HE-09 & Error Recovery & Generic server errors & Network Layer & 3 & Structured envelope + trace IDs \\
+	\hline
+	HE-10 & Help & No evidence guidance & Complaint Form & 1 & Tooltip + examples microcopy \\
+	\hline
+	HE-11 & Security Feedback & No password strength meter & Signup & 1 & Strength meter + policy hints \\
+	\hline
+	HE-12 & Feedback Latency & No optimistic chat send & Chat & 2 & Pending bubble + retry UI \\
+	\hline
+	HE-13 & Accessibility & Low contrast buttons & Theme & 2 & Palette tune (WCAG AA) \\
+	\hline
+\end{longtable}
+
+\section{Cognitive Walkthrough Issue Summary}
+\begin{table}[h]
+	\centering
+	\caption{CW Issue Consolidation}
+	\begin{tabular}{|p{1.1cm}|p{3.3cm}|p{1.5cm}|p{4.4cm}|p{4.2cm}|}
+		\hline
+			extbf{ID} & \textbf{Issue} & \textbf{Risk} & \textbf{Root Cause} & \textbf{Primary Fix} \\
+		\hline
+		CW-01 & Shop selection lacks search & High & No lookup component & Searchable picker + recents \\
+		\hline
+		CW-02 & Weak evidence upload affordance & High & Unlabeled icon button & Media panel w/ previews \\
+		\hline
+		CW-03 & Silent inventory save & Medium & No post-action feedback & Toast + highlight pulse \\
+		\hline
+		CW-04 & Detached chat initiation & High & Context switch overhead & Inline contextual CTA \\
+		\hline
+		CW-05 & Mixed language taxonomy & Medium & No i18n dictionary & Central glossary + keys \\
+		\hline
+		CW-06 & Missing progress cues & Medium & Monolithic form layout & Stepper + progress indicator \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{Risk Matrix (Selected)}
+\begin{table}[h]
+	\centering
+	\caption{Qualitative Risk Matrix (Impact vs Likelihood)}
+	\begin{tabular}{|p{5.1cm}|p{1.9cm}|p{2.1cm}|p{2.1cm}|}
+		\hline
+			extbf{Issue} & \textbf{Impact} & \textbf{Likelihood} & \textbf{Priority Tier} \\
+		\hline
+		Plaintext password (HE-05) & Critical & High & P0 \\
+		\hline
+		Dashboard overload (HE-06) & High & High & P1 \\
+		\hline
+		Complaint shop search (CW-01) & High & Medium & P1 \\
+		\hline
+		Error specificity (HE-09) & High & Medium & P1 \\
+		\hline
+		Evidence affordance (CW-02) & Medium & Medium & P1 \\
+		\hline
+		Accessibility contrast (HE-13) & Medium & High & P2 \\
+		\hline
+		Bulk inventory editing (HE-07) & Low & Medium & P3 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\vfill
+\begin{center}
+\textit{End of Report}
+\end{center}
+
+\end{document}

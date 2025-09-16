@@ -3,78 +3,79 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import type { JwtVariables } from "hono/jwt";
 import { prettyJSON } from "hono/pretty-json";
+import path from "path";
 import {
-    getCategories,
-    getChatConversations,
-    getChatMessages,
-    getPrice,
-    getPricesfromDB,
-    getProductPriceHistory,
-    getSheetUrl,
-    getShops,
-    getShopsByProduct,
-    getShopsBySubcategoryId,
-    getWholesalers,
-    initializeSampleData,
-    sendMessage,
+  getCategories,
+  getChatConversations,
+  getChatMessages,
+  getPrice,
+  getPricesfromDB,
+  getProductPriceHistory,
+  getSheetUrl,
+  getShops,
+  getShopsByProduct,
+  getShopsBySubcategoryId,
+  getWholesalers,
+  initializeSampleData,
+  sendMessage,
 } from "./controller/apiController";
 import {
-    login,
-    loginCustomer,
-    loginShopOwner,
-    loginWholesaler,
-    signupCustomer,
-    signupShopOwner,
-    signupWholesaler,
+  login,
+  loginCustomer,
+  loginShopOwner,
+  loginWholesaler,
+  signupCustomer,
+  signupShopOwner,
+  signupWholesaler,
 } from "./controller/authController";
 import {
-    createCustomerComplaint,
-    createPublicComplaint,
-    getCustomerComplaints,
+  createCustomerComplaint,
+  createPublicComplaint,
+  getCustomerComplaints,
 } from "./controller/customerComplaintController";
 import {
-    cancelCustomerOrder,
-    createCustomerOrder,
-    getCancelledOrders,
-    getCustomerOrder,
-    getCustomerOrders,
-    getCustomerOrderStats,
-    getShopOwnerCustomerOrders,
-    updateCustomerOrderStatus,
+  cancelCustomerOrder,
+  createCustomerOrder,
+  getCancelledOrders,
+  getCustomerOrder,
+  getCustomerOrders,
+  getCustomerOrderStats,
+  getShopOwnerCustomerOrders,
+  updateCustomerOrderStatus,
 } from "./controller/customerOrderController";
 import { DatabaseReviewController } from "./controller/databaseReviewController";
 import {
-    addProductToInventory as addShopOwnerProduct,
-    getChatMessages as getShopOwnerChatMessages,
-    getShopOwnerDashboard,
-    getShopOwnerInventory,
-    getLowStockProducts as getShopOwnerLowStockProducts,
-    getShopOrders as getShopOwnerOrders,
-    updateShopOrderStatus,
-    updateInventoryItem as updateShopOwnerInventoryItem,
+  addProductToInventory as addShopOwnerProduct,
+  getChatMessages as getShopOwnerChatMessages,
+  getShopOwnerDashboard,
+  getShopOwnerInventory,
+  getLowStockProducts as getShopOwnerLowStockProducts,
+  getShopOrders as getShopOwnerOrders,
+  updateShopOrderStatus,
+  updateInventoryItem as updateShopOwnerInventoryItem,
 } from "./controller/shopOwnerController";
 import {
-    addProductToInventory as addWholesalerProduct,
-    createOffer,
-    createOrder,
-    getShopOwners,
-    getSubcategories,
-    getCategories as getWholesalerCategories,
-    getChatMessages as getWholesalerChatMessages,
-    getWholesalerDashboard,
-    getWholesalerInventory,
-    getLowStockProducts as getWholesalerLowStockProducts,
-    getWholesalerOffers,
-    getWholesalerProfile,
-    getShopOrders as getWholesalerShopOrders,
-    updateOrderStatus,
-    updateInventoryItem as updateWholesalerInventoryItem,
+  addProductToInventory as addWholesalerProduct,
+  createOffer,
+  createOrder,
+  getShopOwners,
+  getSubcategories,
+  getCategories as getWholesalerCategories,
+  getChatMessages as getWholesalerChatMessages,
+  getWholesalerDashboard,
+  getWholesalerInventory,
+  getLowStockProducts as getWholesalerLowStockProducts,
+  getWholesalerOffers,
+  getWholesalerProfile,
+  getShopOrders as getWholesalerShopOrders,
+  updateOrderStatus,
+  updateInventoryItem as updateWholesalerInventoryItem,
 } from "./controller/wholesalerController";
 import sql, { db } from "./db"; // Database connection for persistent storage
 import { createAuthMiddleware, requireRole } from "./utils/jwt";
 
 // Load environment variables
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 const app = new Hono<{ Variables: JwtVariables }>();
 // Use database controller for persistent storage
@@ -82,6 +83,49 @@ const reviewController = new DatabaseReviewController();
 
 app.use(prettyJSON());
 app.use("/*", cors());
+
+// Serve static files from uploads directory
+app.get("/uploads/*", async (c) => {
+  try {
+    const filePath = c.req.path.replace("/uploads/", "");
+    const fullPath = path.join(process.cwd(), "uploads", filePath);
+
+    // Check if file exists
+    const fs = await import("fs");
+    if (!fs.existsSync(fullPath)) {
+      return c.json({ error: "File not found" }, 404);
+    }
+
+    // Get file stats and content
+    const stats = fs.statSync(fullPath);
+    const fileBuffer = fs.readFileSync(fullPath);
+
+    // Determine content type based on file extension
+    const ext = path.extname(fullPath).toLowerCase();
+    const contentTypes: { [key: string]: string } = {
+      ".jpg": "image/jpeg",
+      ".jpeg": "image/jpeg",
+      ".png": "image/png",
+      ".pdf": "application/pdf",
+      ".doc": "application/msword",
+      ".docx":
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    };
+
+    const contentType = contentTypes[ext] || "application/octet-stream";
+
+    return new Response(fileBuffer, {
+      headers: {
+        "Content-Type": contentType,
+        "Content-Length": stats.size.toString(),
+        "Cache-Control": "public, max-age=3600",
+      },
+    });
+  } catch (error) {
+    console.error("Error serving file:", error);
+    return c.json({ error: "Internal server error" }, 500);
+  }
+});
 
 // Debug middleware to log all requests
 app.use("*", async (c, next) => {
@@ -100,9 +144,9 @@ app.get("/", (c) => {
 
 // Test route
 app.get("/test", (c) => {
-  return c.json({ 
+  return c.json({
     message: "Server is working!",
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 // Existing API routes
@@ -150,7 +194,9 @@ app.use("/shop-owner/*", createAuthMiddleware(), requireRole("shop_owner"));
 
 // Add logging middleware for shop-owner routes
 app.use("/shop-owner/*", async (c, next) => {
-  console.log(`🔍 [BACKEND] Shop-owner route called: ${c.req.method} ${c.req.path}`);
+  console.log(
+    `🔍 [BACKEND] Shop-owner route called: ${c.req.method} ${c.req.path}`
+  );
   // console.log(`🔍 [BACKEND] Headers:`, JSON.stringify(c.req.header(), null, 2));
   await next();
 });
@@ -187,8 +233,8 @@ app.get("/customer/complaints", getCustomerComplaints);
 // DNCRP Admin routes
 app.get("/complaints/all", async (c) => {
   try {
-    console.log('📋 Fetching all complaints for DNCRP admin');
-    
+    console.log("📋 Fetching all complaints for DNCRP admin");
+
     const complaints = await sql`
       SELECT 
         id,
@@ -214,15 +260,18 @@ app.get("/complaints/all", async (c) => {
     return c.json({
       success: true,
       complaints: complaints,
-      message: 'All complaints retrieved successfully'
+      message: "All complaints retrieved successfully",
     });
   } catch (error) {
-    console.error('❌ Error fetching all complaints:', error);
-    return c.json({
-      success: false,
-      message: 'Failed to fetch complaints',
-      error: error
-    }, 500);
+    console.error("❌ Error fetching all complaints:", error);
+    return c.json(
+      {
+        success: false,
+        message: "Failed to fetch complaints",
+        error: error,
+      },
+      500
+    );
   }
 });
 
@@ -394,11 +443,11 @@ app.get(
 app.post("/api/complaints/submit", async (c) => {
   try {
     const body = await c.req.json();
-    console.log('📝 Complaint submission received:', body);
-    
+    console.log("📝 Complaint submission received:", body);
+
     // Generate complaint number
     const complaintNumber = `DNCRP${Date.now()}`;
-    
+
     // Save to database
     const result = await sql`
       INSERT INTO complaints (
@@ -419,75 +468,81 @@ app.post("/api/complaints/submit", async (c) => {
       ) VALUES (
         ${complaintNumber},
         ${body.customerId || 0},
-        ${body.customerName || 'Unknown'},
-        ${body.customerEmail || 'unknown@email.com'},
-        ${body.customerPhone || ''},
-        ${body.shopName || 'DNCRP Online'},
-        ${body.category || 'সাধারণ'},
-        ${body.priority || 'মাঝারি'},
-        ${body.severity || 'মাঝারি'},
-        ${body.subject || 'DNCRP অভিযোগ'},
-        ${body.description || ''},
+        ${body.customerName || "Unknown"},
+        ${body.customerEmail || "unknown@email.com"},
+        ${body.customerPhone || ""},
+        ${body.shopName || "DNCRP Online"},
+        ${body.category || "সাধারণ"},
+        ${body.priority || "মাঝারি"},
+        ${body.severity || "মাঝারি"},
+        ${body.subject || "DNCRP অভিযোগ"},
+        ${body.description || ""},
         ${body.expectedDate || null},
         'pending',
         NOW()
       ) RETURNING *;
     `;
-    
+
     const complaint = result[0];
-    console.log('✅ Complaint saved to database:', complaint);
-    
+    console.log("✅ Complaint saved to database:", complaint);
+
     return c.json({
       success: true,
       data: {
         complaint_number: complaint.complaint_number,
         id: complaint.id,
         status: complaint.status,
-        created_at: complaint.created_at
+        created_at: complaint.created_at,
       },
-      message: 'অভিযোগ সফলভাবে জমা হয়েছে!'
+      message: "অভিযোগ সফলভাবে জমা হয়েছে!",
     });
   } catch (error) {
-    console.error('❌ Error submitting complaint:', error);
-    return c.json({
-      success: false,
-      message: 'অভিযোগ জমা দিতে সমস্যা হয়েছে',
-      error: error.message
-    }, 500);
+    console.error("❌ Error submitting complaint:", error);
+    return c.json(
+      {
+        success: false,
+        message: "অভিযোগ জমা দিতে সমস্যা হয়েছে",
+        error: error.message,
+      },
+      500
+    );
   }
 });
 
 // Get complaints by customer
 app.get("/api/complaints/customer/:customerId", async (c) => {
   try {
-    const customerId = c.req.param('customerId');
-    console.log('📋 Fetching complaints for customer:', customerId);
-    
+    const customerId = c.req.param("customerId");
+    console.log("📋 Fetching complaints for customer:", customerId);
+
     // Mock data (replace with real DB query)
     const complaints = [
       {
         id: 1,
-        complaint_number: 'DNCRP123456',
+        complaint_number: "DNCRP123456",
         customer_id: parseInt(customerId),
-        shop_name: 'Sample Shop',
-        complaint_type: 'পণ্যের গুণগত মান সমস্যা',
-        status: 'pending',
+        shop_name: "Sample Shop",
+        complaint_type: "পণ্যের গুণগত মান সমস্যা",
+        status: "pending",
         created_at: new Date().toISOString(),
-      }
+      },
     ];
-    
+
     return c.json({
       success: true,
       data: complaints,
-      message: 'Complaints retrieved successfully'
+      message: "Complaints retrieved successfully",
     });
   } catch (error) {
-    console.error('❌ Error fetching complaints:', error);
-    return c.json({
-      success: false,
-      message: 'Failed to fetch complaints',
-      error: error.message
-    }, 500);
+    console.error("❌ Error fetching complaints:", error);
+    return c.json(
+      {
+        success: false,
+        message: "Failed to fetch complaints",
+        error: error.message,
+      },
+      500
+    );
   }
 });
 
@@ -651,14 +706,14 @@ app.get("/health", async (c) => {
 
 export default {
   port: process.env.PORT || 3005,
-  hostname: '0.0.0.0', // Listen on all network interfaces
+  hostname: "0.0.0.0", // Listen on all network interfaces
   fetch: app.fetch,
   idleTimeout: 255,
   error(error: Error) {
-    console.error('🚨 Server error:', error);
+    console.error("🚨 Server error:", error);
   },
   async onstart(server: any) {
     console.log(`🚀 Server started successfully on port ${server.port}`);
     console.log(`📡 Health check: http://localhost:${server.port}/api/health`);
-  }
+  },
 };

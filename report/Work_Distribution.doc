@@ -1,0 +1,132 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Arial;}{\f1 Courier New;}}
+\f0\fs24\b Work Distribution Report - NityMulya Project\b0\par
+\fs20\par
+\b Project Timeline\b0\par
+Start Date: July 12, 2025\par
+End Date: September 12, 2025\par
+Duration: 62 days\par
+Total Commits: 105\par
+\par
+\b Team Members & Contribution Summary\b0\par
+{\trowd\trgaph108\trleft0
+\cellx3000\cellx6000\cellx8000\cellx10000\cellx15000
+\b Member Name\b0\cell \b Email\b0\cell \b Commits\b0\cell \b Percentage\b0\cell \b Primary Focus\b0\cell\row
+\trowd\trgaph108\trleft0\cellx3000\cellx6000\cellx8000\cellx10000\cellx15000
+Tamal (Syed Tamal)\cell syedtamal@gmail.com\cell 32\cell 30.5%\cell Backend Architecture, Authentication\cell\row
+\trowd\trgaph108\trleft0\cellx3000\cellx6000\cellx8000\cellx10000\cellx15000
+sakifshahrear\cell sakifshahrear@gmail.com\cell 32\cell 30.5%\cell Order System, Inventory, Messaging\cell\row
+\trowd\trgaph108\trleft0\cellx3000\cellx6000\cellx8000\cellx10000\cellx15000
+NAHIDURZAMAN\cell NAHIDURZAMAN@users.noreply.github.com\cell 31\cell 29.5%\cell Complaint UI, Reviews, Shop Features\cell\row
+\trowd\trgaph108\trleft0\cellx3000\cellx6000\cellx8000\cellx10000\cellx15000
+Khadiza Khanum Mithila\cell khadizakhanom8833@gmail.com\cell 10\cell 9.5%\cell Data Models, Admin Tools, Testing\cell\row
+}\par
+\par
+\b Backend Development\b0\par
+{\trowd\trgaph108\trleft0
+\cellx4000\cellx7000\cellx10000\cellx15000
+\b Component\b0\cell \b Primary Contributor\b0\cell \b Secondary\b0\cell \b Key Files\b0\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Core Server & API\cell Tamal\cell sakifshahrear\cell Backend/src/index.ts, controllers\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Database Schema\cell sakifshahrear\cell Khadiza\cell customer_order_schema.sql\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Authentication\cell Tamal\cell -\cell Auth controllers, JWT middleware\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Controller Logic\cell Tamal\cell sakifshahrear\cell shopOwnerController.ts, etc.\cell\row
+}\par
+\par
+\b Customer Features\b0\par
+{\trowd\trgaph108\trleft0
+\cellx4000\cellx7000\cellx10000\cellx15000
+\b Feature\b0\cell \b Primary\b0\cell \b Secondary\b0\cell \b Components\b0\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Order Placement\cell Tamal\cell sakifshahrear\cell my_orders_screen.dart\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Order Status\cell sakifshahrear\cell Tamal\cell Pending, ongoing, cancelled screens\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Complaint Submission\cell NAHIDURZAMAN\cell Khadiza\cell complaint_screen variations\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Complaint Forms\cell Khadiza\cell NAHIDURZAMAN\cell complaint_submission_screen.dart\cell\row
+}\par
+\par
+\b Shop Owner Features\b0\par
+{\trowd\trgaph108\trleft0
+\cellx4000\cellx7000\cellx10000\cellx15000
+\b Feature\b0\cell \b Primary\b0\cell \b Secondary\b0\cell \b Components\b0\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Dashboard\cell Tamal\cell sakifshahrear\cell dashboard_screen.dart\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Order Management\cell sakifshahrear\cell Tamal\cell Order confirmation, status updates\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Inventory Integration\cell Tamal\cell sakifshahrear\cell Inventory API integration\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Customer Orders\cell sakifshahrear\cell Tamal\cell Customer order processing\cell\row
+}\par
+\par
+\b Wholesaler Features\b0\par
+{\trowd\trgaph108\trleft0
+\cellx4000\cellx7000\cellx10000\cellx15000
+\b Feature\b0\cell \b Primary\b0\cell \b Secondary\b0\cell \b Components\b0\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Dashboard\cell Tamal\cell sakifshahrear\cell wholesaler_dashboard_screen.dart\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Order Creation\cell Tamal\cell sakifshahrear\cell add_order_screen.dart\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Chat System\cell Tamal\cell sakifshahrear\cell Wholesaler chat screens\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx7000\cellx10000\cellx15000
+Shop Reviews\cell NAHIDURZAMAN\cell -\cell shop_reviews_screen.dart\cell\row
+}\par
+\par
+\b Testing & Quality Assurance\b0\par
+{\trowd\trgaph108\trleft0
+\cellx4000\cellx8000\cellx15000
+\b Area\b0\cell \b Primary Contributor\b0\cell \b Focus\b0\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx8000\cellx15000
+Inventory Testing\cell sakifshahrear\cell 15+ inventory test scripts\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx8000\cellx15000
+Order Testing\cell sakifshahrear\cell Order flow validation\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx8000\cellx15000
+Complaint Testing\cell Khadiza\cell Cancelled orders workflow\cell\row
+\trowd\trgaph108\trleft0\cellx4000\cellx8000\cellx15000
+API Integration\cell Tamal\cell Backend-frontend integration\cell\row
+}\par
+\par
+\b Technical Contribution Details\b0\par
+\par
+\b Backend Architecture (Tamal - 30.5%)\b0\par
+Core Responsibilities: Server setup, API routing, authentication\par
+Major Files: Backend/src/index.ts, controller files\par
+Integration: Connected Flutter frontend with backend APIs\par
+Cross-cutting: Custom drawer, network helpers, auth provider\par
+\par
+\b Order & Inventory Systems (sakifshahrear - 30.5%)\b0\par
+Core Responsibilities: Order lifecycle, inventory, messaging\par
+Major Contributions: Database schema, 20+ test scripts\par
+Quality Assurance: Extensive inventory and order testing\par
+UI Components: Order status screens (pending, ongoing, cancelled)\par
+\par
+\b Complaint & Review Systems (NAHIDURZAMAN - 29.5%)\b0\par
+Core Responsibilities: Customer complaint UI, shop reviews\par
+Major Contributions: Multiple complaint screen iterations\par
+Focus: Frontend complaint experience and navigation\par
+Shop Features: Wholesaler review functionality\par
+\par
+\b Data Models & Admin Tools (Khadiza - 9.5%)\b0\par
+Core Responsibilities: Data structure, admin interfaces\par
+Major Contributions: Complaint models, database migrations\par
+Admin Tools: DNCRP complaint management screens\par
+Testing: Order cancellation validation scripts\par
+\par
+\b Project Summary\b0\par
+Duration: 62 days (July-September 2025)\par
+Total Commits: 105\par
+Average: 1.7 commits per day\par
+Collaboration: Cross-member file modifications evident\par
+Technologies: Bun, Hono, PostgreSQL, Flutter, Dart\par
+\par
+The NityMulya project demonstrates balanced team collaboration with complementary skills: backend architecture (Tamal), data systems (sakifshahrear), user interfaces (NAHIDURZAMAN), and data modeling (Khadiza).\par
+\par
+Report Generated: September 13, 2025\par
+Data Source: Git repository analysis\par
+}

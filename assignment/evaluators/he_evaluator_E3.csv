@@ -1,0 +1,6 @@
+issue_id,heuristic,severity,evaluator_id,evaluator_name,description,evaluator_comment,recommendation
+HE-04,Consistency & Standards,3,E3,Engineer C,API routes inconsistent (/api vs none),Backend cleanup needed,Introduce routing middleware & versioning
+HE-05,Error Prevention,4,E3,Engineer C,Passwords stored in plaintext,Breach risk immediate,Implement bcrypt + salt rounds 12
+HE-09,Help Users Recover,3,E3,Engineer C,Generic error envelope,no diagnostic codes,Adopt {code,message,action} JSON pattern
+HE-02,Match Between System & Real World,2,E3,Engineer C,Role strings inconsistent in DB vs client,Hard to unify RBAC,Normalize enumeration layer
+HE-13,Accessibility,2,E3,Engineer C,Color contrast fails in green CTA,SaaS admin not fully accessible,Refactor theme tokens

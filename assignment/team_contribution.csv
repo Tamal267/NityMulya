@@ -1,0 +1,6 @@
+member_id,name,role,primary_contributions,he_issues_logged,cw_steps_analyzed,documentation_hours,implementation_hours,notes
+M1,Analyst A,UX Researcher,Led HE synthesis & CW protocol,8,22,6,2,Coordinated evaluation cadence
+M2,Engineer B,Frontend Dev,Dashboards audit & feasibility scoring,3,14,2,5,Provided refactor estimates
+M3,Engineer C,Backend Dev,Security & API consistency review,4,0,1,4,Outlined hashing migration
+M4,Designer D,Product Designer,Visual hierarchy & accessibility pass,5,10,4,3,Prepared contrast matrix
+M5,QA Specialist E,QA Analyst,Task path validation & data logging,2,18,3,2,Aggregated CW timing stats

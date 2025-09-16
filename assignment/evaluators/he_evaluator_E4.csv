@@ -1,0 +1,7 @@
+issue_id,heuristic,severity,evaluator_id,evaluator_name,description,evaluator_comment,recommendation
+HE-06,Consistency & Standards,3,E4,Designer D,Overloaded dashboard visual hierarchy weak,Hard to scan priorities,Use grid layout + spacing scale
+HE-08,Aesthetic & Minimalist,2,E4,Designer D,Metric cards competing for attention,Need progressive disclosure,Group secondary stats in collapsible
+HE-10,Help & Documentation,1,E4,Designer D,No inline guidance for complaint evidence,User confusion risk,Context hint + example chips
+HE-13,Accessibility,2,E4,Designer D,Contrast ratio insufficient (#079b11 on white),AA non-compliant,Adjust to darker shade or bold weight
+HE-01,Visibility of System Status,2,E4,Designer D,Lack of skeleton states on load,Perceived slowness,Add animated placeholders
+HE-12,Feedback Latency,2,E4,Designer D,Chat lacks sending animation,User unsure of state,Show transient sending bubble

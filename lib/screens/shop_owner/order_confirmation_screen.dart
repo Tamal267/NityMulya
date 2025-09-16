@@ -381,7 +381,7 @@ class _OrderConfirmationScreenState extends State<OrderConfirmationScreen> {
       }
     } catch (e) {
       print('❌ Error adding product to inventory: $e');
-      throw e;
+      rethrow;
     }
   }
 

@@ -1,0 +1,18 @@
+task_id,task_name,role,step_number,user_intention,expected_action,observed_issue,breakdown_risk,recommendation
+T1,Submit Pricing Complaint,Customer,1,Access complaints feature,Open complaints from nav,None,Low,Add home shortcut button
+T1,Submit Pricing Complaint,Customer,2,Start new complaint,Tap 'Submit Complaint',Label long/ambiguous,Medium,Use concise 'New Complaint'
+T1,Submit Pricing Complaint,Customer,3,Select shop,Pick from list,No search/autocomplete,High,Add searchable picker + recent history
+T1,Submit Pricing Complaint,Customer,4,Attach evidence,Tap media button,Affordance unclear,High,Add labeled media card + preview
+T1,Submit Pricing Complaint,Customer,5,Set category/priority,Select dropdowns,Jargon mix,Medium,Provide helper tooltips
+T1,Submit Pricing Complaint,Customer,6,Submit form,Tap submit,Weak progress feedback,Medium,Add progress bar + success stub
+T2,Update Inventory Quantity,ShopOwner,1,Open inventory,Select inventory tab,None,Low,Ok
+T2,Update Inventory Quantity,ShopOwner,2,Locate product,Scroll list,Dense list/no search,Medium,Add search/filter
+T2,Update Inventory Quantity,ShopOwner,3,Edit quantity,Tap row,Edit affordance subtle,Medium,Add explicit edit icon
+T2,Update Inventory Quantity,ShopOwner,4,Save changes,Confirm update,No confirmation feedback,High,Toast + highlight changed row
+T3,Respond to Low Stock,Wholesaler,1,Check low stock,Open low stock tab,None,Low,Badge count
+T3,Respond to Low Stock,Wholesaler,2,Inspect shop need,Click product link,Link styling subtle,Medium,Use card w/ CTA
+T3,Respond to Low Stock,Wholesaler,3,Initiate negotiation,Open chat tab,Context switch required,High,Inline 'Message Shop' button
+T3,Respond to Low Stock,Wholesaler,4,Confirm supply,Update order status,Multi-step friction,Medium,Quick status buttons
+T4,Add Favorite Product,Customer,1,View product list,Open products,None,Low,Ok
+T4,Add Favorite Product,Customer,2,Mark favorite,Tap heart icon,Small touch target,Medium,Enlarge & toggle fill
+T4,Add Favorite Product,Customer,3,Verify favorite,Open favorites page,No immediate feedback,Medium,Snackbar on add

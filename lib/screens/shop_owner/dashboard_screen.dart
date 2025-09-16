@@ -3120,7 +3120,7 @@ Widget build(BuildContext context) {
                 Icon(Icons.inventory, color: Colors.white),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text('Product added to your inventory: ${order['subcat_name'] ?? 'Product'} (${quantityRequested} units)'),
+                  child: Text('Product added to your inventory: ${order['subcat_name'] ?? 'Product'} ($quantityRequested units)'),
                 ),
               ],
             ),

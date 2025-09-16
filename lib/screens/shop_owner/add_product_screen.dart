@@ -13,19 +13,19 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
-  
+
   String? selectedProduct;
   String? selectedCategory;
-  
+
   // Dynamic data from backend
   List<Map<String, dynamic>> categories = [];
   List<Map<String, dynamic>> priceList = [];
   Map<String, List<Map<String, dynamic>>> categorizedProducts = {};
-  
+
   // Loading states
   bool isLoadingCategories = true;
   bool isLoadingPriceList = true;
-  
+
   @override
   void initState() {
     super.initState();
@@ -83,38 +83,41 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
   void _organizePriceListByCategory() {
     categorizedProducts.clear();
-    
+
     for (var item in priceList) {
       String categoryName = item['cat_name'] ?? 'Unknown';
-      
+
       if (!categorizedProducts.containsKey(categoryName)) {
         categorizedProducts[categoryName] = [];
       }
       categorizedProducts[categoryName]!.add(item);
     }
-    
+
     // Set initial selected product if category is already selected
-    if (selectedCategory != null && categorizedProducts.containsKey(selectedCategory)) {
-      if (categorizedProducts[selectedCategory]!.isNotEmpty && selectedProduct == null) {
-        selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'];
+    if (selectedCategory != null &&
+        categorizedProducts.containsKey(selectedCategory)) {
+      if (categorizedProducts[selectedCategory]!.isNotEmpty &&
+          selectedProduct == null) {
+        selectedProduct =
+            categorizedProducts[selectedCategory]!.first['subcat_name'];
       }
     }
   }
 
   String? get _selectedProductFixedPrice {
     if (selectedProduct == null || selectedCategory == null) return null;
-    
+
     if (categorizedProducts.containsKey(selectedCategory)) {
       final product = categorizedProducts[selectedCategory]!.firstWhere(
         (p) => p['subcat_name'] == selectedProduct,
         orElse: () => <String, dynamic>{},
       );
-      
+
       if (product.isNotEmpty) {
         String minPrice = product['min_price']?.toString() ?? '';
         String maxPrice = product['max_price']?.toString() ?? '';
         String unit = product['unit']?.toString() ?? '';
-        
+
         if (minPrice.isNotEmpty && maxPrice.isNotEmpty) {
           return '৳$minPrice-$maxPrice${unit.isNotEmpty ? '/$unit' : ''}';
         } else if (minPrice.isNotEmpty) {
@@ -138,7 +141,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
     if (_formKey.currentState!.validate() && selectedProduct != null) {
       // Get selected product data
       Map<String, dynamic>? selectedProductData;
-      if (selectedProduct != null && selectedCategory != null && 
+      if (selectedProduct != null &&
+          selectedCategory != null &&
           categorizedProducts.containsKey(selectedCategory)) {
         selectedProductData = categorizedProducts[selectedCategory]!.firstWhere(
           (product) => product['subcat_name'] == selectedProduct,
@@ -191,7 +195,8 @@ class _AddProductScreenState extends State<AddProductScreen> {
           if (result['success'] == true) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(result['message'] ?? 'Product "$selectedProduct" added successfully!'),
+                content: Text(result['message'] ??
+                    'Product "$selectedProduct" added successfully!'),
                 backgroundColor: Colors.green,
               ),
             );
@@ -203,10 +208,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 backgroundColor: Colors.red,
               ),
             );
-            
+
             // Check if login is required
             if (result['requiresLogin'] == true) {
-              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/login', (route) => false);
             }
           }
         }
@@ -225,18 +231,20 @@ class _AddProductScreenState extends State<AddProductScreen> {
   }
 
   void _autofillProductData() {
-    if (selectedProduct != null && selectedCategory != null && 
+    if (selectedProduct != null &&
+        selectedCategory != null &&
         categorizedProducts.containsKey(selectedCategory)) {
-      
       var productData = categorizedProducts[selectedCategory]!.firstWhere(
         (product) => product['subcat_name'] == selectedProduct,
         orElse: () => <String, dynamic>{},
       );
-      
+
       if (productData.isNotEmpty) {
         // Auto-fill with minimum price as suggestion if available
         String? minPrice = productData['min_price']?.toString();
-        if (minPrice != null && minPrice.isNotEmpty && _priceController.text.isEmpty) {
+        if (minPrice != null &&
+            minPrice.isNotEmpty &&
+            _priceController.text.isEmpty) {
           _priceController.text = minPrice;
         }
       }
@@ -282,335 +290,376 @@ class _AddProductScreenState extends State<AddProductScreen> {
               ),
             )
           : Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            // Info Card
-            Card(
-              color: Colors.blue[50],
-              child: Padding(
+              key: _formKey,
+              child: ListView(
                 padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    Icon(Icons.info, color: Colors.blue[600]),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        "Select from government approved products only. Prices are regulated by the government.",
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Category Selection
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Product Category",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      decoration: InputDecoration(
-                        hintText: "Select a category",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: const Icon(Icons.category),
-                      ),
-                      isExpanded: true,
-                      items: categories.map((category) {
-                        String categoryName = category['cat_name'] ?? 'Unknown';
-                        return DropdownMenuItem(
-                          value: categoryName,
-                          child: Text(
-                            categoryName,
-                            overflow: TextOverflow.ellipsis,
+                children: [
+                  // Info Card
+                  Card(
+                    color: Colors.blue[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info, color: Colors.blue[600]),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              "Select from government approved products only. Prices are regulated by the government.",
+                              style: TextStyle(fontSize: 14),
+                            ),
                           ),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCategory = value!;
-                          // Reset selected product when category changes
-                          if (categorizedProducts.containsKey(selectedCategory) &&
-                              categorizedProducts[selectedCategory]!.isNotEmpty) {
-                            selectedProduct = categorizedProducts[selectedCategory]!.first['subcat_name'];
-                          } else {
-                            selectedProduct = null;
-                          }
-                        });
-                      },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a category';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Product Selection
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Product Name",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                  ),
+                  const SizedBox(height: 20),
 
-                    // ✅ Fixed DropdownButtonFormField
-                    DropdownButtonFormField<String>(
-                      value: selectedProduct,
-                      decoration: InputDecoration(
-                        hintText: selectedCategory == null
-                            ? "Select category first"
-                            : "Select a product",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: const Icon(Icons.inventory),
-                      ),
-                      isExpanded: true,
-                      menuMaxHeight: 300,
-                      items: selectedCategory != null && categorizedProducts.containsKey(selectedCategory)
-                          ? categorizedProducts[selectedCategory]!.map((product) {
-                              String productName = product['subcat_name'] ?? 'Unknown';
-                              String unit = product['unit'] ?? '';
-                              
-                              // Build display name with unit
-                              String displayName = productName;
-                              if (unit.isNotEmpty) {
-                                displayName += ' ($unit)';
-                              }
-                              
-                              return DropdownMenuItem<String>(
-                                value: productName,
+                  // Category Selection
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Product Category",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          DropdownButtonFormField<String>(
+                            value: selectedCategory,
+                            decoration: InputDecoration(
+                              hintText: "Select a category",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              prefixIcon: const Icon(Icons.category),
+                            ),
+                            isExpanded: true,
+                            items: categories.map((category) {
+                              String categoryName =
+                                  category['cat_name'] ?? 'Unknown';
+                              return DropdownMenuItem(
+                                value: categoryName,
                                 child: Text(
-                                  displayName,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  categoryName,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               );
-                            }).toList()
-                          : [],
-                      onChanged: selectedCategory == null
-                          ? null
-                          : (value) {
+                            }).toList(),
+                            onChanged: (value) {
                               setState(() {
-                                selectedProduct = value;
-                                _autofillProductData(); // Auto-fill price if available
+                                selectedCategory = value!;
+                                // Reset selected product when category changes
+                                if (categorizedProducts
+                                        .containsKey(selectedCategory) &&
+                                    categorizedProducts[selectedCategory]!
+                                        .isNotEmpty) {
+                                  selectedProduct =
+                                      categorizedProducts[selectedCategory]!
+                                          .first['subcat_name'];
+                                } else {
+                                  selectedProduct = null;
+                                }
                               });
                             },
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select a product';
-                        }
-                        return null;
-                      },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please select a category';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
 
-                    // Price Info
-                    if (_selectedProductFixedPrice != null) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.green[50],
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: Colors.green),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.price_check,
-                                color: Colors.green[600], size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Government Fixed Price: $_selectedProductFixedPrice',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.green[600],
-                                fontWeight: FontWeight.bold,
+                  // Product Selection
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Product Name",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // ✅ Fixed DropdownButtonFormField
+                          DropdownButtonFormField<String>(
+                            value: selectedProduct,
+                            decoration: InputDecoration(
+                              hintText: selectedCategory == null
+                                  ? "Select category first"
+                                  : "Select a product",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              prefixIcon: const Icon(Icons.inventory),
+                            ),
+                            isExpanded: true,
+                            menuMaxHeight: 300,
+                            items: selectedCategory != null &&
+                                    categorizedProducts
+                                        .containsKey(selectedCategory)
+                                ? categorizedProducts[selectedCategory]!
+                                    .map((product) {
+                                    String productName =
+                                        product['subcat_name'] ?? 'Unknown';
+                                    String unit = product['unit'] ?? '';
+
+                                    // Build display name with unit
+                                    String displayName = productName;
+                                    if (unit.isNotEmpty) {
+                                      displayName += ' ($unit)';
+                                    }
+
+                                    return DropdownMenuItem<String>(
+                                      value: productName,
+                                      child: Text(
+                                        displayName,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    );
+                                  }).toList()
+                                : [],
+                            onChanged: selectedCategory == null
+                                ? null
+                                : (value) {
+                                    setState(() {
+                                      selectedProduct = value;
+                                      _autofillProductData(); // Auto-fill price if available
+                                    });
+                                  },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please select a product';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          // Price Info
+                          if (_selectedProductFixedPrice != null) ...[
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.green[50],
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: Colors.green),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.price_check,
+                                      color: Colors.green[600], size: 16),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Government Fixed Price:',
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            color: Colors.green[600],
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        Text(
+                                          '$_selectedProductFixedPrice',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.green[600],
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Quantity Input
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Initial Stock Quantity",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _quantityController,
-                      decoration: InputDecoration(
-                        hintText: "Enter quantity",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: const Icon(Icons.numbers),
-                        suffixText: "units",
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter quantity';
-                        }
-                        if (int.tryParse(value) == null ||
-                            int.parse(value) <= 0) {
-                          return 'Please enter a valid positive number';
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Your Selling Price
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "Your Selling Price",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "Must be within government price range",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _priceController,
-                      decoration: InputDecoration(
-                        hintText: "Enter your price per unit",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        prefixIcon: const Icon(Icons.attach_money),
-                        prefixText: "৳",
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter selling price';
-                        }
-                        
-                        final enteredPrice = double.tryParse(value);
-                        if (enteredPrice == null || enteredPrice <= 0) {
-                          return 'Please enter a valid price';
-                        }
-
-                        // Validate against government price range
-                        if (selectedProduct != null && selectedCategory != null && 
-                            categorizedProducts.containsKey(selectedCategory)) {
-                          final productData = categorizedProducts[selectedCategory]!.firstWhere(
-                            (product) => product['subcat_name'] == selectedProduct,
-                            orElse: () => <String, dynamic>{},
-                          );
-                          
-                          if (productData.isNotEmpty) {
-                            final minPrice = double.tryParse(productData['min_price']?.toString() ?? '0') ?? 0;
-                            final maxPrice = double.tryParse(productData['max_price']?.toString() ?? '0') ?? double.infinity;
-                            
-                            if (minPrice > 0 && enteredPrice < minPrice) {
-                              return 'Price must be at least ৳${minPrice.toStringAsFixed(2)}';
-                            }
-                            
-                            if (maxPrice < double.infinity && enteredPrice > maxPrice) {
-                              return 'Price cannot exceed ৳${maxPrice.toStringAsFixed(2)}';
-                            }
-                          }
-                        }
-                        
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // Add Product Button
-            SizedBox(
-              height: 56,
-              child: ElevatedButton.icon(
-                onPressed: _addProduct,
-                icon: const Icon(Icons.add_shopping_cart, color: Colors.white),
-                label: const Text(
-                  "Add Product to Inventory",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
                   ),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green[600],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+
+                  const SizedBox(height: 16),
+
+                  // Quantity Input
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Initial Stock Quantity",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _quantityController,
+                            decoration: InputDecoration(
+                              hintText: "Enter quantity",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              prefixIcon: const Icon(Icons.numbers),
+                              suffixText: "units",
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter quantity';
+                              }
+                              if (int.tryParse(value) == null ||
+                                  int.parse(value) <= 0) {
+                                return 'Please enter a valid positive number';
+                              }
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+
+                  // Your Selling Price
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Your Selling Price",
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Must be within government price range",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          TextFormField(
+                            controller: _priceController,
+                            decoration: InputDecoration(
+                              hintText: "Enter your price per unit",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              prefixIcon: const Icon(Icons.attach_money),
+                              prefixText: "৳",
+                            ),
+                            keyboardType: TextInputType.number,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter selling price';
+                              }
+
+                              final enteredPrice = double.tryParse(value);
+                              if (enteredPrice == null || enteredPrice <= 0) {
+                                return 'Please enter a valid price';
+                              }
+
+                              // Validate against government price range
+                              if (selectedProduct != null &&
+                                  selectedCategory != null &&
+                                  categorizedProducts
+                                      .containsKey(selectedCategory)) {
+                                final productData =
+                                    categorizedProducts[selectedCategory]!
+                                        .firstWhere(
+                                  (product) =>
+                                      product['subcat_name'] == selectedProduct,
+                                  orElse: () => <String, dynamic>{},
+                                );
+
+                                if (productData.isNotEmpty) {
+                                  final minPrice = double.tryParse(
+                                          productData['min_price']
+                                                  ?.toString() ??
+                                              '0') ??
+                                      0;
+                                  final maxPrice = double.tryParse(
+                                          productData['max_price']
+                                                  ?.toString() ??
+                                              '0') ??
+                                      double.infinity;
+
+                                  if (minPrice > 0 && enteredPrice < minPrice) {
+                                    return 'Price must be at least ৳${minPrice.toStringAsFixed(2)}';
+                                  }
+
+                                  if (maxPrice < double.infinity &&
+                                      enteredPrice > maxPrice) {
+                                    return 'Price cannot exceed ৳${maxPrice.toStringAsFixed(2)}';
+                                  }
+                                }
+                              }
+
+                              return null;
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+
+                  // Add Product Button
+                  SizedBox(
+                    height: 56,
+                    child: ElevatedButton.icon(
+                      onPressed: _addProduct,
+                      icon: const Icon(Icons.add_shopping_cart,
+                          color: Colors.white),
+                      label: const Text(
+                        "Add Product to Inventory",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green[600],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

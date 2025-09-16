@@ -1,16 +1,46 @@
 import 'package:flutter/material.dart';
+import '../../config/api_config.dart';
 
-class ComplaintDetailsScreen extends StatelessWidget {
+class ComplaintDetailsScreen extends StatefulWidget {
   final Map<String, dynamic> complaint;
 
   const ComplaintDetailsScreen({super.key, required this.complaint});
 
   @override
+  State<ComplaintDetailsScreen> createState() => _ComplaintDetailsScreenState();
+}
+
+class _ComplaintDetailsScreenState extends State<ComplaintDetailsScreen> {
+  List<String> attachments = [];
+  bool isLoadingAttachments = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAttachments();
+  }
+
+  void _loadAttachments() async {
+    // For now, just use the file_url from the current complaint
+    // TODO: Implement backend endpoint to get all attachments for a complaint number
+    final fileUrl = widget.complaint['file_url'];
+    setState(() {
+      if (fileUrl != null && fileUrl.toString().isNotEmpty) {
+        attachments = [fileUrl.toString()];
+      } else {
+        attachments = [];
+      }
+      isLoadingAttachments = false;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final complaint = widget.complaint;
     final status = complaint['status'] ?? 'Received';
     final priority = complaint['priority'] ?? 'Medium';
     final severity = complaint['severity'] ?? 'Minor';
-    
+
     Color statusColor = Colors.orange;
     if (status == 'Solved') statusColor = Colors.green;
     if (status == 'Forwarded') statusColor = Colors.blue;
@@ -72,7 +102,10 @@ class ComplaintDetailsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   gradient: LinearGradient(
-                    colors: [statusColor.withOpacity(0.1), statusColor.withOpacity(0.05)],
+                    colors: [
+                      statusColor.withOpacity(0.1),
+                      statusColor.withOpacity(0.05)
+                    ],
                   ),
                 ),
                 child: Column(
@@ -90,7 +123,8 @@ class ComplaintDetailsScreen extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
                             color: statusColor,
                             borderRadius: BorderRadius.circular(20),
@@ -157,10 +191,10 @@ class ComplaintDetailsScreen extends StatelessWidget {
               Icons.report_problem,
               [
                 _buildDetailRow('Category', complaint['category'] ?? 'N/A'),
-                _buildDetailRow('Priority', priority, 
-                  valueColor: _getPriorityColor(priority)),
+                _buildDetailRow('Priority', priority,
+                    valueColor: _getPriorityColor(priority)),
                 _buildDetailRow('Severity', severity,
-                  valueColor: _getSeverityColor(severity)),
+                    valueColor: _getSeverityColor(severity)),
               ],
             ),
             const SizedBox(height: 16),
@@ -204,7 +238,76 @@ class ComplaintDetailsScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+
+            // File Attachments Section
+            Card(
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.attach_file, color: Color(0xFF1976D2)),
+                        SizedBox(width: 8),
+                        Text(
+                          'File Attachments',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    isLoadingAttachments
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: CircularProgressIndicator(),
+                            ),
+                          )
+                        : attachments.isEmpty
+                            ? Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border:
+                                      Border.all(color: Colors.grey.shade300),
+                                ),
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.info_outline,
+                                        color: Colors.grey),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'No file attachments found',
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Column(
+                                children: attachments.map((fileUrl) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child:
+                                        _buildFileAttachment(context, fileUrl),
+                                  );
+                                }).toList(),
+                              ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
             // Action Buttons
             Row(
@@ -417,6 +520,356 @@ class ComplaintDetailsScreen extends StatelessWidget {
             child: const Text('Resolve'),
           ),
         ],
+      ),
+    );
+  }
+
+  // Build file attachment widget with enhanced image display
+  Widget _buildFileAttachment(BuildContext context, String? fileUrl) {
+    if (fileUrl == null || fileUrl.isEmpty) {
+      return const Text(
+        'No attachments',
+        style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+      );
+    }
+
+    final fileName = fileUrl.split('/').last;
+    final isImage = fileName.toLowerCase().endsWith('.jpg') ||
+        fileName.toLowerCase().endsWith('.jpeg') ||
+        fileName.toLowerCase().endsWith('.png') ||
+        fileName.toLowerCase().endsWith('.gif');
+    final isVideo = fileName.toLowerCase().endsWith('.mp4') ||
+        fileName.toLowerCase().endsWith('.mov') ||
+        fileName.toLowerCase().endsWith('.avi');
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 2,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Enhanced file preview
+          InkWell(
+            onTap: () =>
+                _openFileFullScreen(context, fileUrl, fileName, isImage),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(12),
+              topRight: Radius.circular(12),
+            ),
+            child: Container(
+              width: double.infinity,
+              height:
+                  isImage ? 300 : 120, // Increased height for better image view
+              decoration: BoxDecoration(
+                color: Colors.grey.shade50,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(12),
+                ),
+              ),
+              child: isImage
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12),
+                      ),
+                      child: Stack(
+                        children: [
+                          Image.network(
+                            '${ApiConfig.baseUrl}$fileUrl',
+                            width: double.infinity,
+                            height: 300,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey.shade200,
+                                child: const Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.broken_image,
+                                        size: 64, color: Colors.grey),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Failed to load image',
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 16),
+                                    ),
+                                    Text(
+                                      'Click to retry',
+                                      style: TextStyle(
+                                          color: Colors.grey, fontSize: 12),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                color: Colors.grey.shade100,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CircularProgressIndicator(
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                                  null
+                                              ? loadingProgress
+                                                      .cumulativeBytesLoaded /
+                                                  loadingProgress
+                                                      .expectedTotalBytes!
+                                              : null,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Loading image...',
+                                      style: TextStyle(
+                                          color: Colors.grey.shade600),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                          // Overlay for better UX
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.7),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.fullscreen,
+                                      color: Colors.white, size: 16),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'View Full',
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 12),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isVideo
+                                  ? Colors.red.shade50
+                                  : Colors.blue.shade50,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              isVideo ? Icons.videocam : Icons.attach_file,
+                              size: 48,
+                              color: isVideo
+                                  ? Colors.red.shade600
+                                  : Colors.blue.shade600,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            isVideo ? 'Video File' : 'File Attachment',
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Click to view',
+                            style: TextStyle(
+                              color: Colors.grey.shade500,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+            ),
+          ),
+          // Enhanced file info section
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade50,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(12),
+                bottomRight: Radius.circular(12),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isImage
+                        ? Colors.green.shade100
+                        : (isVideo
+                            ? Colors.red.shade100
+                            : Colors.blue.shade100),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    isImage
+                        ? Icons.image
+                        : (isVideo ? Icons.videocam : Icons.attach_file),
+                    size: 24,
+                    color: isImage
+                        ? Colors.green.shade700
+                        : (isVideo
+                            ? Colors.red.shade700
+                            : Colors.blue.shade700),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        fileName,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isImage
+                            ? 'Image • Click to zoom'
+                            : (isVideo
+                                ? 'Video File • Click to view'
+                                : 'File • Click to download'),
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    onPressed: () => _openFileFullScreen(
+                        context, fileUrl, fileName, isImage),
+                    icon: Icon(
+                      Icons.open_in_new,
+                      color: Colors.blue.shade700,
+                    ),
+                    tooltip: isImage ? 'View full screen' : 'Open file',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Open file in full screen
+  void _openFileFullScreen(
+      BuildContext context, String fileUrl, String fileName, bool isImage) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(
+            title: Text(fileName),
+            backgroundColor: Colors.black,
+            iconTheme: const IconThemeData(color: Colors.white),
+            titleTextStyle: const TextStyle(color: Colors.white),
+          ),
+          backgroundColor: Colors.black,
+          body: Center(
+            child: isImage
+                ? InteractiveViewer(
+                    child: Image.network(
+                      '${ApiConfig.baseUrl}$fileUrl',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image,
+                                size: 64, color: Colors.white),
+                            SizedBox(height: 16),
+                            Text(
+                              'Failed to load image',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        fileName.toLowerCase().endsWith('.mp4') ||
+                                fileName.toLowerCase().endsWith('.mov') ||
+                                fileName.toLowerCase().endsWith('.avi')
+                            ? Icons.videocam
+                            : Icons.attach_file,
+                        size: 64,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        fileName,
+                        style:
+                            const TextStyle(color: Colors.white, fontSize: 18),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          // TODO: Implement file download or external viewer
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content:
+                                  Text('File download not implemented yet'),
+                            ),
+                          );
+                        },
+                        child: const Text('Download File'),
+                      ),
+                    ],
+                  ),
+          ),
+        ),
       ),
     );
   }

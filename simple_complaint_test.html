@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Complaint File Upload Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        textarea { height: 80px; }
+        button { background: #28a745; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #218838; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 4px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .file-info { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Simple Complaint with Photo/Video (Web Compatible)</h1>
+    <p>Customer এর জন্য complaint form with file upload option - Web এ কাজ করবে</p>
+    
+    <form id="complaintForm">
+        <div class="form-group">
+            <label for="shop_name">দোকানের নাম:</label>
+            <input type="text" id="shop_name" name="shop_name" value="Test Shop" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="complaint_type">অভিযোগের ধরন:</label>
+            <select id="complaint_type" name="complaint_type" required>
+                <option value="Low Quality Product">পণ্যের গুণগত মান সমস্যা</option>
+                <option value="Overpricing">ভুল দাম</option>
+                <option value="Short Measurement">ওজন কম</option>
+                <option value="Other">অন্যান্য</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">বিস্তারিত:</label>
+            <textarea id="description" name="description" required>Test complaint with photo upload</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="attachment">ছবি/ভিডিও (ঐচ্ছিক):</label>
+            <input type="file" id="attachment" name="attachment" accept="image/*,video/*">
+            <small>Max 10MB</small>
+        </div>
+        
+        <button type="submit">অভিযোগ জমা দিন</button>
+    </form>
+    
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('complaintForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>🔄 অভিযোগ জমা দেওয়া হচ্ছে...</p>';
+            
+            try {
+                const formData = new FormData();
+                
+                // Basic fields for public complaint
+                formData.append('customer_name', 'Test Customer');
+                formData.append('customer_email', 'test@example.com');
+                formData.append('shop_owner_id', '1');
+                formData.append('shop_name', document.getElementById('shop_name').value);
+                formData.append('complaint_type', document.getElementById('complaint_type').value);
+                formData.append('description', document.getElementById('description').value);
+                formData.append('priority', 'medium');
+                
+                // Add file if selected
+                const fileInput = document.getElementById('attachment');
+                if (fileInput.files[0]) {
+                    formData.append('attachment', fileInput.files[0]);
+                    console.log('File selected:', fileInput.files[0].name, 'Size:', fileInput.files[0].size);
+                }
+                
+                console.log('Submitting to public complaints endpoint...');
+                
+                const response = await fetch('http://localhost:3005/api/complaints/public', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                console.log('Response:', result);
+                
+                if (result.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <h3>✅ সফল!</h3>
+                            <p><strong>অভিযোগ নম্বর:</strong> ${result.complaint.complaint_number}</p>
+                            <p><strong>বার্তা:</strong> ${result.message}</p>
+                            ${result.complaint.file_url ? `
+                                <div class="file-info">
+                                    <strong>ফাইল আপলোড হয়েছে:</strong><br>
+                                    <a href="http://localhost:3005${result.complaint.file_url}" target="_blank">
+                                        📷 ফাইল দেখুন
+                                    </a>
+                                </div>
+                            ` : '<p>কোন ফাইল আপলোড হয়নি</p>'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <h3>❌ সমস্যা!</h3>
+                            <p>${result.message || result.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ Network Error!</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Show file info when selected
+        document.getElementById('attachment').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                console.log('File selected:', {
+                    name: file.name,
+                    size: file.size,
+                    type: file.type
+                });
+            }
+        });
+    </script>
+</body>
+</html>

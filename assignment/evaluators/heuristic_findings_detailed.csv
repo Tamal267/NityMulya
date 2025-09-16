@@ -1,0 +1,14 @@
+issue_id,heuristic,severity,screen_or_context,description,recommendation,frequency,fix_priority
+HE-01,Visibility of System Status,2,ShopOwnerDashboard,No loading indicator on inventory fetch,Add skeleton loader + retry,Medium,P2
+HE-02,Match Between System & Real World,2,Login & Role Labels,Mixed role naming and casing,Introduce role dictionary & mapping,High,P2
+HE-03,User Control & Freedom,2,ComplaintSubmission,No mid-form cancel/draft,Implement draft autosave + cancel CTA,Medium,P2
+HE-04,Consistency & Standards,3,API Structure,Inconsistent /api prefix usage,Standardize /api/v1 routes; deprecate legacy,High,P1
+HE-05,Error Prevention,4,Auth Backend,Plaintext password storage,Implement bcrypt + migration script,High,P0
+HE-06,Consistency & Standards,3,Dashboards,Monolithic 2-3K line screens,Refactor modular panels & navigation,High,P1
+HE-07,Flexibility & Efficiency,1,Inventory,No bulk edit support,Add multi-select batch update,Low,P3
+HE-08,Aesthetic & Minimalist,2,WholesalerDashboard,Overcrowded metrics header,Group metrics + progressive disclosure,Medium,P3
+HE-09,Help Users Recover,3,Global Errors,Generic 'Server error' messages,Adopt structured error envelope,High,P1
+HE-10,Help & Documentation,1,Complaint Form,No guidance on evidence quality,Tooltip with examples,Medium,P3
+HE-11,Security Feedback,1,Signup,No password strength meter,Add strength meter & policy hints,High,P3
+HE-12,Feedback Latency,2,Chat,No optimistic send state,Show pending + resend option,Medium,P2
+HE-13,Accessibility,2,Theme,Low contrast buttons,Adjust palette to meet WCAG AA,Medium,P2

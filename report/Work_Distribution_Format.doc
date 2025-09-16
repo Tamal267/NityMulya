@@ -1,0 +1,32 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Arial;}{\f1 Courier New;}}
+\f0\fs24\b Work Distribution\b0\par
+\fs20\par
+\b Frontend Work Distribution\b0\par
+{\trowd\trgaph108\trleft0
+\cellx1000\cellx4000\cellx15000
+\b SL\b0\cell \b Members\b0\cell \b FrontEnd Pages\b0\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+1\cell Member 1 Name: Tamal (Syed Tamal)\line Member 1 ID: [Add ID]\cell 1) lib/screens/auth/login_screen.dart\line 2) lib/screens/dncrp/dncrp_dashboard_screen.dart\line 3) lib/screens/shop_owner/dashboard_screen.dart\line 4) lib/screens/wholesaler/wholesaler_dashboard_screen.dart\line 5) lib/widgets/custom_drawer.dart\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+2\cell Member 2 Name: sakifshahrear\line Member 2 ID: [Add ID]\cell 1) lib/screens/customers/my_orders_screen.dart\line 2) lib/screens/shop_owner/pending_orders_screen.dart\line 3) lib/screens/shop_owner/on_going_orders_screen.dart\line 4) lib/screens/shop_owner/cancelled_orders_screen.dart\line 5) lib/screens/customers/cancelled_orders_screen.dart\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+3\cell Member 3 Name: NAHIDURZAMAN\line Member 3 ID: [Add ID]\cell 1) lib/screens/customers/complaint_screen.dart\line 2) lib/screens/customers/complaint_screen_new.dart\line 3) lib/screens/customers/complaint_screen_backup.dart\line 4) lib/screens/wholesaler/shop_reviews_screen.dart\line 5) lib/screens/customers/complaint_form_screen.dart\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+4\cell Member 4 Name: Khadiza Khanum Mithila\line Member 4 ID: [Add ID]\cell 1) lib/screens/customers/complaint_submission_screen.dart\line 2) lib/screens/admin/complaint_list_screen.dart\line 3) lib/screens/dncrp/complaint_details_screen.dart\line 4) lib/models/complaint.dart\line 5) lib/screens/wholesaler/temp_dashboard.dart\cell\row
+}\par
+\par
+\b Backend Work Distribution\b0\par
+{\trowd\trgaph108\trleft0
+\cellx1000\cellx4000\cellx15000
+\b SL\b0\cell \b Members\b0\cell \b Features\b0\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+1\cell Member 1 Name: Tamal (Syed Tamal)\line Member 1 ID: [Add ID]\cell 1) Backend/src/index.ts (Main server setup)\line 2) Backend/src/controller/apiController.ts\line 3) Backend/src/controller/shopOwnerController.ts\line 4) Backend/src/controller/wholesalerController.ts\line 5) Authentication & JWT middleware implementation\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+2\cell Member 2 Name: sakifshahrear\line Member 2 ID: [Add ID]\cell 1) Backend/customer_order_schema.sql\line 2) Backend/create_order_messages_table.ts\line 3) Backend/src/controller/orderMessageController.ts\line 4) Backend/test_inventory_update.js (and 15+ inventory tests)\line 5) Backend/src/migrations/orderMessageMigration.ts\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+3\cell Member 3 Name: NAHIDURZAMAN\line Member 3 ID: [Add ID]\cell 1) Frontend complaint system integration\line 2) Customer complaint UI/UX design\line 3) Shop review functionality backend support\line 4) Customer service interface development\line 5) Frontend navigation & user experience optimization\cell\row
+\trowd\trgaph108\trleft0\cellx1000\cellx4000\cellx15000
+4\cell Member 4 Name: Khadiza Khanum Mithila\line Member 4 ID: [Add ID]\cell 1) Backend/create_simple_complaints.ts\line 2) Backend/recreate_complaints_table.ts\line 3) Backend/test_cancelled_orders_api.js\line 4) Backend/test_customer_cancelled_orders.js\line 5) Complaint data model design & validation\cell\row
+}\par
+}

@@ -1,0 +1,7 @@
+issue_id,heuristic,severity,evaluator_id,evaluator_name,description,evaluator_comment,recommendation
+HE-01,Visibility of System Status,2,E2,Engineer B,Inventory load lacks spinner,Frontend missing async state,Skeleton + shimmer placeholders
+HE-06,Consistency & Standards,3,E2,Engineer B,Dashboard code size harming maintainability,Refactor urgency high,Split by feature domains
+HE-07,Flexibility & Efficiency,1,E2,Engineer B,No bulk edit for inventory,Power users slowed,Batch update dialog
+HE-08,Aesthetic & Minimalist,2,E2,Engineer B,Metrics cluster visually heavy,Hierarchy unclear,Group & collapse secondary metrics
+HE-12,Feedback Latency,2,E2,Engineer B,Chat send no pending state,Users may resend message,Optimistic UI + resend on failure
+HE-11,Security Feedback,1,E2,Engineer B,No password strength meter at signup,Users choose weak passwords,Add strength indicator & policy

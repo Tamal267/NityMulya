@@ -1,0 +1,214 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Arial;}{\f1 Courier New;}}
+\f0\fs28 NityMulya: A Fair Market Transparency & Commerce Platform\par
+\fs20\par
+\b Cover Page\b0\par
+Group Number: (Add Here)\par
+Group Members:\par
+- Member 1 (Name / ID)\par
+- Member 2 (Name / ID)\par
+- Member 3 (Name / ID)\par
+- Member 4 (Name / ID)\par
+App Name: NityMulya: A Multi-Role Fair Price & Supply Chain Application\par
+Date: September 13, 2025\par
+\par
+\b Table of Contents\b0\par
+1. Introduction\par
+2. Target Users\par
+3. Literature Review of Existing Systems\par
+4. Problem Statement & Identification\par
+5. Objectives\par
+6. Feature List\par
+7. Technology Stack\par
+8. Developed System (Key Screens)\par
+9. Ethical Concerns\par
+10. Societal Impacts\par
+11. Design Changes\par
+12. Lifelong Learning\par
+13. SUS Usability Testing & Task Completion Time\par
+14. Future Work\par
+15. Work Distribution\par
+16. References\par
+\par
+\b 1. Introduction\b0\par
+NityMulya is a multi-stakeholder digital marketplace platform that integrates customers, shop owners, wholesalers, and a regulatory (DNCRP demo) authority into a unified ecosystem. It addresses core problems of opaque pricing, inventory mismanagement, delayed complaint redressal, and lack of structured accountability between retail participants. The platform combines real-time product & inventory updates, customer ordering with lifecycle tracking, wholesaler–retailer supply alignment, complaint submission and administrative monitoring, messaging, notifications, and reviews.\par
+\par
+\b 2. Target Users\b0\par
+- Retail Customers\par
+- Shop Owners\par
+- Wholesalers\par
+- Regulatory / Consumer Rights Officers\par
+- Policy / Analytics Stakeholders\par
+\par
+\b 3. Literature Review of Existing Systems\b0\par
+Vegetable Market Price apps aggregate daily prices across cities but lack transactional and governance features. Large e-commerce platforms like Daraz and grocery delivery (Panda Mart) excel in logistics but do not surface government price baselines or empower users to escalate pricing violations with proof. Regional supermarket apps (e.g., Shwapno) offer catalog breadth yet omit wholesaler integration and robust regulatory workflows. No reviewed platform unifies fair price transparency, supply chain integration, complaints, reviews, and oversight.\par
+\par
+\b Summary Table\b0\par
+{\trowd\trgaph108\trleft0
+\cellx2000\cellx8000\cellx15000
+\b App\b0\cell \b Key Features\b0\cell \b Limitations\b0\cell\row
+	rowd\trgaph108\trleft0
+\cellx2000\cellx8000\cellx15000
+Vegetable Market Price App\cell Daily price listings; city filtering; lightweight; language select\cell No purchasing; no shop linkage; ads; no feedback; no proof upload; no govt verification; update delay\cell\row
+	rowd\trgaph108\trleft0
+\cellx2000\cellx8000\cellx15000
+Shwapno Grocery App\cell Large catalog; tracking; multi payments; delivery network; offers\cell No govt comparison; no violation reporting; weak loyalty; ops issues; no wholesaler link\cell\row
+	rowd\trgaph108\trleft0
+\cellx2000\cellx8000\cellx15000
+Daraz\cell Massive inventory; chat; AI; assurance; seller tools\cell No govt price integration; no public pricing complaints; no fairness incentives; limited wholesaler sync\cell\row
+	rowd\trgaph108\trleft0
+\cellx2000\cellx8000\cellx15000
+Panda Mart\cell Quick delivery; pickup; private label pricing; subscription discounts\cell No govt baseline; no violation reporting; spend-only rewards; no wholesaler channel; reliability issues\cell\row
+	rowd\trgaph108\trleft0
+\cellx2000\cellx8000\cellx15000
+Generic Marketplace\cell Catalog, cart, promotions\cell No regulatory workflow; no chain transparency; no evidence complaints\cell\row
+}\par
+\par
+\b 4. Problem Statement & Identification\b0\par
+1. Absence of government price benchmarks in purchase context.\par
+2. Lack of structured, evidence-backed complaint escalation.\par
+3. Disconnected supply tiers causing opacity and stockouts.\par
+4. Limited tools for transparent inventory and order status.\par
+5. No unified trust + transparency mechanism.\par
+\par
+\b 5. Objectives\b0\par
+- To enable transparent, fair pricing and order lifecycle visibility.\par
+- To streamline complaint lodging and resolution tracking.\par
+- To integrate wholesaler–retailer–customer interactions ethically.\par
+\par
+\b 6. Feature List\b0\par
+{\trowd\trgaph108\trleft0
+\cellx5000\cellx15000
+\b Feature\b0\cell \b Description\b0\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Multi-Role Authentication\cell Role-based login.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Customer Ordering\cell Place orders, track lifecycle.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Order Status Tracking\cell Historical timeline & cancellation.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Shop Inventory Management\cell CRUD + low stock alerts.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Wholesaler Supply Module\cell Offers, inventory, orders.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Complaint System\cell Evidence-ready escalation (demo).\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Messaging System\cell Order-context communication.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Notifications\cell Status and complaint updates.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Review & Rating\cell Product and shop feedback.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Price & Category APIs\cell Dynamic taxonomy & price history.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Location & Mapping\cell Shop geolocation and map view.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Secure Storage & Auth\cell JWT + secure storage.\cell\row
+	rowd\trgaph108\trleft0\cellx5000\cellx15000
+Analytics Dashboards\cell Role metrics.\cell\row
+}\par
+\par
+\b 7. Technology Stack\b0\par
+{\trowd\trgaph108\trleft0
+\cellx3000\cellx9000\cellx15000
+\b Layer\b0\cell \b Technology\b0\cell \b Purpose\b0\cell\row
+	rowd\trgaph108\trleft0\cellx3000\cellx9000\cellx15000
+Frontend\cell Flutter (Dart), Provider\cell UI & State\cell\row
+	rowd\trgaph108\trleft0\cellx3000\cellx9000\cellx15000
+Backend\cell Bun, Hono (TypeScript)\cell API Server\cell\row
+	rowd\trgaph108\trleft0\cellx3000\cellx9000\cellx15000
+Database\cell PostgreSQL\cell Persistent storage\cell\row
+	rowd\trgaph108\trleft0\cellx3000\cellx9000\cellx15000
+Auth\cell JWT, bcrypt\cell Secure roles\cell\row
+	rowd\trgaph108\trleft0\cellx3000\cellx9000\cellx15000
+Mapping\cell flutter_map, geolocator\cell Location\cell\row
+	rowd\trgaph108\trleft0\cellx3000\cellx9000\cellx15000
+Config\cell dotenv\cell Env management\cell\row
+	rowd\trgaph108\trleft0\cellx3000\cellx9000\cellx15000
+Storage\cell flutter_secure_storage\cell Token safety\cell\row
+	rowd\trgaph108\trleft0\cellx3000\cellx9000\cellx15000
+Utilities\cell fl_chart, uuid, file_picker\cell Charts, IDs, files\cell\row
+}\par
+\par
+\b 8. Developed System (Key Screens)\b0\par
+(Insert screenshots)\par
+- Login / Role Selection\par
+- Product Detail / Order Flow\par
+- Customer Orders / Profile\par
+- Shop Owner Inventory Dashboard\par
+- Complaint Submission\par
+- DNCRP Admin Dashboard\par
+\par
+\b 9. Ethical Concerns\b0\par
+1. Data minimization.\par
+2. Location permission transparency.\par
+3. Sensitive complaint handling.\par
+4. Demo regulatory disclaimer.\par
+\par
+\b 10. Societal Impacts\b0\par
+- Empowers consumer fairness.\par
+- Encourages ethical competition.\par
+- Improves supply continuity.\par
+- Prototypes digital oversight.\par
+\par
+\b 11. Design Changes\b0\par
+1. Unified login screen.\par
+2. Overflow fixes in tabs.\par
+3. Simplified order confirmation UI.\par
+4. Reorganized drawer for clarity.\par
+\par
+\b 12. Lifelong Learning\b0\par
+- User habit of verifying prices.\par
+- Team multi-role architecture skills.\par
+- Reusable civic-tech patterns.\par
+- Data-driven transparency mindset.\par
+\par
+\b 13. SUS Usability Testing & Task Completion Time\b0\par
+SUS Score: (Insert). Core tasks completed within acceptable times.\par
+{\trowd\trgaph108\trleft0
+\cellx6000\cellx9000\cellx15000
+\b Task\b0\cell \b Avg Time (s)\b0\cell \b Notes\b0\cell\row
+	rowd\trgaph108\trleft0\cellx6000\cellx9000\cellx15000
+Login & Role\cell 8\cell Unified screen\cell\row
+	rowd\trgaph108\trleft0\cellx6000\cellx9000\cellx15000
+Place Order\cell 35\cell Includes selection\cell\row
+	rowd\trgaph108\trleft0\cellx6000\cellx9000\cellx15000
+View Status\cell 6\cell Quick access\cell\row
+	rowd\trgaph108\trleft0\cellx6000\cellx9000\cellx15000
+Submit Complaint\cell 42\cell Multi-field\cell\row
+	rowd\trgaph108\trleft0\cellx6000\cellx9000\cellx15000
+Check Complaint\cell 10\cell Filtered view\cell\row
+}\par
+\par
+\b 14. Future Work\b0\par
+- WebSocket notifications.\par
+- Govt price feed integration.\par
+- Evidence (media) attachments.\par
+- Advanced analytics dashboards.\par
+- Full localization expansion.\par
+- Anomaly detection automation.\par
+\par
+\b 15. Work Distribution\b0\par
+(Adjust with actual names)\par
+{\trowd\trgaph108\trleft0
+\cellx7000\cellx15000
+\b Member\b0\cell \b Responsibility\b0\cell\row
+	rowd\trgaph108\trleft0\cellx7000\cellx15000
+Member 1\cell Auth & Orders Backend\cell\row
+	rowd\trgaph108\trleft0\cellx7000\cellx15000
+Member 2\cell Flutter UI & Complaints\cell\row
+	rowd\trgaph108\trleft0\cellx7000\cellx15000
+Member 3\cell Inventory, Wholesaler, Messaging\cell\row
+	rowd\trgaph108\trleft0\cellx7000\cellx15000
+Member 4\cell Reviews & DNCRP Dashboard\cell\row
+}\par
+\par
+\b 16. References\b0\par
+- Brooke, J. SUS Usability Scale.\par
+- Flutter Documentation.\par
+- Hono Framework Docs.\par
+- PostgreSQL Documentation.\par
+- Observed feature sets: Daraz, Shwapno, Foodpanda Panda Mart, regional price apps.\par
+\par
+Prepared: September 13, 2025. Replace placeholders before final submission.\par
+}

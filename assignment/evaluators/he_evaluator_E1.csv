@@ -1,0 +1,9 @@
+issue_id,heuristic,severity,evaluator_id,evaluator_name,description,evaluator_comment,recommendation
+HE-01,Visibility of System Status,2,E1,Analyst A,No loading indicator on inventory fetch,User waits without clarity,Skeleton loaders + retry button
+HE-02,Match Between System & Real World,2,E1,Analyst A,Mixed role naming (Shop Owner vs shop_owner),Terminology inconsistency harms trust,Introduce centralized role dictionary
+HE-04,Consistency & Standards,3,E1,Analyst A,Inconsistent API prefix usage,Harder mental model for routes,Standardize /api/v1 prefix
+HE-05,Error Prevention,4,E1,Analyst A,Plaintext password storage discovered,Critical security blocker,Implement bcrypt + migration
+HE-06,Consistency & Standards,3,E1,Analyst A,Monolithic dashboards reduce scan efficiency,Cognitive overload modularization needed,Refactor into modular panels
+HE-09,Help Users Recover,3,E1,Analyst A,Generic 'Server error' messages,No actionable recovery path,Adopt structured error schema
+HE-10,Help & Documentation,1,E1,Analyst A,Lack of evidence guidance in complaint form,Users may attach irrelevant media,Add tooltip with examples
+HE-13,Accessibility,2,E1,Analyst A,Low contrast green buttons,Impacts low-vision users,Adjust palette for WCAG AA

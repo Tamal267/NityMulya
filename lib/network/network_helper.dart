@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +26,8 @@ class NetworkHelper {
       } else {
         await _secureStorage.write(key: 'token', value: token);
       }
-      print('🔑 Token updated in secure storage: ${token.isEmpty ? "cleared" : "set"}');
+      print(
+          '🔑 Token updated in secure storage: ${token.isEmpty ? "cleared" : "set"}');
     } catch (e) {
       print('🔑 Error setting token: $e');
     }
@@ -34,16 +38,18 @@ class NetworkHelper {
     try {
       // First try to get from secure storage
       String? token = await _secureStorage.read(key: 'token');
-      print('🔑 Token from secure storage: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Not found"}');
-      
+      print(
+          '🔑 Token from secure storage: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Not found"}');
+
       // If not found in secure storage, try to sync from UserSession
       if (token == null || token.isEmpty) {
         print('🔑 Token not in secure storage, syncing from UserSession...');
         await syncTokenFromUserSession();
         token = await _secureStorage.read(key: 'token');
-        print('🔑 Token after sync: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Still not found"}');
+        print(
+            '🔑 Token after sync: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Still not found"}');
       }
-      
+
       return token;
     } catch (e) {
       print('🔑 Error getting token: $e');
@@ -67,8 +73,9 @@ class NetworkHelper {
       // Import UserSession dynamically to avoid circular dependency
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token');
-      print('🔑 Token from SharedPreferences: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Not found"}');
-      
+      print(
+          '🔑 Token from SharedPreferences: ${token != null ? "Found (${token.substring(0, 20)}...)" : "Not found"}');
+
       if (token != null) {
         await setToken(token);
         print('🔑 Token synced to secure storage');
@@ -121,7 +128,7 @@ class NetworkHelper {
   Future<dynamic> getWithToken(String url) async {
     // First try to sync token from UserSession
     await syncTokenFromUserSession();
-    
+
     final token = await getToken();
     if (token == null) {
       return {'error': 'Unauthorized'};
@@ -147,10 +154,10 @@ class NetworkHelper {
   Future<dynamic> postWithToken(String url, Map<String, dynamic> data) async {
     // First try to sync token from UserSession
     await syncTokenFromUserSession();
-    
+
     final token = await getToken();
     print('🔑 POST Token retrieved: ${token?.substring(0, 20)}...');
-    
+
     if (token == null || token.isEmpty) {
       print('🔑 No valid token found for POST request');
       return {'error': 'Unauthorized'};
@@ -158,14 +165,15 @@ class NetworkHelper {
 
     final fullUrl = Uri.parse('$serverUrl$url');
     print('🔑 Making POST request to: $fullUrl');
-    print('🔑 Request headers: Content-Type: application/json, Authorization: Bearer ${token.substring(0, 20)}...');
-    
+    print(
+        '🔑 Request headers: Content-Type: application/json, Authorization: Bearer ${token.substring(0, 20)}...');
+
     try {
       // Use longer timeout for inventory operations
-      final timeoutDuration = url.contains('/inventory') 
-          ? const Duration(seconds: 10) 
+      final timeoutDuration = url.contains('/inventory')
+          ? const Duration(seconds: 10)
           : const Duration(seconds: 3);
-          
+
       final response = await http
           .post(
             fullUrl,
@@ -227,7 +235,7 @@ class NetworkHelper {
   Future<dynamic> putWithToken(String url, Map<String, dynamic> data) async {
     // First try to sync token from UserSession
     await syncTokenFromUserSession();
-    
+
     final token = await getToken();
     if (token == null) {
       return {'error': 'Unauthorized'};
@@ -266,6 +274,87 @@ class NetworkHelper {
           'Authorization': 'Bearer $token',
         },
       );
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // POST request with file upload and token
+  Future<dynamic> postWithFileAndToken(
+      String url, Map<String, dynamic> data, File file) async {
+    final token = await getToken();
+    if (token == null) {
+      return {'error': 'Unauthorized'};
+    }
+
+    final fullUrl = Uri.parse('$serverUrl$url');
+    try {
+      final request = http.MultipartRequest('POST', fullUrl);
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add form fields
+      data.forEach((key, value) {
+        request.fields[key] = value.toString();
+      });
+
+      // Add file
+      final fileStream = http.ByteStream(file.openRead());
+      final fileLength = await file.length();
+      final fileName = file.path.split('/').last;
+
+      final multipartFile = http.MultipartFile(
+        'attachment',
+        fileStream,
+        fileLength,
+        filename: fileName,
+      );
+
+      request.files.add(multipartFile);
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      return _handleResponse(response);
+    } catch (e) {
+      return {'error': 'Network error: $e'};
+    }
+  }
+
+  // POST request with file bytes upload and token (for web platform)
+  Future<dynamic> postWithFileBytesAndToken(String url,
+      Map<String, dynamic> data, Uint8List fileBytes, String fileName) async {
+    final token = await getToken();
+    if (token == null) {
+      return {'error': 'Unauthorized'};
+    }
+
+    final fullUrl = Uri.parse('$serverUrl$url');
+    try {
+      final request = http.MultipartRequest('POST', fullUrl);
+
+      // Add headers
+      request.headers['Authorization'] = 'Bearer $token';
+
+      // Add form fields
+      data.forEach((key, value) {
+        request.fields[key] = value.toString();
+      });
+
+      // Add file from bytes
+      final multipartFile = http.MultipartFile.fromBytes(
+        'attachment',
+        fileBytes,
+        filename: fileName,
+      );
+
+      request.files.add(multipartFile);
+
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
 
       return _handleResponse(response);
     } catch (e) {

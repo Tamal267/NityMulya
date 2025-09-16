@@ -1,4 +1,9 @@
 import 'package:nitymulya/network/network_helper.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
 
 class CustomerApi {
   static final NetworkHelper _networkHelper = NetworkHelper();
@@ -55,6 +60,9 @@ class CustomerApi {
     String? severity,
     String? productId,
     String? productName,
+    File? attachmentFile,
+    Uint8List? attachmentBytes,
+    String? attachmentName,
   }) async {
     try {
       final data = {
@@ -68,8 +76,29 @@ class CustomerApi {
         if (productName != null) 'product_name': productName,
       };
 
-      final response =
-          await _networkHelper.postWithToken('/customer/complaints', data);
+      Map<String, dynamic> response;
+
+      if (attachmentFile != null ||
+          (attachmentBytes != null && attachmentName != null)) {
+        // Use multipart form for file upload
+        if (kIsWeb && attachmentBytes != null && attachmentName != null) {
+          // Web platform - use bytes
+          response = await _networkHelper.postWithFileBytesAndToken(
+              '/customer/complaints', data, attachmentBytes, attachmentName);
+        } else if (attachmentFile != null) {
+          // Mobile/Desktop - use file
+          response = await _networkHelper.postWithFileAndToken(
+              '/customer/complaints', data, attachmentFile);
+        } else {
+          // Fallback to regular JSON request
+          response =
+              await _networkHelper.postWithToken('/customer/complaints', data);
+        }
+      } else {
+        // Regular JSON request
+        response =
+            await _networkHelper.postWithToken('/customer/complaints', data);
+      }
 
       if (response['error'] != null) {
         return {
@@ -323,7 +352,7 @@ class CustomerApi {
   static Future<Map<String, dynamic>> getAllComplaints() async {
     try {
       final response = await _networkHelper.get('/complaints/all');
-      
+
       if (response['error'] != null) {
         return {
           'success': false,
@@ -340,6 +369,33 @@ class CustomerApi {
       return {
         'success': false,
         'error': 'Failed to get complaints: $e',
+      };
+    }
+  }
+
+  // Get all attachments for a specific complaint number
+  static Future<Map<String, dynamic>> getComplaintAttachments(
+      String complaintNumber) async {
+    try {
+      final response =
+          await _networkHelper.get('/complaints/attachments/$complaintNumber');
+
+      if (response['error'] != null) {
+        return {
+          'success': false,
+          'error': response['error'],
+        };
+      }
+
+      return {
+        'success': true,
+        'attachments': response['attachments'] ?? [],
+        'message': response['message'],
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'error': 'Failed to get attachments: $e',
       };
     }
   }
