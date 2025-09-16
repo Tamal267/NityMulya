@@ -1,9 +1,6 @@
 import 'package:nitymulya/network/network_helper.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart';
 import 'dart:io';
-import 'dart:convert';
-import 'dart:typed_data';
 
 class CustomerApi {
   static final NetworkHelper _networkHelper = NetworkHelper();

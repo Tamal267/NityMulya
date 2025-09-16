@@ -33,10 +33,10 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
   List<Map<String, dynamic>> _shopProducts = [];
 
   // File upload variables (for multiple files)
-  List<File> _selectedFiles = [];
-  List<String> _selectedFileNames = [];
-  List<Uint8List> _selectedFileBytes = []; // For web platform
-  List<String> _selectedFileTypes = []; // To know if it's image or video
+  final List<File> _selectedFiles = [];
+  final List<String> _selectedFileNames = [];
+  final List<Uint8List> _selectedFileBytes = []; // For web platform
+  final List<String> _selectedFileTypes = []; // To know if it's image or video
   bool _isFileUploading = false;
 
   // DNCRP Form Fields
@@ -602,7 +602,7 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
                                       ],
                                     ),
                                   ))
-                              .toList(),
+                              ,
                         ],
                       ),
                     ),
