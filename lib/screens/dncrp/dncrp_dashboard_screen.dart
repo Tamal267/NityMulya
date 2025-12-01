@@ -44,15 +44,17 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
 
     try {
       final response = await CustomerApi.getAllComplaints();
-      
+
       if (response['success'] == true) {
         final List<dynamic> complaintsData = response['complaints'] ?? [];
-        
+
         setState(() {
           complaints = complaintsData.cast<Map<String, dynamic>>();
           totalComplaints = complaints.length;
-          pendingComplaints = complaints.where((c) => c['status'] == 'Received').length;
-          resolvedComplaints = complaints.where((c) => c['status'] == 'Solved').length;
+          pendingComplaints =
+              complaints.where((c) => c['status'] == 'Received').length;
+          resolvedComplaints =
+              complaints.where((c) => c['status'] == 'Solved').length;
           isLoadingComplaints = false;
         });
       } else {
@@ -93,7 +95,7 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
     } catch (e) {
       // Close loading dialog
       Navigator.pop(context);
-      
+
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -336,7 +338,8 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String title, String value, IconData icon, Color color) {
     return Card(
       elevation: 3,
       child: Padding(
@@ -436,14 +439,27 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
   Widget _buildComplaintCard(Map<String, dynamic> complaint) {
     final status = complaint['status'] ?? 'Received';
     final priority = complaint['priority'] ?? 'Medium';
-    
+
+    // AI-enhanced fields
+    final aiPriority = complaint['ai_priority_level'];
+    final isValid = complaint['is_valid'] ?? true;
+    final validityScore = complaint['validity_score'];
+    final sentiment = complaint['sentiment'];
+    final aiSummary = complaint['ai_summary'];
+    final aiCategory = complaint['ai_category'];
+
     Color statusColor = Colors.orange;
     if (status == 'Solved') statusColor = Colors.green;
     if (status == 'Forwarded') statusColor = Colors.blue;
 
+    // Use AI priority if available, otherwise manual priority
+    final displayPriority = aiPriority ?? priority;
     Color priorityColor = Colors.grey;
-    if (priority == 'High' || priority == 'high') priorityColor = Colors.orange;
-    if (priority == 'Urgent' || priority == 'urgent') priorityColor = Colors.red;
+    if (displayPriority == 'Urgent')
+      priorityColor = Colors.red;
+    else if (displayPriority == 'High' || displayPriority == 'high')
+      priorityColor = Colors.orange;
+    else if (displayPriority == 'Medium') priorityColor = Colors.blue.shade300;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -471,26 +487,87 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: statusColor),
-                    ),
-                    child: Text(
-                      status,
-                      style: TextStyle(
-                        color: statusColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                  Row(
+                    children: [
+                      // AI Badge
+                      if (aiPriority != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.purple.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.smart_toy,
+                                  size: 12, color: Colors.purple.shade700),
+                              const SizedBox(width: 2),
+                              Text(
+                                'AI',
+                                style: TextStyle(
+                                  color: Colors.purple.shade700,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      // Status Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: statusColor),
+                        ),
+                        child: Text(
+                          status,
+                          style: TextStyle(
+                            color: statusColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              
+
+              // AI Validity Warning
+              if (!isValid)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.warning_amber,
+                          size: 16, color: Colors.orange.shade700),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Flagged by AI for review (${(validityScore * 100).toInt()}% confidence)',
+                          style: TextStyle(
+                            color: Colors.orange.shade700,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Customer Info
               Row(
                 children: [
@@ -505,7 +582,7 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                 ],
               ),
               const SizedBox(height: 4),
-              
+
               // Shop Info
               Row(
                 children: [
@@ -520,7 +597,38 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              
+
+              // AI Summary (if available)
+              if (aiSummary != null && aiSummary.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.summarize,
+                          size: 14, color: Colors.blue.shade700),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'AI Summary: $aiSummary',
+                          style: TextStyle(
+                            color: Colors.blue.shade900,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Description
               Text(
                 complaint['description'] ?? 'No description',
@@ -529,21 +637,23 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                 style: const TextStyle(color: Colors.black87),
               ),
               const SizedBox(height: 8),
-              
-              // Bottom Row
+
+              // Bottom Row with AI insights
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
+                      // Priority Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: priorityColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          priority,
+                          displayPriority,
                           style: TextStyle(
                             color: priorityColor,
                             fontSize: 10,
@@ -552,13 +662,30 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
                         ),
                       ),
                       const SizedBox(width: 8),
+                      // Category
                       Text(
-                        complaint['category'] ?? 'General',
+                        aiCategory ?? complaint['category'] ?? 'General',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,
                         ),
                       ),
+                      const SizedBox(width: 8),
+                      // Sentiment indicator
+                      if (sentiment != null)
+                        Icon(
+                          sentiment == 'Negative'
+                              ? Icons.sentiment_very_dissatisfied
+                              : sentiment == 'Neutral'
+                                  ? Icons.sentiment_neutral
+                                  : Icons.sentiment_satisfied,
+                          size: 14,
+                          color: sentiment == 'Negative'
+                              ? Colors.red
+                              : sentiment == 'Neutral'
+                                  ? Colors.grey
+                                  : Colors.green,
+                        ),
                     ],
                   ),
                   Text(
