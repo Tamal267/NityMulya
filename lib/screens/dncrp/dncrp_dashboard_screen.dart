@@ -20,6 +20,8 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
   int totalComplaints = 0;
   int pendingComplaints = 0;
   int resolvedComplaints = 0;
+  String filterPriority = 'All'; // Filter: All, Urgent, High, Medium, Low
+  String filterStatus = 'All'; // Filter: All, Received, Forwarded, Solved
 
   @override
   void initState() {
@@ -43,13 +45,42 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
     });
 
     try {
+      // Get complaints with AI priority sorting
       final response = await CustomerApi.getAllComplaints();
 
       if (response['success'] == true) {
         final List<dynamic> complaintsData = response['complaints'] ?? [];
+        
+        // Sort complaints by AI priority (Urgent > High > Medium > Low)
+        final sortedComplaints = List<Map<String, dynamic>>.from(complaintsData);
+        sortedComplaints.sort((a, b) {
+          // Calculate priority rank
+          int getPriorityRank(Map<String, dynamic> complaint) {
+            final aiPriority = complaint['ai_priority_level'];
+            final manualPriority = complaint['priority'];
+            
+            if (aiPriority == 'Urgent') return 1;
+            if (aiPriority == 'High' || manualPriority == 'High') return 2;
+            if (aiPriority == 'Medium' || manualPriority == 'Medium') return 3;
+            return 4;
+          }
+          
+          final rankA = getPriorityRank(a);
+          final rankB = getPriorityRank(b);
+          
+          if (rankA != rankB) {
+            return rankA.compareTo(rankB);
+          }
+          
+          // If same priority, sort by validity score (lower validity = more suspicious)
+          final validityA = a['validity_score'] ?? 1.0;
+          final validityB = b['validity_score'] ?? 1.0;
+          
+          return validityA.compareTo(validityB);
+        });
 
         setState(() {
-          complaints = complaintsData.cast<Map<String, dynamic>>();
+          complaints = sortedComplaints;
           totalComplaints = complaints.length;
           pendingComplaints =
               complaints.where((c) => c['status'] == 'Received').length;
@@ -421,17 +452,165 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
       );
     }
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        _loadComplaints();
-      },
-      child: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: complaints.length,
-        itemBuilder: (context, index) {
-          final complaint = complaints[index];
-          return _buildComplaintCard(complaint);
+    // Filter complaints based on selected filters
+    final filteredComplaints = complaints.where((complaint) {
+      bool matchesPriority = true;
+      bool matchesStatus = true;
+      
+      if (filterPriority != 'All') {
+        final aiPriority = complaint['ai_priority_level']?.toString().toLowerCase();
+        final manualPriority = complaint['priority']?.toString().toLowerCase();
+        final filterLower = filterPriority.toLowerCase();
+        matchesPriority = (aiPriority == filterLower || manualPriority == filterLower);
+      }
+      
+      if (filterStatus != 'All') {
+        final complaintStatus = complaint['status']?.toString() ?? 'Received';
+        matchesStatus = complaintStatus == filterStatus;
+      }
+      
+      return matchesPriority && matchesStatus;
+    }).toList();
+
+    return Column(
+      children: [
+        // Filter chips
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Filter by Priority:',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildFilterChip('All', Icons.all_inclusive, Colors.grey),
+                    _buildFilterChip('Urgent', Icons.priority_high, Colors.red),
+                    _buildFilterChip('High', Icons.arrow_upward, Colors.orange),
+                    _buildFilterChip('Medium', Icons.remove, Colors.blue),
+                    _buildFilterChip('Low', Icons.arrow_downward, Colors.green),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Filter by Status:',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+              ),
+              const SizedBox(height: 8),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildStatusFilterChip('All', Icons.all_inclusive, Colors.grey),
+                    _buildStatusFilterChip('Received', Icons.inbox, Colors.orange),
+                    _buildStatusFilterChip('Forwarded', Icons.forward, Colors.blue),
+                    _buildStatusFilterChip('Solved', Icons.check_circle, Colors.green),
+                  ],
+                ),
+              ),
+              const Divider(),
+              Text(
+                'Showing ${filteredComplaints.length} of ${complaints.length} complaints',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
+            ],
+          ),
+        ),
+        
+        // Complaints list
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: () async {
+              _loadComplaints();
+            },
+            child: filteredComplaints.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.filter_list_off, size: 48, color: Colors.grey[400]),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No complaints match the filters',
+                          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredComplaints.length,
+                    itemBuilder: (context, index) {
+                      final complaint = filteredComplaints[index];
+                      return _buildComplaintCard(complaint);
+                    },
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+  
+  Widget _buildFilterChip(String label, IconData icon, Color color) {
+    final isSelected = filterPriority == label;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: isSelected ? Colors.white : color),
+            const SizedBox(width: 4),
+            Text(label),
+          ],
+        ),
+        selected: isSelected,
+        onSelected: (selected) {
+          setState(() {
+            filterPriority = label;
+          });
         },
+        selectedColor: color,
+        checkmarkColor: Colors.white,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : Colors.black87,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildStatusFilterChip(String label, IconData icon, Color color) {
+    final isSelected = filterStatus == label;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: FilterChip(
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: isSelected ? Colors.white : color),
+            const SizedBox(width: 4),
+            Text(label),
+          ],
+        ),
+        selected: isSelected,
+        onSelected: (selected) {
+          setState(() {
+            filterStatus = label;
+          });
+        },
+        selectedColor: color,
+        checkmarkColor: Colors.white,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : Colors.black87,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
       ),
     );
   }

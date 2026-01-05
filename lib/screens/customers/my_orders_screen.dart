@@ -67,9 +67,9 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
 
   // Start timer for real-time message updates
   void _startMessageTimer() {
-    _messageTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+    _messageTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
-        _loadMessages(); // Refresh messages every 10 seconds
+        _loadMessages(); // Refresh messages every 30 seconds
       }
     });
   }
@@ -1156,15 +1156,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
           widget.customerId ??
           'unknown_customer';
 
-      debugPrint('📧 Loading messages for customer: $customerId');
-
       // Load messages using real API
       final result = await MessageApiService.getCustomerMessages(
         customerId: customerId,
       );
-
-      debugPrint('📧 Messages API result: ${result['success']}');
-      debugPrint('📧 Messages count: ${result['data']?.length ?? 0}');
 
       if (!mounted) return; // Check mounted before setState
 
@@ -1173,15 +1168,11 @@ class _MyOrdersScreenState extends State<MyOrdersScreen>
           messages = List<Map<String, dynamic>>.from(result['data'] ?? []);
           isLoadingMessages = false;
         });
-
-        debugPrint('📧 Messages loaded successfully: ${messages.length}');
       } else {
         setState(() {
           messages = [];
           isLoadingMessages = false;
         });
-
-        debugPrint('❌ Failed to load messages: ${result['message']}');
 
         // Show error message
         if (mounted) {

@@ -118,8 +118,6 @@ class MessageApiService {
     try {
       final response = await _networkHelper.getWithToken('/api/messages/customer/$customerId');
 
-      print('💬 Get customer messages response: $response');
-
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           return {
