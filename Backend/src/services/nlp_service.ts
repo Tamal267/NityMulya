@@ -15,6 +15,7 @@ interface ComplaintAnalysisRequest {
 interface ValidityResult {
   validity_score: number;
   is_valid: boolean;
+  is_gibberish?: boolean;
   reasons: string[];
   confidence: string;
 }
@@ -22,6 +23,13 @@ interface ValidityResult {
 interface PriorityResult {
   priority_score: number;
   priority_level: string;
+  reasons: string[];
+  confidence: string;
+}
+
+interface SeverityResult {
+  severity_score: number;
+  severity_level: string;
   reasons: string[];
   confidence: string;
 }
@@ -43,6 +51,7 @@ interface CategoryResult {
 interface ComplaintAnalysisResult {
   validity: ValidityResult;
   priority: PriorityResult;
+  severity: SeverityResult;
   sentiment: SentimentResult;
   category: CategoryResult;
   summary: string;
@@ -51,6 +60,7 @@ interface ComplaintAnalysisResult {
     word_count: number;
     char_count: number;
     has_numbers: boolean;
+    is_gibberish?: boolean;
   };
   original_text?: string;
   cleaned_text?: string;
@@ -211,6 +221,17 @@ class NLPService {
 // Export singleton instance
 export const nlpService = new NLPService();
 
+// Export types
+export type {
+  ComplaintAnalysisResult,
+  ValidityResult,
+  PriorityResult,
+  SeverityResult,
+  SentimentResult,
+  CategoryResult,
+  ComplaintAnalysisRequest,
+  AnalysisResponse,
+};
 // Export types
 export type {
   ComplaintAnalysisRequest,

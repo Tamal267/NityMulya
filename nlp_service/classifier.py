@@ -50,43 +50,93 @@ class ComplaintClassifier:
     
     def detect_validity(self, text: str, features: Dict) -> Dict:
         """
-        Detect if complaint is valid or spam
+        Detect if complaint is valid or spam/gibberish
         Returns: validity_score (0-1), is_valid (bool), reason
         """
         validity_score = 1.0
         reasons = []
         
-        # Rule-based checks
-        # 1. Check for spam keywords
         text_lower = text.lower()
+        
+        # CRITICAL: Gibberish detection
+        # 1. Check for excessive repeated characters
+        if features.get('repeated_char_ratio', 0) > 0.15:
+            validity_score -= 0.6
+            reasons.append("Excessive repeated characters (gibberish)")
+        
+        # 2. Check for consonant clusters (gibberish English)
+        if features.get('consonant_clusters', 0) > 2:
+            validity_score -= 0.5
+            reasons.append(f"Too many consonant clusters ({features['consonant_clusters']})")
+        
+        # 3. Check space ratio (gibberish lacks proper spacing)
+        space_ratio = features.get('space_ratio', 0)
+        if space_ratio < 0.08 and features['char_count'] > 20:
+            validity_score -= 0.5
+            reasons.append("Improper spacing (gibberish)")
+        
+        # 4. Check average word length (gibberish has unusual lengths)
+        avg_word_len = features.get('avg_word_length', 0)
+        if avg_word_len < 2.5 or avg_word_len > 15:
+            validity_score -= 0.4
+            reasons.append(f"Unusual word length (avg: {avg_word_len:.1f})")
+        
+        # 5. Check for minimal vowels (especially for English text)
+        if features.get('has_english') and not features.get('has_bengali'):
+            # English text should have vowels
+            vowel_count = len(re.findall(r'[aeiouAEIOU]', text))
+            vowel_ratio = vowel_count / max(features['char_count'], 1)
+            if vowel_ratio < 0.2 and features['char_count'] > 10:
+                validity_score -= 0.5
+                reasons.append(f"Insufficient vowels (gibberish English) - {vowel_ratio:.2f}")
+        
+        # 6. Check if Bengali text has proper structure
+        if features.get('has_bengali'):
+            vowel_ratio = features.get('vowel_ratio', 0)
+            if vowel_ratio < 0.05:  # Bengali text needs vowel markers
+                validity_score -= 0.4
+                reasons.append("Invalid Bengali structure")
+        
+        # Rule-based checks
+        # 7. Check for spam keywords
         spam_count = sum(1 for keyword in config.SPAM_KEYWORDS if keyword in text_lower)
         if spam_count > 0:
             validity_score -= 0.3 * spam_count
             reasons.append(f"Contains {spam_count} spam keyword(s)")
         
-        # 2. Check if too short
+        # 8. Check if too short
         if features['is_short']:
-            validity_score -= 0.2
-            reasons.append("Text too short")
+            validity_score -= 0.3
+            reasons.append("Text too short (minimum 5 words)")
         
-        # 3. Check if contains excessive punctuation
-        if features['exclamation_count'] > 3:
-            validity_score -= 0.1
+        # 9. Check if contains excessive punctuation
+        if features['exclamation_count'] > 5:
+            validity_score -= 0.2
             reasons.append("Excessive exclamation marks")
         
-        # 4. Check if all caps (spam indicator)
-        if features['capital_ratio'] > 0.5 and features['char_count'] > 20:
-            validity_score -= 0.15
+        # 10. Check if all caps (spam indicator)
+        if features['capital_ratio'] > 0.6 and features['char_count'] > 20:
+            validity_score -= 0.2
             reasons.append("Excessive capitalization")
         
-        # 5. Check for product/shop mention (valid complaints usually mention these)
-        has_context = any(word in text_lower for word in [
+        # POSITIVE indicators
+        # 11. Check for product/shop mention (valid complaints usually mention these)
+        context_keywords = [
             'দোকান', 'shop', 'পণ্য', 'product', 'বিক্রেতা', 'seller',
-            'কিনেছি', 'bought', 'purchased', 'খাবার', 'food'
-        ])
-        if has_context:
+            'কিনেছি', 'bought', 'purchased', 'খাবার', 'food', 'চাল', 'rice',
+            'ডাল', 'lentil', 'তেল', 'oil', 'দাম', 'price', 'টাকা', 'taka',
+            'ওজন', 'weight', 'মান', 'quality', 'সমস্যা', 'problem'
+        ]
+        context_count = sum(1 for word in context_keywords if word in text_lower)
+        if context_count > 0:
+            validity_score += min(0.3, context_count * 0.1)
+            reasons.append(f"Contains {context_count} relevant context keyword(s)")
+        
+        # 12. Proper sentence structure (has periods or Bengali danda)
+        has_structure = bool(re.search(r'[।.!?]', text))
+        if has_structure and features['word_count'] > 5:
             validity_score += 0.1
-            reasons.append("Contains relevant context")
+            reasons.append("Proper sentence structure")
         
         # Normalize score
         validity_score = max(0.0, min(1.0, validity_score))
@@ -96,6 +146,7 @@ class ComplaintClassifier:
         return {
             'validity_score': round(validity_score, 3),
             'is_valid': is_valid,
+            'is_gibberish': validity_score < 0.4,  # Changed threshold
             'reasons': reasons,
             'confidence': 'high' if abs(validity_score - 0.5) > 0.3 else 'medium'
         }
@@ -155,6 +206,78 @@ class ComplaintClassifier:
             'priority_level': priority_level,
             'reasons': reasons,
             'confidence': 'high' if abs(priority_score - 0.5) > 0.3 else 'medium'
+        }
+    
+    def detect_severity(self, text: str, features: Dict, category: str = None) -> Dict:
+        """
+        Detect severity of complaint: Critical, Major, Moderate, Minor
+        """
+        severity_score = 0.5  # Start with Moderate
+        reasons = []
+        
+        text_lower = text.lower()
+        
+        # 1. Check for critical keywords
+        critical_count = sum(1 for keyword in config.SEVERITY_KEYWORDS['critical'] if keyword in text_lower)
+        if critical_count > 0:
+            severity_score += 0.3
+            reasons.append(f"Critical situation ({critical_count} keywords)")
+        
+        # 2. Check for major keywords
+        major_count = sum(1 for keyword in config.SEVERITY_KEYWORDS['major'] if keyword in text_lower)
+        if major_count > 0:
+            severity_score += 0.2
+            reasons.append(f"Major issue ({major_count} keywords)")
+        
+        # 3. Check for moderate keywords
+        moderate_count = sum(1 for keyword in config.SEVERITY_KEYWORDS['moderate'] if keyword in text_lower)
+        if moderate_count > 0:
+            severity_score += 0.1
+            reasons.append(f"Moderate issue ({moderate_count} keywords)")
+        
+        # 4. Category-based severity
+        critical_categories = ['স্বাস্থ্য সমস্যা', 'প্রতারণা']
+        major_categories = ['মেয়াদোত্তীর্ণ', 'গুণগত মান']
+        
+        if category in critical_categories:
+            severity_score += 0.2
+            reasons.append(f"Critical category: {category}")
+        elif category in major_categories:
+            severity_score += 0.15
+            reasons.append(f"Major category: {category}")
+        
+        # 5. Health-related terms boost severity
+        health_terms = ['স্বাস্থ্য', 'health', 'অসুস্থ', 'sick', 'হাসপাতাল', 'hospital', 'ডাক্তার', 'doctor']
+        health_count = sum(1 for term in health_terms if term in text_lower)
+        if health_count > 0:
+            severity_score += 0.15
+            reasons.append(f"Health impact mentioned ({health_count} terms)")
+        
+        # 6. Financial loss indicators
+        financial_terms = ['ক্ষতি', 'loss', 'টাকা', 'taka', 'money', 'refund']
+        financial_count = sum(1 for term in financial_terms if term in text_lower)
+        if financial_count > 0:
+            severity_score += 0.05
+            reasons.append(f"Financial impact ({financial_count} terms)")
+        
+        # Normalize score
+        severity_score = max(0.0, min(1.0, severity_score))
+        
+        # Determine severity level
+        if severity_score >= 0.8:
+            severity_level = "Critical"
+        elif severity_score >= 0.65:
+            severity_level = "Major"
+        elif severity_score >= 0.4:
+            severity_level = "Moderate"
+        else:
+            severity_level = "Minor"
+        
+        return {
+            'severity_score': round(severity_score, 3),
+            'severity_level': severity_level,
+            'reasons': reasons,
+            'confidence': 'high' if abs(severity_score - 0.5) > 0.3 else 'medium'
         }
     
     def analyze_sentiment(self, text: str, features: Dict) -> Dict:
@@ -274,10 +397,15 @@ class ComplaintClassifier:
             text, features, category_result['category']
         )
         
-        # 4. Sentiment analysis
+        # 4. Severity detection (NEW)
+        severity_result = self.detect_severity(
+            text, features, category_result['category']
+        )
+        
+        # 5. Sentiment analysis
         sentiment_result = self.analyze_sentiment(text, features)
         
-        # 5. Generate summary
+        # 6. Generate summary
         summary = self.generate_summary(text)
         
         # Compile all results
@@ -285,12 +413,14 @@ class ComplaintClassifier:
             'validity': validity_result,
             'category': category_result,
             'priority': priority_result,
+            'severity': severity_result,  # NEW
             'sentiment': sentiment_result,
             'summary': summary,
             'language': features['language'],
             'metadata': {
                 'word_count': features['word_count'],
                 'char_count': features['char_count'],
-                'has_numbers': features['has_numbers']
+                'has_numbers': features['has_numbers'],
+                'is_gibberish': validity_result.get('is_gibberish', False)
             }
         }

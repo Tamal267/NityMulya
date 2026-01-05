@@ -99,7 +99,8 @@ class TextPreprocessor:
         cleaned_text = self.clean_text(text)
         
         # Count features
-        word_count = len(cleaned_text.split())
+        words = cleaned_text.split()
+        word_count = len(words)
         char_count = len(cleaned_text)
         
         # Check for specific markers
@@ -114,6 +115,25 @@ class TextPreprocessor:
         # Check for capital letters (indicates urgency/emphasis in English)
         capital_ratio = sum(1 for c in cleaned_text if c.isupper()) / max(char_count, 1)
         
+        # NEW: Gibberish detection features
+        # Count repeated characters (like "aaaa" or "xxxx")
+        repeated_char_ratio = len(re.findall(r'(.)\1{2,}', cleaned_text)) / max(char_count, 1)
+        
+        # Count consonant clusters without vowels (gibberish indicator)
+        consonant_clusters = len(re.findall(r'[bcdfghjklmnpqrstvwxyz]{4,}', cleaned_text.lower()))
+        
+        # Check for meaningful words (both English and Bengali)
+        # Common Bengali vowels: া, ি, ী, ু, ূ, ৃ, ে, ৈ, ো, ৌ
+        bengali_vowel_count = len(re.findall(r'[\u09BE\u09BF\u09C0\u09C1\u09C2\u09C3\u09C7\u09C8\u09CB\u09CC]', cleaned_text))
+        vowel_ratio = bengali_vowel_count / max(char_count, 1) if has_bengali else 0
+        
+        # Check space ratio (gibberish usually lacks proper spacing)
+        space_count = cleaned_text.count(' ')
+        space_ratio = space_count / max(char_count, 1)
+        
+        # Average word length (gibberish often has unusual word lengths)
+        avg_word_length = sum(len(word) for word in words) / max(word_count, 1)
+        
         return {
             'original_text': text,
             'cleaned_text': cleaned_text,
@@ -127,7 +147,13 @@ class TextPreprocessor:
             'question_count': question_count,
             'capital_ratio': capital_ratio,
             'is_short': word_count < 5,
-            'is_long': word_count > 100
+            'is_long': word_count > 100,
+            # Gibberish detection features
+            'repeated_char_ratio': repeated_char_ratio,
+            'consonant_clusters': consonant_clusters,
+            'vowel_ratio': vowel_ratio,
+            'space_ratio': space_ratio,
+            'avg_word_length': avg_word_length
         }
     
     def preprocess(self, text: str) -> Tuple[str, Dict]:

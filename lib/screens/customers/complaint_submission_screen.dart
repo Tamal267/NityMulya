@@ -41,8 +41,6 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
 
   // DNCRP Form Fields
   String? _selectedCategory;
-  String? _selectedPriority = 'Medium';
-  String? _selectedSeverity = 'Moderate';
   String? _selectedProductId;
   String? _selectedProductName;
 
@@ -55,9 +53,6 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
     'মেয়াদোত্তীর্ণ পণ্য', // Expired Product
     'অন্যান্য', // Others
   ];
-
-  final List<String> _priorities = ['Low', 'Medium', 'High', 'Urgent'];
-  final List<String> _severities = ['Minor', 'Moderate', 'Major', 'Critical'];
 
   @override
   void initState() {
@@ -460,8 +455,6 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
           shopName: widget.shop.name,
           complaintType: englishCategory,
           description: _descriptionController.text.trim(),
-          priority: _selectedPriority ?? 'Medium',
-          severity: _selectedSeverity,
           productId: productId,
           productName: productName,
           attachmentFile: null,
@@ -482,8 +475,6 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
             description: i == 0
                 ? _descriptionController.text.trim()
                 : 'Additional file attachment',
-            priority: _selectedPriority ?? 'Medium',
-            severity: _selectedSeverity,
             productId: productId,
             productName: productName,
             attachmentFile:
@@ -847,101 +838,6 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
                     ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-
-              // Priority and Severity
-              Row(
-                children: [
-                  Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.priority_high,
-                                    color: Colors.red),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'অগ্রাধিকার',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              value: _selectedPriority,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                              ),
-                              items: _priorities.map((priority) {
-                                return DropdownMenuItem(
-                                  value: priority,
-                                  child: Text(priority,
-                                      style: const TextStyle(fontSize: 12)),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() => _selectedPriority = value);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.warning, color: Colors.amber),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'তীব্রতা',
-                                  style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            DropdownButtonFormField<String>(
-                              value: _selectedSeverity,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 8),
-                              ),
-                              items: _severities.map((severity) {
-                                return DropdownMenuItem(
-                                  value: severity,
-                                  child: Text(severity,
-                                      style: const TextStyle(fontSize: 12)),
-                                );
-                              }).toList(),
-                              onChanged: (value) {
-                                setState(() => _selectedSeverity = value);
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
               ),
               const SizedBox(height: 16),
 

@@ -25,8 +25,6 @@ export const submitComplaintWithAI = async (c: Context) => {
       product_name,
       category,
       description,
-      priority,
-      severity,
     } = body;
 
     // Validate required fields
@@ -65,9 +63,11 @@ export const submitComplaintWithAI = async (c: Context) => {
     // Step 2: Prepare database insert
     const now = new Date();
 
-    // Use AI-detected priority if available, otherwise use manual
+    // Use AI-detected priority and severity
     const finalPriority =
-      aiAnalysis?.priority?.priority_level || priority || "Medium";
+      aiAnalysis?.priority?.priority_level || "Medium";
+    const finalSeverity =
+      aiAnalysis?.severity?.severity_level || "Moderate";
     const finalCategory =
       aiAnalysis?.category?.category || category || "অন্যান্য";
 
@@ -118,7 +118,7 @@ export const submitComplaintWithAI = async (c: Context) => {
         ${product_name || null},
         ${finalCategory},
         ${finalPriority},
-        ${severity || "Minor"},
+        ${finalSeverity},
         ${description},
         'Received',
         ${now},

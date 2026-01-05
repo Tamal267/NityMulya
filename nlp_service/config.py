@@ -51,6 +51,27 @@ class Config:
         "click here", "এখানে ক্লিক", "offer", "অফার"
     ]
     
+    # Severity Keywords
+    SEVERITY_KEYWORDS = {
+        "critical": [
+            "মৃত্যু", "death", "জীবন", "life", "হাসপাতাল", "hospital",
+            "বিষক্রিয়া", "poisoning", "গুরুতর", "serious", "critical",
+            "জরুরি", "emergency"
+        ],
+        "major": [
+            "স্বাস্থ্য", "health", "অসুস্থ", "sick", "ব্যথা", "pain",
+            "মেয়াদোত্তীর্ণ", "expired", "নষ্ট", "rotten", "damaged",
+            "প্রতারণা", "fraud", "ঠকানো", "cheated"
+        ],
+        "moderate": [
+            "খারাপ", "bad", "সমস্যা", "problem", "ভুল", "wrong",
+            "কম", "less", "বেশি", "more", "অতিরিক্ত", "extra"
+        ],
+        "minor": [
+            "ছোট", "small", "সামান্য", "minor", "একটু", "little"
+        ]
+    }
+    
     # Category Keywords
     CATEGORY_KEYWORDS = {
         "মূল্য সংক্রান্ত": ["দাম", "price", "মূল্য", "টাকা", "expensive", "costly"],
