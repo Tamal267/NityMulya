@@ -39,12 +39,10 @@ def insert_complaints(complaints: list):
         product_name,
         category,
         description,
-        priority,
-        severity,
         status,
         submitted_at
     ) VALUES (
-        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
     )
     """
     
@@ -62,8 +60,6 @@ def insert_complaints(complaints: list):
             complaint["product_name"],
             complaint["category"],
             complaint["description"],
-            "Medium",  # Default, will be updated by AI
-            "Moderate",  # Default, will be updated by AI
             "Received",
             complaint["submitted_at"],
         ))

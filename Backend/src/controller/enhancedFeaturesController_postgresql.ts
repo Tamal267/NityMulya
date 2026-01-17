@@ -309,7 +309,7 @@ export const submitComplaint = async (c: Context) => {
     const { 
       customer_id, customer_name, customer_email, customer_phone,
       shop_id, shop_name, product_id, product_name,
-      complaint_type, complaint_title, complaint_description, priority 
+      complaint_type, complaint_title, complaint_description 
     } = body;
 
     if (!customer_id || !customer_name || !customer_email || !shop_id || 
@@ -327,11 +327,11 @@ export const submitComplaint = async (c: Context) => {
       INSERT INTO complaints (
         complaint_number, customer_id, customer_name, customer_email, customer_phone,
         shop_owner_id, shop_name, subcat_id, product_name,
-        complaint_type, complaint_title, complaint_description, priority
+        complaint_type, complaint_title, complaint_description
       ) VALUES (
         ${complaintNumber}, ${customer_id}, ${customer_name}, ${customer_email}, ${customer_phone},
         ${shop_id}, ${shop_name}, ${product_id}, ${product_name},
-        ${complaint_type}, ${complaint_title}, ${complaint_description}, ${priority || 'medium'}
+        ${complaint_type}, ${complaint_title}, ${complaint_description}
       )
       RETURNING id, complaint_number
     `;

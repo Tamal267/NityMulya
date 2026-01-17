@@ -483,7 +483,7 @@ class _SignupScreenState extends State<SignupScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 8),
                       child: DropdownButtonFormField<String>(
-                        value: selectedRole,
+                        initialValue: selectedRole,
                         dropdownColor: Colors.green[50],
                         decoration:
                             const InputDecoration.collapsed(hintText: ''),

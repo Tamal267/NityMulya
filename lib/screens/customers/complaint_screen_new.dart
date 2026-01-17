@@ -27,7 +27,6 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
   final TextEditingController _complaintController = TextEditingController();
   String _selectedComplaintType = 'পণ্যের গুণগত মান';
   String _selectedProduct = 'সাধারণ';
-  String _selectedPriority = 'medium';
   bool _isSubmitting = false;
 
   final List<String> complaintTypes = [
@@ -37,20 +36,6 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
     'আচরণগত সমস্যা',
     'অন্যান্য'
   ];
-
-  final List<String> priorities = [
-    'low',
-    'medium', 
-    'high',
-    'urgent'
-  ];
-
-  final Map<String, String> priorityLabels = {
-    'low': 'কম গুরুত্বপূর্ণ',
-    'medium': 'মাঝারি',
-    'high': 'গুরুত্বপূর্ণ',
-    'urgent': 'জরুরি',
-  };
 
   @override
   void dispose() {
@@ -95,7 +80,6 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
         complaintType: _selectedComplaintType,
         complaintTitle: _titleController.text.trim(),
         complaintDescription: _complaintController.text.trim(),
-        priority: _selectedPriority,
       );
 
       if (response['success'] == true) {
@@ -318,7 +302,7 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _selectedComplaintType,
+                    initialValue: _selectedComplaintType,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -371,7 +355,7 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
-                    value: _selectedProduct,
+                    initialValue: _selectedProduct,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -394,59 +378,6 @@ class _ComplaintScreenState extends State<ComplaintScreen> {
                     onChanged: (value) {
                       setState(() {
                         _selectedProduct = value!;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Priority Selection
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    spreadRadius: 1,
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'গুরুত্ব',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    value: _selectedPriority,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide(color: Colors.grey[300]!),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    ),
-                    items: priorities.map((priority) {
-                      return DropdownMenuItem<String>(
-                        value: priority,
-                        child: Text(priorityLabels[priority]!),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedPriority = value!;
                       });
                     },
                   ),

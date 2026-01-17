@@ -112,9 +112,7 @@ def update_complaint_with_ai(conn, complaint_id: int, analysis: Dict[str, Any], 
         detected_language = %s,
         ai_analysis_date = %s,
         ai_processing_time_ms = %s,
-        ai_full_analysis = %s,
-        priority = %s,
-        severity = %s
+        ai_full_analysis = %s
     WHERE id = %s
     """
     
@@ -136,8 +134,6 @@ def update_complaint_with_ai(conn, complaint_id: int, analysis: Dict[str, Any], 
         datetime.now(),
         int(processing_time * 1000),
         json.dumps(analysis),
-        priority.get("priority_level", "Medium"),
-        severity.get("severity_level", "Moderate"),
         complaint_id,
     ))
     

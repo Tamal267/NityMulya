@@ -169,7 +169,7 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
 
               // Category Selection
               DropdownButtonFormField<String>(
-                value: selectedCategory,
+                initialValue: selectedCategory,
                 decoration: InputDecoration(
                   labelText: "Product Category",
                   prefixIcon: const Icon(Icons.category),
@@ -206,7 +206,7 @@ class _WholesalerAddProductScreenState extends State<WholesalerAddProductScreen>
 
               // Available Products Selection
               DropdownButtonFormField<String>(
-                value: selectedProduct,
+                initialValue: selectedProduct,
                 decoration: InputDecoration(
                   labelText: "Available Products",
                   prefixIcon: const Icon(Icons.verified),

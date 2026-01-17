@@ -26,6 +26,25 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 sns.set_theme(style="whitegrid")
 plt.rcParams['figure.figsize'] = (12, 8)
 
+# Translation map for visualization
+CATEGORY_TRANSLATIONS = {
+    'অন্যান্য': 'Other',
+    'স্বাস্থ্য সমস্যা': 'Health Issues',
+    'গুণগত মান': 'Quality Issues',
+    'মেয়াদোত্তীর্ণ': 'Expired',
+    'ওজন/পরিমাণ': 'Weight/Quantity',
+    'মূল্য সংক্রান্ত': 'Price Pricing',
+    'প্রতারণা': 'Fraud',
+    'প্যাকেজিং': 'Packaging',
+    'পরিষেবা': 'Service',
+    'ব্যবহার': 'Behavior'
+}
+
+def translate_labels(labels):
+    """Translate Bengali labels to English for visualization"""
+    return [CATEGORY_TRANSLATIONS.get(label, label) for label in labels]
+
+
 
 def fetch_processed_complaints():
     """Fetch all processed complaints from database"""
@@ -39,8 +58,6 @@ def fetch_processed_complaints():
         complaint_number,
         description,
         category,
-        priority,
-        severity,
         validity_score,
         is_valid,
         validity_reasons,
@@ -96,9 +113,6 @@ def calculate_metrics(df: pd.DataFrame):
     
     # Priority distribution
     metrics["priority_distribution"] = df["ai_priority_level"].value_counts().to_dict()
-    
-    # Severity distribution
-    metrics["severity_distribution"] = df["severity"].value_counts().to_dict()
     
     # Sentiment distribution
     metrics["sentiment_distribution"] = df["sentiment"].value_counts().to_dict()
@@ -192,28 +206,7 @@ def plot_priority_distribution(df: pd.DataFrame):
     print("✅ Saved: priority_distribution.png")
 
 
-def plot_severity_distribution(df: pd.DataFrame):
-    """Plot severity distribution"""
-    
-    plt.figure(figsize=(10, 6))
-    
-    severity_order = ["Critical", "Major", "Moderate", "Minor"]
-    severity_counts = df["severity"].value_counts()
-    
-    # Sort by custom order
-    severity_counts = severity_counts.reindex(severity_order, fill_value=0)
-    
-    colors = ['#B71C1C', '#E64A19', '#F57C00', '#FBC02D']
-    plt.bar(severity_counts.index, severity_counts.values, color=colors, edgecolor='black')
-    plt.xlabel("Severity Level", fontsize=12)
-    plt.ylabel("Count", fontsize=12)
-    plt.title("Severity Level Distribution", fontsize=14, fontweight='bold')
-    plt.grid(True, alpha=0.3, axis='y')
-    
-    plt.savefig(f"{OUTPUT_DIR}/severity_distribution.png", dpi=300, bbox_inches='tight')
-    plt.close()
-    
-    print("✅ Saved: severity_distribution.png")
+
 
 
 def plot_sentiment_analysis(df: pd.DataFrame):
@@ -248,24 +241,28 @@ def plot_sentiment_analysis(df: pd.DataFrame):
 
 
 def plot_category_distribution(df: pd.DataFrame):
-    """Plot category distribution"""
-    
-    plt.figure(figsize=(12, 8))
-    
-    category_counts = df["ai_category"].value_counts().head(10)
-    
-    colors = sns.color_palette("viridis", len(category_counts))
-    plt.barh(category_counts.index, category_counts.values, color=colors, edgecolor='black')
-    plt.xlabel("Count", fontsize=12)
-    plt.ylabel("Category", fontsize=12)
-    plt.title("Top 10 Complaint Categories", fontsize=14, fontweight='bold')
-    plt.grid(True, alpha=0.3, axis='x')
-    
-    plt.tight_layout()
-    plt.savefig(f"{OUTPUT_DIR}/category_distribution.png", dpi=300, bbox_inches='tight')
-    plt.close()
-    
-    print("✅ Saved: category_distribution.png")
+     """Plot category distribution"""
+     
+     plt.figure(figsize=(12, 8))
+     
+     category_counts = df["ai_category"].value_counts().head(10)
+     
+     # Translate labels
+     translated_labels = translate_labels(category_counts.index)
+     
+     colors = sns.color_palette("viridis", len(category_counts))
+     # Use translated labels for plotting
+     plt.barh(translated_labels, category_counts.values, color=colors, edgecolor='black')
+     plt.xlabel("Count", fontsize=12)
+     plt.ylabel("Category", fontsize=12)
+     plt.title("Top 10 Complaint Categories", fontsize=14, fontweight='bold')
+     plt.grid(True, alpha=0.3, axis='x')
+     
+     plt.tight_layout()
+     plt.savefig(f"{OUTPUT_DIR}/category_distribution.png", dpi=300, bbox_inches='tight')
+     plt.close()
+     
+     print("✅ Saved: category_distribution.png")
 
 
 def plot_processing_time(df: pd.DataFrame):
@@ -396,17 +393,6 @@ Average Processing Time: {metrics['avg_processing_time_ms']:.2f}ms
     
     report += f"""
 
-⚠️  SEVERITY DISTRIBUTION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-"""
-    
-    for severity in ["Critical", "Major", "Moderate", "Minor"]:
-        count = metrics['severity_distribution'].get(severity, 0)
-        percentage = (count / metrics['total_complaints']) * 100
-        report += f"{severity}: {count} ({percentage:.1f}%)\n"
-    
-    report += f"""
-
 😊 SENTIMENT DISTRIBUTION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 """
@@ -477,7 +463,6 @@ def main():
     plot_language_distribution(df)
     plot_validity_distribution(df)
     plot_priority_distribution(df)
-    plot_severity_distribution(df)
     plot_sentiment_analysis(df)
     plot_category_distribution(df)
     plot_processing_time(df)

@@ -763,7 +763,7 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
                               ),
                             )
                           : DropdownButtonFormField<String>(
-                              value: _selectedProductId,
+                              initialValue: _selectedProductId,
                               decoration: const InputDecoration(
                                 border: OutlineInputBorder(),
                                 hintText: 'পণ্য নির্বাচন করুন (ঐচ্ছিক)',
@@ -814,7 +814,7 @@ class _ComplaintSubmissionScreenState extends State<ComplaintSubmissionScreen> {
                       ),
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
-                        value: _selectedCategory,
+                        initialValue: _selectedCategory,
                         decoration: const InputDecoration(
                           border: OutlineInputBorder(),
                           hintText: 'অভিযোগের ধরন নির্বাচন করুন',

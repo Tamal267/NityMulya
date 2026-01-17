@@ -248,7 +248,6 @@ class EnhancedFeaturesService {
     required String complaintType,
     required String subject,
     required String description,
-    String? priority,
   }) async {
     try {
       final response = await http.post(
@@ -266,7 +265,6 @@ class EnhancedFeaturesService {
           'complaint_type': complaintType,
           'subject': subject,
           'description': description,
-          'priority': priority ?? 'medium',
         }),
       );
       

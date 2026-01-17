@@ -455,7 +455,7 @@ class _UpdateProductScreenState extends State<UpdateProductScreen> {
                             : "Product is hidden from customers",
                       ),
                       value: _isVisible,
-                      activeColor: Colors.green,
+                      activeThumbColor: Colors.green,
                       onChanged: (value) {
                         setState(() {
                           _isVisible = value;

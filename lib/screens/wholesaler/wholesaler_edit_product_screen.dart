@@ -392,7 +392,7 @@ class _WholesalerEditProductScreenState extends State<WholesalerEditProductScree
 
                     // Category Selection
                     DropdownButtonFormField<String>(
-                      value: selectedCategory,
+                      initialValue: selectedCategory,
                       decoration: InputDecoration(
                         labelText: "Product Category",
                         prefixIcon: const Icon(Icons.category),
@@ -423,7 +423,7 @@ class _WholesalerEditProductScreenState extends State<WholesalerEditProductScree
 
                     // Government Fixed Product Selection
                     DropdownButtonFormField<String>(
-                      value: selectedProduct,
+                      initialValue: selectedProduct,
                       decoration: InputDecoration(
                         labelText: "Government Approved Product",
                         hintText: "Select from approved product list",
@@ -453,7 +453,7 @@ class _WholesalerEditProductScreenState extends State<WholesalerEditProductScree
 
                     // Unit Selection
                     DropdownButtonFormField<String>(
-                      value: selectedUnit,
+                      initialValue: selectedUnit,
                       decoration: InputDecoration(
                         labelText: "Unit",
                         prefixIcon: const Icon(Icons.straighten),
@@ -669,7 +669,7 @@ class _WholesalerEditProductScreenState extends State<WholesalerEditProductScree
                                 isPriorityProduct = value;
                               });
                             },
-                            activeColor: Colors.yellow[700],
+                            activeThumbColor: Colors.yellow[700],
                           ),
                         ],
                       ),
@@ -715,7 +715,7 @@ class _WholesalerEditProductScreenState extends State<WholesalerEditProductScree
                                     }
                                   });
                                 },
-                                activeColor: Colors.green[700],
+                                activeThumbColor: Colors.green[700],
                               ),
                             ],
                           ),

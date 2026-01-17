@@ -813,7 +813,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
                     children: [
                       // Product Dropdown (Full Width)
                       DropdownButtonFormField<String>(
-                        value: selectedProduct,
+                        initialValue: selectedProduct,
                         decoration: InputDecoration(
                           labelText: "Product",
                           border: OutlineInputBorder(
@@ -844,7 +844,7 @@ class _WholesalerDashboardScreenState extends State<WholesalerDashboardScreen>
 
                       // Location Dropdown (Full Width)
                       DropdownButtonFormField<String>(
-                        value: selectedLocation,
+                        initialValue: selectedLocation,
                         decoration: InputDecoration(
                           labelText: "Location",
                           border: OutlineInputBorder(

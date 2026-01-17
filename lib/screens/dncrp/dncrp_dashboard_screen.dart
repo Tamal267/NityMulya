@@ -634,9 +634,9 @@ class _DNCRPDashboardScreenState extends State<DNCRPDashboardScreen> {
     // Use AI priority if available, otherwise manual priority
     final displayPriority = aiPriority ?? priority;
     Color priorityColor = Colors.grey;
-    if (displayPriority == 'Urgent')
+    if (displayPriority == 'Urgent') {
       priorityColor = Colors.red;
-    else if (displayPriority == 'High' || displayPriority == 'high')
+    } else if (displayPriority == 'High' || displayPriority == 'high')
       priorityColor = Colors.orange;
     else if (displayPriority == 'Medium') priorityColor = Colors.blue.shade300;
 

@@ -251,7 +251,7 @@ export class DatabaseReviewController {
   // Get all reviews by a specific customer
   async getCustomerProductReviews(c: Context) {
     try {
-      const customerId = c.req.param("customerId");
+      let customerId = c.req.param("customerId");
 
       if (!customerId) {
         return c.json(
@@ -261,6 +261,15 @@ export class DatabaseReviewController {
           },
           400
         );
+      }
+
+      if (customerId === 'customer_current') {
+        const user = c.get('user');
+        if (user && user.userId) {
+          customerId = user.userId;
+        } else {
+           return c.json({ success: false, error: "Authentication required" }, 401);
+        }
       }
 
       console.log(`Getting product reviews by customer: ${customerId}`);
@@ -290,7 +299,7 @@ export class DatabaseReviewController {
   // Get all shop reviews by a specific customer
   async getCustomerShopReviews(c: Context) {
     try {
-      const customerId = c.req.param("customerId");
+      let customerId = c.req.param("customerId");
 
       if (!customerId) {
         return c.json(
@@ -300,6 +309,15 @@ export class DatabaseReviewController {
           },
           400
         );
+      }
+
+      if (customerId === 'customer_current') {
+         const user = c.get('user');
+         if (user && user.userId) {
+           customerId = user.userId;
+         } else {
+            return c.json({ success: false, error: "Authentication required" }, 401);
+         }
       }
 
       console.log(`Getting shop reviews by customer: ${customerId}`);

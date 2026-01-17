@@ -551,7 +551,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                   borderSide: BorderSide(color: Colors.green[600]!, width: 2),
                 ),
               ),
-              value: selectedCategory,
+              initialValue: selectedCategory,
               hint: const Text('Select Category'),
               isExpanded: true,
               items: availableCategories.map((category) {
@@ -593,7 +593,7 @@ class _AddOrderScreenState extends State<AddOrderScreen> {
                   borderSide: BorderSide(color: Colors.green[600]!, width: 2),
                 ),
               ),
-              value: selectedSubcategory,
+              initialValue: selectedSubcategory,
               hint: const Text('Select Product'),
               isExpanded: true,
               isDense: false,

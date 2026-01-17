@@ -331,7 +331,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                           ),
                           const SizedBox(height: 12),
                           DropdownButtonFormField<String>(
-                            value: selectedCategory,
+                            initialValue: selectedCategory,
                             decoration: InputDecoration(
                               hintText: "Select a category",
                               border: OutlineInputBorder(
@@ -398,7 +398,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
                           // ✅ Fixed DropdownButtonFormField
                           DropdownButtonFormField<String>(
-                            value: selectedProduct,
+                            initialValue: selectedProduct,
                             decoration: InputDecoration(
                               hintText: selectedCategory == null
                                   ? "Select category first"

@@ -226,8 +226,6 @@ export const createCustomerComplaint = async (c: any) => {
         "shop_name",
         "complaint_type",
         "description",
-        "priority",
-        "severity",
         "product_id",
         "product_name",
       ];
@@ -267,8 +265,6 @@ export const createCustomerComplaint = async (c: any) => {
       shop_name,
       complaint_type,
       description,
-      priority,
-      severity,
       product_id,
       product_name,
     } = body;
@@ -278,15 +274,13 @@ export const createCustomerComplaint = async (c: any) => {
       !shop_owner_id ||
       !shop_name ||
       !complaint_type ||
-      !description ||
-      !priority
+      !description
     ) {
       console.log("❌ Missing required fields:", {
         shop_owner_id: !!shop_owner_id,
         shop_name: !!shop_name,
         complaint_type: !!complaint_type,
         description: !!description,
-        priority: !!priority,
       });
       return c.json(
         {
@@ -302,8 +296,6 @@ export const createCustomerComplaint = async (c: any) => {
       shop_name,
       complaint_type,
       description,
-      priority,
-      severity,
       product_id: product_id || "N/A",
       product_name: product_name || "N/A",
       customerId,
@@ -391,8 +383,6 @@ export const createCustomerComplaint = async (c: any) => {
         product_id,
         product_name,
         category,
-        priority,
-        severity,
         description,
         status,
         submitted_at,
@@ -407,8 +397,6 @@ export const createCustomerComplaint = async (c: any) => {
         ${product_id || null},
         ${product_name || null},
         ${complaint_type},
-        ${priority},
-        ${severity || "Minor"},
         ${description},
         'Received',
         NOW(),
@@ -419,6 +407,63 @@ export const createCustomerComplaint = async (c: any) => {
 
     console.log("🎉 Database insert successful:", complaintResult[0]);
     const complaint = complaintResult[0];
+
+    // Trigger NLP Analysis in background (fire and forget to not delay response too much, 
+    // but here we might want to await it if it's fast enough. 
+    // Given the Python script takes ~3ms, let's await it to ensure consistency.)
+    try {
+      console.log("🤖 Initiating AI analysis...");
+      const nlpResponse = await fetch("http://localhost:8001/api/analyze-complaint", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": "your-secret-api-key"
+        },
+        body: JSON.stringify({
+          complaint_text: description,
+          customer_name: customer.full_name,
+          shop_name: shop_name,
+          product_name: product_name || "General Product"
+        })
+      });
+
+      if (nlpResponse.ok) {
+        const nlpData: any = await nlpResponse.json();
+        console.log("🤖 AI Analysis received");
+        
+        if (nlpData.success && nlpData.analysis) {
+          const analysis = nlpData.analysis;
+          const priority = analysis.priority || {};
+          const sentiment = analysis.sentiment || {};
+          const category = analysis.category || {};
+          const validity = analysis.validity || {};
+
+          await sql`
+            UPDATE complaints SET
+              ai_priority_level = ${priority.priority_level || 'Medium'},
+              ai_priority_score = ${priority.priority_score || 0},
+              sentiment = ${sentiment.sentiment || 'neutral'},
+              sentiment_score = ${sentiment.sentiment_score || 0},
+              emotion_intensity = ${sentiment.emotion_intensity || 0},
+              ai_category = ${category.category || 'Other'},
+              ai_category_confidence = ${category.confidence || 0},
+              ai_summary = ${analysis.summary || ''},
+              detected_language = ${analysis.detected_language || 'unknown'},
+              is_valid = ${validity.is_valid ?? true},
+              validity_score = ${validity.score || 0},
+              ai_full_analysis = ${JSON.stringify(analysis)},
+              ai_analysis_date = NOW()
+            WHERE id = ${complaint.id}
+          `;
+          console.log("✅ AI Analysis saved to database.");
+        }
+      } else {
+        console.error("❌ NLP Service returned error:", nlpResponse.status, await nlpResponse.text());
+      }
+    } catch (nlpError) {
+      console.error("❌ Error during AI analysis:", nlpError);
+      // Don't fail the request if AI fails
+    }
 
     return c.json(
       {
