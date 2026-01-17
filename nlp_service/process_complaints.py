@@ -117,7 +117,7 @@ def update_complaint_with_ai(conn, complaint_id: int, analysis: Dict[str, Any], 
     """
     
     cursor.execute(update_query, (
-        validity.get("score", 0),
+        validity.get("validity_score", 0),
         validity.get("is_valid", False),
         validity.get("reasons", []),
         priority.get("priority_score", 0),

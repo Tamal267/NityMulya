@@ -97,8 +97,28 @@ class ComplaintClassifier:
                 validity_score -= 0.4
                 reasons.append("Invalid Bengali structure")
         
+        # 7. Check if language is unknown (usually indicates gibberish)
+        if features.get('language') == 'unknown' and features['word_count'] > 3:
+            validity_score -= 0.4
+            reasons.append("Unknown language structure")
+
+        # 8. Check for common words (if English, should have at least one stop word)
+        if features.get('language') == 'en' and features['word_count'] > 4:
+            common_en = {'the', 'and', 'is', 'to', 'in', 'of', 'it', 'my', 'that', 'was', 'for', 'on', 'at'}
+            has_common = any(w in text_lower.split() for w in common_en)
+            if not has_common:
+                validity_score -= 0.25
+                reasons.append("No common vocabulary found")
+
+        # 9. Check for words without vowels (gibberish indicator)
+        words = text_lower.split()
+        words_no_vowels = [w for w in words if len(w) > 2 and not re.search(r'[aeiouy]', w)]
+        if len(words_no_vowels) > 0:
+            validity_score -= 0.2 * len(words_no_vowels)
+            reasons.append(f"Contains {len(words_no_vowels)} word(s) without vowels")
+
         # Rule-based checks
-        # 7. Check for spam keywords
+        # 8. Check for spam keywords
         spam_count = sum(1 for keyword in config.SPAM_KEYWORDS if keyword in text_lower)
         if spam_count > 0:
             validity_score -= 0.3 * spam_count
