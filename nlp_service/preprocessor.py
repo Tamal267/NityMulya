@@ -37,21 +37,136 @@ class TextPreprocessor:
             bengali_chars = re.findall(r'[\u0980-\u09FF]', text)
             english_chars = re.findall(r'[a-zA-Z]', text)
             
-            bengali_ratio = len(bengali_chars) / max(len(text), 1)
-            english_ratio = len(english_chars) / max(len(text), 1)
+            text_len = max(len(text), 1)
+            bengali_ratio = len(bengali_chars) / text_len
+            english_ratio = len(english_chars) / text_len
             
-            if bengali_ratio > 0.3 and english_ratio > 0.1:
-                return 'mixed'  # Banglish
-            elif bengali_ratio > 0.3:
+            # Case 1: Mixed Scripts (Bengali + English characters)
+            if bengali_ratio > 0.15 and english_ratio > 0.15:
+                return 'mixed'
+                
+            # Case 2: Mostly Bengali Script
+            if bengali_ratio > 0.3:
                 return 'bn'
-            elif english_ratio > 0.3:
+                
+            # Case 3: Mostly English Script - Check for Banglish (Bengali words in Latin script)
+            if english_ratio > 0.3:
+                # Common Banglish words/suffixes (Expanded list for Complaint System)
+                banglish_markers = {
+                    # Pronouns & People
+                    'ami', 'amra', 'apni', 'apnara', 'tumi', 'tomra', 'tui', 'tora',
+                    'amar', 'amader', 'apnar', 'apnader', 'tomar', 'tomader',
+                    'bhai', 'bai', 'bro', 'vai', 'vaia', 'bhaia', 'sir', 'madam', 'mam', 'maam',
+                    'customer', 'cust', 'seller', 'shopkeeper', 'dokan', 'dokandar',
+                    'rider', 'deliveryman', 'man', 'lok', 'user', 'admin',
+
+                    # Questions
+                    'ki', 'key', 'keno', 'kno', 'kn', 'kobe', 'kbe', 'koi', 'kothay', 'kothai',
+                    'kamne', 'kemon', 'kmn', 'koto', 'kto', 'koyta', 'koita', 'kon', 'konti',
+                    'kivabe', 'kemne', 'karon',
+
+                    # Verbs (Doing/Action)
+                    'chai', 'cai', 'lagbe', 'den', 'din', 'diben', 'disen', 'diyeche', 'dice',
+                    'dilam', 'nilam', 'nibo', 'nicchi', 'nebo', 'nite',
+                    'kinechi', 'kinsi', 'kinbo', 'kinte', 'kena',
+                    'ashe', 'asheni', 'aseni', 'ashbe', 'asbe', 'asche', 'ashse',
+                    'gelo', 'geche', 'gese', 'jacche', 'jacce', 'jabo', 'jete',
+                    'pacchi', 'pacci', 'paini', 'payni', 'pabo', 'peyechi', 'peyecho', 'paichi', 'paisi',
+                    'dekhen', 'dekhun', 'dekho', 'dekhbo', 'dekhlam', 'dekha',
+                    'koren', 'korun', 'koro', 'korbo', 'korben', 'korchi', 'korsi', 'koreche', 'korse',
+                    'hobe', 'hbe', 'hoyeche', 'hoyese', 'hoyni', 'hoini', 'hoy', 'hoye',
+                    'thakbe', 'thake', 'thako', 'thakun',
+                    'bollen', 'bolchen', 'bolse', 'bolsi', 'bollam', 'bolo', 'bola',
+                    'shunen', 'shunchen', 'shunse', 'shunsi', 'shunlam',
+                    'janen', 'janan', 'janabo', 'janaben', 'jani', 'janai',
+                    'pathan', 'pathabo', 'pathiye', 'pathaise', 'pathaisi',
+                    'order', 'ordr', 'deleyvary', 'delivary', 'delivery', 'receive', 'return', 'cancel',
+                    'refund', 'replace', 'exchange', 'change', 'fix', 'solved', 'solve',
+                    'thokalen', 'thoksen', 'thoks', ' ঠoklam',
+
+                    # Adjectives (Quality/Status)
+                    'valo', 'bhalo', 'vl', 'bhala', 'good', 'best', 'fatafati', 'joss',
+                    'kharap', 'khrap', 'baje', 'fakibaji', 'worst', 'bad', 'faltu', 'bogus',
+                    'nosto', 'nosto', 'noshto', 'damage', 'vanga', 'bhanga', 'fata', 'chehra',
+                    'pocha', 'pacha', 'rotten', 'shukna', 'shukno', 'bheja', 'veja',
+                    'purono', 'puran', 'old', 'notun', 'new', 'fresh', 'taja',
+                    'gorom', 'hot', 'thanda', 'cold', 'warm',
+                    'onek', 'onk', 'beshi', 'bashi', 'kom', 'less', 'more',
+                    'choto', 'small', 'boro', 'big', 'large', 'medium',
+                    'heavy', 'halka', 'light', 'weight',
+                    'missing', 'nai', 'nei', 'short', 'wrong', 'vul', 'bhul',
+                    'fake', 'nokol', 'duplicate', 'copy', 'original', 'authentic', 'real',
+                    'same', 'different', 'onnorkom', 'vinno',
+                    'slow', 'fast', 'druto', 'taratari', 'late', 'deri',
+
+                    # Nouns (Objects/Concepts)
+                    'product', 'prodacat', 'prduct', 'item', 'jinish', 'mal', 'ponno',
+                    'packet', 'pket', 'box', 'bag', 'bosta', 'polithin', 'wrap', 'packing',
+                    'color', 'colour', 'rong', 'size', 'map', 'ojon', 'weight',
+                    'kg', 'gm', 'gram', 'liter', 'ltr', 'pc', 'pcs', 'piece', 'pis',
+                    'taka', 'tk', 'price', 'dam', 'rate', 'mullo', 'cost', 'charge', 'fee',
+                    'bill', 'cash', 'money', 'payment', 'pay', 'due', 'baki', 'advance',
+                    'bikash', 'bkash', 'nagad', 'rocket', 'card', 'bank',
+                    'offer', 'discount', 'sar', 'coupon', 'voucher', 'gift',
+                    'app', 'ap', 'website', 'site', 'link',
+                    'msg', 'message', 'sms', 'call', 'kol', 'phone', 'phon', 'number', 'num',
+                    'pic', 'picture', 'chobi', 'photo', 'video', 'ss', 'screenshot',
+                    'review', 'rating', 'star',
+                    'stock', 'available', 'out',
+
+                    # Food Specific (Common in complaints)
+                    'alu', 'potato', 'peyaj', 'onion', 'rosun', 'garlic', 'ada', 'ginger',
+                    'mach', 'fish', 'mangsho', 'meat', 'chicken', 'beef', 'mutton',
+                    'chal', 'rice', 'dal', 'oil', 'tel', 'lobon', 'salt', 'chini', 'sugar',
+                    'sabji', 'shobji', 'vegetable', 'fruit', 'fol',
+                    'biskut', 'biscuit', 'cake', 'ruti', 'bread', 'milk', 'dudh',
+                    'dim', 'egg', 'pani', 'water',
+
+                    # Expressions & Issues
+                    'problem', 'prob', 'prblm', 'somossa', 'shomossha', 'issue', 'hamela', 'jamela', 'jhamela',
+                    'complain', 'complaint', 'avijog', 'ovijog',
+                    'cheat', 'cheater', 'fake', 'fraud', 'butpar', 'batpar', 'chater',
+                    'chor', 'churi', 'dakat', 'm মিথ্যা', 'mittha', 'lie', 'liar',
+                    'kotha', 'ktha', 'promise', 'commitment',
+                    'service', 'sarvice', 'bebohar', 'bavor', 'behavior', 'rude', 'behay',
+                    'rag', 'angry', 'mood', 'okhushi', 'h হতাশ', 'hotash', 'disappointed',
+                    'thank', 'thanks', 'dhonnobad', 'tnx', 'plz', 'pls', 'please', 'doya',
+
+                    # Connectors/Modifiers
+                    'ar', 'er', 'r', 'o', 'and', 'but', 'kintu', 'tobu', 'tobe',
+                    'na', 'nai', 'nei', 'ni', 'noy',
+                    'h', 'ho', 'hae', 'ha', 'ji', 'hmm', 'ok', 'thik', 'thk', 'accha', 'acha',
+                    'ta', 'ti', 'tar', 'ai', 'ei', 'oi', 'eta', 'oita', 'seta',
+                    'j', 'je', 'ja', 'jar', 'jara',
+                    'tay', 'tai', 'jobno', 'jnno', 'jonno',
+                    'theke', 'thaka', 'theka', 'thike',
+                    'diye', 'dia', 'diya',
+                    'kore', 'kora', 'koira',
+                    'moto', 'mot', 'mt',
+                    'khub', 'kub', 'kkhub', 'onek', 'onk',
+                    'ekhon', 'ekhn', 'akhon', 'tokhon', 'tkhn',
+                    'aj', 'ajke', 'aik', 'kal', 'kalke', 'agamikal', 'grotokal',
+                    'sokale', 'bikale', 'rate', 'dupura',
+                    'ghonta', 'min', 'minute', 'din', 'mash', 'bochor', 'shopta',
+                    'bar', 'bar', 'time', 'somoy', 'shomoy'
+                }
+                
+                words = text.lower().split()
+                banglish_count = sum(1 for w in words if w in banglish_markers)
+                
+                # If we find Banglish markers, classify as mixed
+                if banglish_count >= 1:
+                    return 'mixed'
+                    
                 return 'en'
-            else:
-                # Fallback to langdetect
-                lang = detect(text)
-                return 'bn' if lang == 'bn' else 'en'
+            
+            # Fallback
+            lang = detect(text)
+            return 'bn' if lang == 'bn' else 'en'
+            
         except LangDetectException:
-            return 'unknown'
+            # Fallback for errors or empty/symbol-only text
+            return 'en'
     
     def normalize_bengali(self, text: str) -> str:
         """Normalize Bengali text"""
