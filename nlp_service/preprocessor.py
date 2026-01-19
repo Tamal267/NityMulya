@@ -5,27 +5,95 @@ Handles text normalization, language detection, and cleaning
 
 import re
 import emoji
+import difflib
 from langdetect import detect, LangDetectException
 from typing import Dict, Tuple
+from banglish_dict import BANGLISH_MARKERS_SET, BANGLISH_TO_BN
 
 class TextPreprocessor:
     def __init__(self):
-        # Banglish to Bengali common mappings
-        self.banglish_mappings = {
-            "taka": "টাকা",
-            "dam": "দাম",
-            "kharap": "খারাপ",
-            "valo": "ভালো",
-            "kom": "কম",
-            "beshi": "বেশি",
-            "product": "পণ্য",
-            "shop": "দোকান",
-            "service": "সেবা",
-            "complaint": "অভিযোগ"
-        }
+        # Banglish to Bengali markers and full mapping
+        self.banglish_markers = BANGLISH_MARKERS_SET
+        self.banglish_to_bn = BANGLISH_TO_BN
         
         # Bengali number to English number mapping
         self.bengali_to_english_nums = str.maketrans('০১২৩৪৫৬৭৮৯', '0123456789')
+        
+        # Common English words that should NOT count as Banglish markers
+        # and indicate the text is likely English
+        self.english_stopwords = {
+            # Pronouns
+            'i', 'me', 'my', 'mine', 'you', 'your', 'yours', 'he', 'him', 'his', 'she', 'her', 'hers',
+            'it', 'its', 'we', 'us', 'our', 'ours', 'they', 'them', 'their', 'theirs',
+            'myself', 'yourself', 'himself', 'herself', 'itself', 'ourselves', 'themselves',
+            
+            # Verbs (Auxiliary & Common)
+            'am', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
+            'have', 'has', 'had', 'do', 'does', 'did', 'done',
+            'can', 'could', 'will', 'would', 'shall', 'should', 'may', 'might', 'must',
+            'go', 'come', 'think', 'know', 'want', 'need', 'get', 'got', 'give', 'take', 'make', 'see', 'look',
+            'buy', 'buying', 'bought', 'purchase', 'purchased', 'order', 'ordered', 'sell', 'sold',
+            'work', 'working', 'help', 'ask', 'say', 'said', 'tell', 'told',
+            
+            # Prepositions & Conjunctions
+            'a', 'an', 'the', 'and', 'but', 'if', 'or', 'because', 'as', 'until', 'while',
+            'of', 'at', 'by', 'for', 'with', 'about', 'against', 'between', 'into', 'through',
+            'during', 'before', 'after', 'above', 'below', 'to', 'from', 'up', 'down', 'in', 'out', 'on', 'off', 'over', 'under', 
+            'again', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how',
+            
+            # Quantifiers & Adjectives
+            'all', 'any', 'both', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'many', 'much',
+            'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'now',
+            'good', 'bad', 'new', 'old', 'high', 'low', 'big', 'small', 'long', 'short',
+            'first', 'last', 'next', 'best', 'worst',
+            
+            # Application Specific (Nouns that might be in Banglish dict but are English)
+            'product', 'item', 'goods', 'packet', 'bag', 'bottle', 'box', 'can', 'jar',
+            'price', 'cost', 'rate', 'money', 'cash', 'bill', 'receipt', 'discount', 'offer',
+            'quality', 'quantity', 'weight', 'size', 'color', 'date', 'time',
+            'shop', 'store', 'market', 'mart', 'traders', 'enterprise', 'bhandar',
+            'sugar', 'salt', 'oil', 'rice', 'milk', 'egg', 'eggs', 'water', 'tea', 'coffee',
+            'onion', 'potato', 'garlic', 'ginger', 'vegetable', 'fruit', 'fish', 'meat', 'chicken', 'beef',
+            'biscuit', 'cake', 'bread', 'soap', 'shampoo', 'detergent', 'paste', 'brush',
+            'yesterday', 'today', 'tomorrow', 'day', 'night', 'morning', 'afternoon', 'evening',
+            'problem', 'issue', 'complaint', 'service', 'staff', 'behavior', 'rude', 'polite',
+            'expire', 'expired', 'rotten', 'smell', 'broken', 'damaged'
+        }
+
+    def convert_banglish_to_bangla(self, text: str) -> str:
+        """
+        Convert Banglish text to Bengali with spell check
+        """
+        words = text.split()
+        converted_words = []
+        
+        for word in words:
+            word_lower = word.lower()
+            
+            # 1. Direct match
+            if word_lower in self.banglish_to_bn:
+                converted_words.append(self.banglish_to_bn[word_lower])
+                continue
+                
+            # 2. Check if it's already Bengali or number
+            if re.match(r'[\u0980-\u09FF]', word) or re.match(r'[0-9]', word):
+                 converted_words.append(word)
+                 continue
+
+            # 3. Fuzzy match (Spell check) if length of word is reasonable
+            # Find close matches in our dictionary keys
+            if len(word) >= 3:
+                matches = difflib.get_close_matches(word_lower, self.banglish_markers, n=1, cutoff=0.85)
+                
+                if matches:
+                    close_match = matches[0]
+                    converted_words.append(self.banglish_to_bn[close_match])
+                else:
+                    converted_words.append(word)
+            else:
+                converted_words.append(word)
+                
+        return ' '.join(converted_words)
         
     def detect_language(self, text: str) -> str:
         """
@@ -49,123 +117,30 @@ class TextPreprocessor:
             if bengali_ratio > 0.3:
                 return 'bn'
                 
-            # Case 3: Mostly English Script - Check for Banglish (Bengali words in Latin script)
+            # Case 3: Mostly English Script - Check for Banglish markers
             if english_ratio > 0.3:
-                # Common Banglish words/suffixes (Expanded list for Complaint System)
-                banglish_markers = {
-                    # Pronouns & People
-                    'ami', 'amra', 'apni', 'apnara', 'tumi', 'tomra', 'tui', 'tora',
-                    'amar', 'amader', 'apnar', 'apnader', 'tomar', 'tomader',
-                    'bhai', 'bai', 'bro', 'vai', 'vaia', 'bhaia', 'sir', 'madam', 'mam', 'maam',
-                    'customer', 'cust', 'seller', 'shopkeeper', 'dokan', 'dokandar',
-                    'rider', 'deliveryman', 'man', 'lok', 'user', 'admin',
-
-                    # Questions
-                    'ki', 'key', 'keno', 'kno', 'kn', 'kobe', 'kbe', 'koi', 'kothay', 'kothai',
-                    'kamne', 'kemon', 'kmn', 'koto', 'kto', 'koyta', 'koita', 'kon', 'konti',
-                    'kivabe', 'kemne', 'karon',
-
-                    # Verbs (Doing/Action)
-                    'chai', 'cai', 'lagbe', 'den', 'din', 'diben', 'disen', 'diyeche', 'dice',
-                    'dilam', 'nilam', 'nibo', 'nicchi', 'nebo', 'nite',
-                    'kinechi', 'kinsi', 'kinbo', 'kinte', 'kena',
-                    'ashe', 'asheni', 'aseni', 'ashbe', 'asbe', 'asche', 'ashse',
-                    'gelo', 'geche', 'gese', 'jacche', 'jacce', 'jabo', 'jete',
-                    'pacchi', 'pacci', 'paini', 'payni', 'pabo', 'peyechi', 'peyecho', 'paichi', 'paisi',
-                    'dekhen', 'dekhun', 'dekho', 'dekhbo', 'dekhlam', 'dekha',
-                    'koren', 'korun', 'koro', 'korbo', 'korben', 'korchi', 'korsi', 'koreche', 'korse',
-                    'hobe', 'hbe', 'hoyeche', 'hoyese', 'hoyni', 'hoini', 'hoy', 'hoye',
-                    'thakbe', 'thake', 'thako', 'thakun',
-                    'bollen', 'bolchen', 'bolse', 'bolsi', 'bollam', 'bolo', 'bola',
-                    'shunen', 'shunchen', 'shunse', 'shunsi', 'shunlam',
-                    'janen', 'janan', 'janabo', 'janaben', 'jani', 'janai',
-                    'pathan', 'pathabo', 'pathiye', 'pathaise', 'pathaisi',
-                    'order', 'ordr', 'deleyvary', 'delivary', 'delivery', 'receive', 'return', 'cancel',
-                    'refund', 'replace', 'exchange', 'change', 'fix', 'solved', 'solve',
-                    'thokalen', 'thoksen', 'thoks', ' ঠoklam',
-
-                    # Adjectives (Quality/Status)
-                    'valo', 'bhalo', 'vl', 'bhala', 'good', 'best', 'fatafati', 'joss',
-                    'kharap', 'khrap', 'baje', 'fakibaji', 'worst', 'bad', 'faltu', 'bogus',
-                    'nosto', 'nosto', 'noshto', 'damage', 'vanga', 'bhanga', 'fata', 'chehra',
-                    'pocha', 'pacha', 'rotten', 'shukna', 'shukno', 'bheja', 'veja',
-                    'purono', 'puran', 'old', 'notun', 'new', 'fresh', 'taja',
-                    'gorom', 'hot', 'thanda', 'cold', 'warm',
-                    'onek', 'onk', 'beshi', 'bashi', 'kom', 'less', 'more',
-                    'choto', 'small', 'boro', 'big', 'large', 'medium',
-                    'heavy', 'halka', 'light', 'weight',
-                    'missing', 'nai', 'nei', 'short', 'wrong', 'vul', 'bhul',
-                    'fake', 'nokol', 'duplicate', 'copy', 'original', 'authentic', 'real',
-                    'same', 'different', 'onnorkom', 'vinno',
-                    'slow', 'fast', 'druto', 'taratari', 'late', 'deri',
-
-                    # Nouns (Objects/Concepts)
-                    'product', 'prodacat', 'prduct', 'item', 'jinish', 'mal', 'ponno',
-                    'packet', 'pket', 'box', 'bag', 'bosta', 'polithin', 'wrap', 'packing',
-                    'color', 'colour', 'rong', 'size', 'map', 'ojon', 'weight',
-                    'kg', 'gm', 'gram', 'liter', 'ltr', 'pc', 'pcs', 'piece', 'pis',
-                    'taka', 'tk', 'price', 'dam', 'rate', 'mullo', 'cost', 'charge', 'fee',
-                    'bill', 'cash', 'money', 'payment', 'pay', 'due', 'baki', 'advance',
-                    'bikash', 'bkash', 'nagad', 'rocket', 'card', 'bank',
-                    'offer', 'discount', 'sar', 'coupon', 'voucher', 'gift',
-                    'app', 'ap', 'website', 'site', 'link',
-                    'msg', 'message', 'sms', 'call', 'kol', 'phone', 'phon', 'number', 'num',
-                    'pic', 'picture', 'chobi', 'photo', 'video', 'ss', 'screenshot',
-                    'review', 'rating', 'star',
-                    'stock', 'available', 'out',
-
-                    # Food Specific (Common in complaints)
-                    'alu', 'potato', 'peyaj', 'onion', 'rosun', 'garlic', 'ada', 'ginger',
-                    'mach', 'fish', 'mangsho', 'meat', 'chicken', 'beef', 'mutton',
-                    'chal', 'rice', 'dal', 'oil', 'tel', 'lobon', 'salt', 'chini', 'sugar',
-                    'sabji', 'shobji', 'vegetable', 'fruit', 'fol',
-                    'biskut', 'biscuit', 'cake', 'ruti', 'bread', 'milk', 'dudh',
-                    'dim', 'egg', 'pani', 'water',
-
-                    # Expressions & Issues
-                    'problem', 'prob', 'prblm', 'somossa', 'shomossha', 'issue', 'hamela', 'jamela', 'jhamela',
-                    'complain', 'complaint', 'avijog', 'ovijog',
-                    'cheat', 'cheater', 'fake', 'fraud', 'butpar', 'batpar', 'chater',
-                    'chor', 'churi', 'dakat', 'm মিথ্যা', 'mittha', 'lie', 'liar',
-                    'kotha', 'ktha', 'promise', 'commitment',
-                    'service', 'sarvice', 'bebohar', 'bavor', 'behavior', 'rude', 'behay',
-                    'rag', 'angry', 'mood', 'okhushi', 'h হতাশ', 'hotash', 'disappointed',
-                    'thank', 'thanks', 'dhonnobad', 'tnx', 'plz', 'pls', 'please', 'doya',
-
-                    # Connectors/Modifiers
-                    'ar', 'er', 'r', 'o', 'and', 'but', 'kintu', 'tobu', 'tobe',
-                    'na', 'nai', 'nei', 'ni', 'noy',
-                    'h', 'ho', 'hae', 'ha', 'ji', 'hmm', 'ok', 'thik', 'thk', 'accha', 'acha',
-                    'ta', 'ti', 'tar', 'ai', 'ei', 'oi', 'eta', 'oita', 'seta',
-                    'j', 'je', 'ja', 'jar', 'jara',
-                    'tay', 'tai', 'jobno', 'jnno', 'jonno',
-                    'theke', 'thaka', 'theka', 'thike',
-                    'diye', 'dia', 'diya',
-                    'kore', 'kora', 'koira',
-                    'moto', 'mot', 'mt',
-                    'khub', 'kub', 'kkhub', 'onek', 'onk',
-                    'ekhon', 'ekhn', 'akhon', 'tokhon', 'tkhn',
-                    'aj', 'ajke', 'aik', 'kal', 'kalke', 'agamikal', 'grotokal',
-                    'sokale', 'bikale', 'rate', 'dupura',
-                    'ghonta', 'min', 'minute', 'din', 'mash', 'bochor', 'shopta',
-                    'bar', 'bar', 'time', 'somoy', 'shomoy'
-                }
-                
                 words = text.lower().split()
-                banglish_count = sum(1 for w in words if w in banglish_markers)
                 
-                # If we find Banglish markers, classify as mixed
-                if banglish_count >= 1:
+                # Check for strong English indicators
+                english_word_count = sum(1 for w in words if w in self.english_stopwords)
+                if english_word_count >= 2 or (len(words) > 3 and english_word_count / len(words) > 0.2):
+                    return 'en'
+
+                # Count matches from loaded dictionary + hardcoded markers for safety
+                # Exclude common English words from Banglish count even if they exist in dict
+                banglish_count = sum(1 for w in words if w in self.banglish_markers and w not in self.english_stopwords)
+                total_words = len(words)
+                
+                # If significant portion matches Banglish words (and NOT English structure)
+                if banglish_count >= 2 or (total_words > 0 and banglish_count/total_words > 0.3):
                     return 'mixed'
                     
                 return 'en'
             
-            # Fallback
             lang = detect(text)
             return 'bn' if lang == 'bn' else 'en'
             
         except LangDetectException:
-            # Fallback for errors or empty/symbol-only text
             return 'en'
     
     def normalize_bengali(self, text: str) -> str:

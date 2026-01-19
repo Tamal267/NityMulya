@@ -68,12 +68,25 @@ def rejudge():
                     continue
                     
                 try:
-                    # 1. Preprocess
-                    cleaned_text = preprocessor.clean_text(description)
-                    features = preprocessor.extract_features(description)
+                   # 1. Detect and Convert Banglish
+                    lang = preprocessor.detect_language(description)
+                    final_text = description
                     
-                    # 2. Run Analysis
-                    analysis = classifier.analyze_complaint(description, features)
+                    # If detected as Mixed (indicates Banglish), try to convert
+                    # We avoid converting 'en' because we improved detection to distinguish English sentences
+                    if lang == 'mixed':
+                         converted = preprocessor.convert_banglish_to_bangla(description)
+                         # Only use converted text if it actually changed something
+                         if converted != description:
+                             final_text = converted
+                             logging.info(f"🔤 Converted Banglish to Bangla: '{description[:30]}...' -> '{final_text[:30]}...'")
+
+                    # 2. Preprocess & Extract Features (using the potentially converted text)
+                    cleaned_text = preprocessor.clean_text(final_text)
+                    features = preprocessor.extract_features(final_text)
+                    
+                    # 3. Run Analysis
+                    analysis = classifier.analyze_complaint(final_text, features)
                     
                     validity = analysis.get("validity", {})
                     priority = analysis.get("priority", {})
