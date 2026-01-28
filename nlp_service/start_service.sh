@@ -31,7 +31,7 @@ fi
 # Set environment variables
 export SERVICE_PORT=8001
 export SERVICE_HOST=0.0.0.0
-export MODEL_NAME="sagorsarker/bangla-bert-base"
+export MODEL_NAME="bert-base-multilingual-cased"
 export API_KEY="your-secret-api-key"
 export LOG_LEVEL="INFO"
 

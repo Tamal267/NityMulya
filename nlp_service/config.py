@@ -14,7 +14,7 @@ class Config:
     SERVICE_HOST = os.getenv("SERVICE_HOST", "0.0.0.0")
     
     # Model Configuration
-    BANGLA_BERT_MODEL = os.getenv("MODEL_NAME", "sagorsarker/bangla-bert-base")
+    BANGLA_BERT_MODEL = os.getenv("MODEL_NAME", "bert-base-multilingual-cased")
     MAX_LENGTH = int(os.getenv("MAX_LENGTH", 512))
     BATCH_SIZE = int(os.getenv("BATCH_SIZE", 8))
     

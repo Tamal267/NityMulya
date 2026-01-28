@@ -12,8 +12,8 @@ import re
 
 class ComplaintClassifier:
     def __init__(self):
-        """Initialize BanglaBERT model and tokenizer"""
-        print(f"Loading BanglaBERT model: {config.BANGLA_BERT_MODEL}")
+        """Initialize mBERT (Multilingual BERT) model and tokenizer"""
+        print(f"Loading mBERT model: {config.BANGLA_BERT_MODEL}")
         
         # Load tokenizer and base model
         self.tokenizer = AutoTokenizer.from_pretrained(config.BANGLA_BERT_MODEL)
