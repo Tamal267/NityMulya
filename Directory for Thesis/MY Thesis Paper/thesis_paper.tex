@@ -109,11 +109,11 @@ A dataset of 512 complaints has been collected from government marketplace users
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.65\textwidth]{language_distribution.png}
-    \caption{Language distribution of complaints showing 85.2\% in English and 14.8\% in Bengali. The pie chart illustrates that while English is more common, significant Bengali language support is required.}
+    \caption{Language distribution of complaints showing 48.8\% in English, 14.8\% in Bengali (বাংলা), and 36.3\% in Banglish (mixed language). The chart demonstrates the multilingual nature of citizen complaints, requiring comprehensive language support.}
     \label{fig:language_dist}
 \end{figure}
 
-Figure \ref{fig:language_dist} shows the language distribution of the complaint dataset. It has been found that 85.2\% of complaints are written in English, while 14.8\% are in Bengali. This distribution is interesting because it shows that many users prefer English when writing formal complaints, possibly because they think it looks more professional. However, the 14.8\% Bengali complaints represent about 76 complaints, which is still a significant number. These complaints need proper Bengali language understanding, which traditional English-only systems cannot provide. The system handles both languages effectively, making it more inclusive and useful for all citizens.
+Figure \ref{fig:language_dist} shows the language distribution of the complaint dataset. It has been found that 48.8\% of complaints are written in English, 14.8\% in pure Bengali, and 36.3\% in Banglish (mixed Bengali-English). This distribution is significant because it reveals the multilingual communication patterns of Bangladeshi citizens. The large proportion of Banglish complaints (186 out of 512) shows that many users naturally mix Bengali and English when expressing their concerns, possibly because they are comfortable with both languages or lack proper vocabulary in one language. The 14.8\% pure Bengali complaints represent about 76 complaints, which require proper Bengali language understanding that traditional English-only systems cannot provide. The system handles all three language types effectively through BanglishBERT for translation and mBERT for classification, making it more inclusive and useful for all citizens regardless of their language preference.
 
 \subsection{Priority Distribution}
 \begin{figure}[h]

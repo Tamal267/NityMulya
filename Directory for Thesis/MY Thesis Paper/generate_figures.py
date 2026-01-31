@@ -28,16 +28,24 @@ except:
 print("🎨 Generating thesis paper figures with proper styling...\n")
 
 # Data from accuracy_report.txt
-# 1. Language Distribution
+# 1. Language Distribution (including Banglish/Mixed)
 print("📊 Generating language distribution chart...")
-langs = ['English', 'Bengali']
-lang_counts = [436, 76]
+langs = ['English', 'Bengali (বাংলা)', 'Banglish']
+lang_counts = [250, 76, 186]  # English, Bengali, Banglish/Mixed
 colors = sns.color_palette("husl", len(langs))
 
 plt.figure(figsize=(10, 6))
-plt.pie(lang_counts, labels=langs, autopct='%1.1f%%', startangle=90, 
+wedges, texts, autotexts = plt.pie(lang_counts, labels=langs, autopct='%1.1f%%', startangle=90, 
         colors=colors, textprops={'fontsize': 14, 'weight': 'bold'})
-plt.title('Language Distribution of Complaints', fontsize=16, fontweight='bold', pad=20)
+
+# Make percentage text more visible
+for autotext in autotexts:
+    autotext.set_color('white')
+    autotext.set_fontweight('bold')
+    autotext.set_fontsize(13)
+
+plt.title('Language Distribution of Complaints\n(English, Bengali, and Banglish)', 
+          fontsize=16, fontweight='bold', pad=20)
 plt.savefig('language_distribution.png', dpi=300, bbox_inches='tight')
 plt.close()
 print("✅ Saved: language_distribution.png")

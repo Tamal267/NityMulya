@@ -32,7 +32,9 @@ def rejudge():
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         
-        preprocessor = TextPreprocessor()
+        # Enable BanglishBERT for Banglish translation
+        logging.info("🚀 Initializing preprocessor with BanglishBERT...")
+        preprocessor = TextPreprocessor(use_banglishbert=True)
         classifier = ComplaintClassifier()
         
         tables_to_process = ['complaints', 'complaints_with_ai']
@@ -68,15 +70,23 @@ def rejudge():
                     continue
                     
                 try:
-                    # Using mBERT (multilingual model) - no Banglish conversion needed
-                    # The model can handle English, Bangla, and Banglish directly
+                    # Using BanglishBERT for Banglish translation
+                    # Detect if text is Banglish and convert to Bengali
                     
-                    # 1. Preprocess & Extract Features (using original text)
+                    # 1. Preprocess & Detect Language
                     cleaned_text = preprocessor.clean_text(description)
                     features = preprocessor.extract_features(description)
+                    detected_lang = features.get('language', 'en')
                     
-                    # 2. Run Analysis
-                    analysis = classifier.analyze_complaint(description, features)
+                    # 2. If Banglish (mixed), translate to Bengali
+                    text_to_analyze = description
+                    if detected_lang == 'mixed':
+                        logging.info(f"🔄 Translating Banglish to Bengali for complaint {complaint_number}...")
+                        text_to_analyze = preprocessor.convert_banglish_to_bangla(cleaned_text)
+                        logging.info(f"✅ Translated: {text_to_analyze[:100]}...")
+                    
+                    # 3. Run Analysis on translated/original text
+                    analysis = classifier.analyze_complaint(text_to_analyze, features)
                     
                     validity = analysis.get("validity", {})
                     priority = analysis.get("priority", {})
