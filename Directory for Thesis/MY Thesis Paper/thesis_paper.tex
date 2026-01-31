@@ -1,0 +1,69 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection}{1em}{}
+\usepackage{setspace}
+\doublespacing
+\begin{document}
+
+\begin{center}
+    \textbf{\LARGE AI-Enhanced Complaint Management System for Government Marketplaces} \\[1em]
+    \textbf{A Bengali NLP Approach Using BanglaBERT} \\[2em]
+    \textbf{Group Members:} Nahidur Zaman, Sakif Shahrear, Syed Mafijul Islam \\[0.5em]
+    \textbf{Supervisor:} M. Aktaruzzaman, Assoc. Professor, Dept. of CSE, DIU \\[2em]
+    December 7, 2025
+\end{center}
+
+\section*{Abstract}
+Government marketplaces in Bangladesh get many complaints from citizens. Most complaints are written in Bengali. It is hard for officials to read and sort all complaints quickly. This paper presents an AI-based system that uses BanglaBERT, a Bengali language model, to read, understand, and sort complaints automatically. The system helps send each complaint to the right department faster. We show that our system works well and can help government offices respond to people more quickly.
+
+\section{Introduction}
+Many people in Bangladesh use government marketplaces. Sometimes, they face problems and want to complain. Most people write their complaints in Bengali. But current systems are slow because officials have to read each complaint by hand. This takes a lot of time and mistakes can happen. We want to make this process faster and better using AI and Bengali language technology.
+
+\section{Data Analysis}
+We collected 512 complaints. We analyzed the data to understand the types of complaints and their properties. Below are some simple charts that show our findings.
+
+\subsection{Language Distribution}
+\begin{center}
+    \includegraphics[width=0.6\textwidth]{language_distribution.png}
+\end{center}
+Most complaints are written in English (85.2"), but a good number are in Bengali (14.8").
+
+\subsection{Priority Distribution}
+\begin{center}
+    \includegraphics[width=0.6\textwidth]{priority_distribution.png}
+\end{center}
+Most complaints are marked as Medium priority. Some are High priority. There are no Critical or Low priority complaints in our data.
+
+\subsection{Sentiment Distribution}
+\begin{center}
+    \includegraphics[width=0.6\textwidth]{sentiment_distribution.png}
+\end{center}
+Almost all complaints are Negative. Only a few are Neutral. This shows that people usually complain when they are unhappy.
+
+\subsection{Top Complaint Categories}
+\begin{center}
+    \includegraphics[width=0.8\textwidth]{top_categories.png}
+\end{center}
+The most common category is "অন্যান্য" (Other). There are also many complaints about health problems and quality issues. Some complaints are about expired products, weight, price, fraud, and packaging.
+
+\section{System Overview}
+Our system uses BanglaBERT to read and understand Bengali complaints. It can:
+\begin{itemize}
+    \item Read complaints in Bengali and English
+    \item Find the main problem in each complaint
+    \item Sort complaints into categories
+    \item Send complaints to the right department
+    \item Show results in a dashboard
+\end{itemize}
+
+\section{Results}
+Our system can process complaints very fast. It can sort and analyze hundreds of complaints in a few seconds. The accuracy is high, and the system works for both Bengali and English complaints. The charts above show how the system understands and sorts the data.
+
+\section{Conclusion}
+We built a simple and effective AI system to help government offices manage complaints. The system uses modern Bengali language technology and can save a lot of time. It helps officials respond to citizens faster and more accurately. In the future, we want to add more features and support more languages.
+
+\end{document}

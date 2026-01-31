@@ -1,0 +1,18 @@
+MILITARY INSTITUTE OF SCIENCE
+AND TECHNOLOGY
+DEPARTMENT OF COMPUTER SCIENCE AND ENGINEERING
+MIRPUR CANTONMENT, DHAKA-1216
+CSE-400 Thesis Project Proposal
+Batch: CSE 22
+AI-Enhanced Complaint
+Management System
+for Government Marketplaces
+A Bengali NLP Approach Using BanglaBERT
+Group Members: Nahidur Zaman- 202214075
+Sakif Shahrear- 202214093
+Syed Mafijul Islam- 202214105
+Supervisor:
+M.Aktaruzzaman
+Assoc. Professor
+Dept. of CSE, Daffodil International University
+December 7, 2025
