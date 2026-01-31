@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:nitymulya/models/shop.dart';
 import 'package:nitymulya/network/customer_api.dart';
 import 'package:nitymulya/utils/user_session.dart';
