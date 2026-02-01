@@ -30,7 +30,7 @@ print("🎨 Generating thesis paper figures with proper styling...\n")
 # Data from accuracy_report.txt
 # 1. Language Distribution (including Banglish/Mixed)
 print("📊 Generating language distribution chart...")
-langs = ['English', 'Bengali (বাংলা)', 'Banglish']
+langs = ['English', 'Bengali', 'Banglish']
 lang_counts = [250, 76, 186]  # English, Bengali, Banglish/Mixed
 colors = sns.color_palette("husl", len(langs))
 

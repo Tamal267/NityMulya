@@ -382,21 +382,22 @@ class ComplaintClassifier:
             'all_categories': category_scores
         }
     
-    def generate_summary(self, text: str, max_length: int = 100) -> str:
+    def generate_summary(self, text: str, max_length: int = 500) -> str:
         """
-        Generate a brief summary of the complaint
-        For now, simple extractive summary
+        Generate a summary of the complaint
+        Returns the full description without truncation
         """
         sentences = re.split(r'[।.!?]', text)
         sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
         
         if not sentences:
-            return text[:max_length]
+            # Return full text without truncation
+            return text.strip()
         
         # Take first meaningful sentence as summary
         summary = sentences[0]
         
-        # If too long, truncate
+        # Only truncate if extremely long (>500 chars)
         if len(summary) > max_length:
             summary = summary[:max_length] + "..."
         
