@@ -1,6 +1,7 @@
 """
 Text Preprocessor for Bengali, English, and Banglish
 Handles text normalization, language detection, and cleaning
+Uses BanglishBERT model for advanced Banglish to Bengali translation
 """
 
 import re
@@ -9,12 +10,35 @@ import difflib
 from langdetect import detect, LangDetectException
 from typing import Dict, Tuple
 from banglish_dict import BANGLISH_MARKERS_SET, BANGLISH_TO_BN
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+import torch
 
 class TextPreprocessor:
-    def __init__(self):
+    def __init__(self, use_banglishbert=True):
         # Banglish to Bengali markers and full mapping
         self.banglish_markers = BANGLISH_MARKERS_SET
         self.banglish_to_bn = BANGLISH_TO_BN
+        
+        # BanglishBERT model for advanced translation
+        self.use_banglishbert = use_banglishbert
+        self.banglishbert_model = None
+        self.banglishbert_tokenizer = None
+        
+        if use_banglishbert:
+            try:
+                print("Loading BanglishBERT model...")
+                self.banglishbert_tokenizer = AutoTokenizer.from_pretrained("csebuetnlp/banglishbert")
+                self.banglishbert_model = AutoModelForSeq2SeqLM.from_pretrained("csebuetnlp/banglishbert")
+                
+                # Move to GPU if available
+                self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+                self.banglishbert_model.to(self.device)
+                self.banglishbert_model.eval()
+                print(f"BanglishBERT loaded successfully on {self.device}")
+            except Exception as e:
+                print(f"Warning: Failed to load BanglishBERT model: {e}")
+                print("Falling back to dictionary-based translation")
+                self.use_banglishbert = False
         
         # Bengali number to English number mapping
         self.bengali_to_english_nums = str.maketrans('০১২৩৪৫৬৭৮৯', '0123456789')
@@ -62,8 +86,34 @@ class TextPreprocessor:
 
     def convert_banglish_to_bangla(self, text: str) -> str:
         """
-        Convert Banglish text to Bengali with spell check
+        Convert Banglish text to Bengali using BanglishBERT model
+        Falls back to dictionary-based translation if model is not available
         """
+        # Use BanglishBERT model if available
+        if self.use_banglishbert and self.banglishbert_model is not None:
+            try:
+                # Tokenize input
+                inputs = self.banglishbert_tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
+                inputs = {k: v.to(self.device) for k, v in inputs.items()}
+                
+                # Generate Bengali translation
+                with torch.no_grad():
+                    generated_ids = self.banglishbert_model.generate(
+                        **inputs,
+                        max_length=512,
+                        num_beams=5,
+                        early_stopping=True
+                    )
+                
+                # Decode the output
+                bangla_text = self.banglishbert_tokenizer.decode(generated_ids[0], skip_special_tokens=True)
+                return bangla_text.strip()
+                
+            except Exception as e:
+                print(f"BanglishBERT translation failed: {e}. Falling back to dictionary.")
+                # Fall through to dictionary-based translation
+        
+        # Dictionary-based translation (fallback)
         words = text.split()
         converted_words = []
         
