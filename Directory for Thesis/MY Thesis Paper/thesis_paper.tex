@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[8pt,a4paper,twocolumn]{article}
 \usepackage{graphicx}
 \usepackage{geometry}
 \geometry{margin=1in}
@@ -15,6 +15,7 @@
 \captionsetup[figure]{font=small,labelfont=bf}
 \begin{document}
 
+\twocolumn[{%
 \begin{center}
     \textbf{\LARGE AI-Enhanced Complaint Management System for Government Marketplaces} \\[1em]
     \textbf{A Bengali NLP Approach Using BanglaBERT} \\[2em]
@@ -22,8 +23,10 @@
     \textbf{Supervisor:} M. Aktaruzzaman, Assoc. Professor, Dept. of CSE, DIU \\[2em]
     December 7, 2025
 \end{center}
+\vspace{1em}
+}]
 
-\section*{Abstract}
+\section{Abstract}
 Government marketplaces in Bangladesh receive thousands of complaints from citizens every day. Most of these complaints are written in Bengali, which makes manual processing difficult and time-consuming. Officials struggle to read, understand, and categorize all complaints quickly, leading to delays in response time and citizen dissatisfaction. An AI-enhanced complaint management system has been developed that uses BanglaBERT, a state-of-the-art Bengali language model, to automatically read, understand, and categorize complaints. Natural Language Processing (NLP) techniques are employed to extract important information from complaints, classify them into appropriate categories, and route them to the correct department for quick action. The system has been evaluated using 512 real complaints and high accuracy has been achieved in sentiment analysis, priority detection, and category classification. The results show that complaints can be processed in seconds, significantly reducing response time and improving citizen satisfaction. This research contributes to the growing field of Bengali NLP and demonstrates practical applications of AI in government services.
 
 \section{Introduction}
@@ -105,69 +108,72 @@ These gaps are filled by this research through:
 \section{Data Analysis}
 A dataset of 512 complaints has been collected from government marketplace users. The data has been analyzed to understand the types of complaints and their characteristics. Important findings with visual charts are presented below.
 
-\subsection{Language Distribution}
-\begin{figure}[h]
+\begin{figure}[!ht]
     \centering
-    \includegraphics[width=0.65\textwidth]{language_distribution.png}
-    \caption{Language distribution of complaints showing 48.8\% in English, 14.8\% in Bengali (বাংলা), and 36.3\% in Banglish (mixed language). The chart demonstrates the multilingual nature of citizen complaints, requiring comprehensive language support.}
+    \includegraphics[width=\columnwidth]{language_distribution.png}
+    \caption{Language distribution of complaints showing 48.8\% in English, 14.8\% in Bengali, and 36.3\% in Banglish (mixed language). The chart demonstrates the multilingual nature of citizen complaints, requiring comprehensive language support.}
     \label{fig:language_dist}
 \end{figure}
 
+\subsection{Language Distribution}
 Figure \ref{fig:language_dist} shows the language distribution of the complaint dataset. It has been found that 48.8\% of complaints are written in English, 14.8\% in pure Bengali, and 36.3\% in Banglish (mixed Bengali-English). This distribution is significant because it reveals the multilingual communication patterns of Bangladeshi citizens. The large proportion of Banglish complaints (186 out of 512) shows that many users naturally mix Bengali and English when expressing their concerns, possibly because they are comfortable with both languages or lack proper vocabulary in one language. The 14.8\% pure Bengali complaints represent about 76 complaints, which require proper Bengali language understanding that traditional English-only systems cannot provide. The system handles all three language types effectively through BanglishBERT for translation and mBERT for classification, making it more inclusive and useful for all citizens regardless of their language preference.
 
-\subsection{Priority Distribution}
-\begin{figure}[h]
+\begin{figure}[!ht]
     \centering
-    \includegraphics[width=0.65\textwidth]{priority_distribution.png}
+    \includegraphics[width=\columnwidth]{priority_distribution.png}
     \caption{Priority distribution of complaints. Approximately 70\% are classified as Medium priority and 30\% as High priority, indicating the typical urgency levels of marketplace complaints.}
     \label{fig:priority_dist}
 \end{figure}
 
+\subsection{Priority Distribution}
 Figure \ref{fig:priority_dist} shows how complaints are distributed by priority level. Most complaints (approximately 70\%) are classified as Medium priority, meaning they are important but not urgent. About 30\% of complaints are High priority, requiring faster attention from officials. No Critical or Low priority complaints were found in the dataset. This distribution is realistic because most marketplace problems are moderately serious—they affect people's daily lives but are not life-threatening emergencies. Understanding priority distribution helps government offices allocate resources properly. High priority complaints should be handled first, while medium priority complaints can be processed later.
 
-\subsection{Sentiment Distribution}
-\begin{figure}[h]
+\begin{figure}[!ht]
     \centering
-    \includegraphics[width=0.65\textwidth]{sentiment_distribution.png}
+    \includegraphics[width=\columnwidth]{sentiment_distribution.png}
     \caption{Sentiment distribution revealing that 95\% of complaints express negative sentiment and 5\% show neutral sentiment, validating the typical emotional tone of complaint data.}
     \label{fig:sentiment_dist}
 \end{figure}
 
+\subsection{Sentiment Distribution}
+
 The sentiment analysis chart (Figure \ref{fig:sentiment_dist}) reveals that almost all complaints (95\%) express negative sentiment, while only 5\% show neutral sentiment. No positive sentiment complaints were found, which makes sense—people generally do not submit complaints when they are happy with a service. The high negative sentiment percentage validates that the complaint dataset represents real problems that citizens are facing. Sentiment analysis is valuable because it helps officials understand the emotional tone of complaints. Highly negative complaints may indicate severe problems that need immediate attention. Neutral complaints might be simple inquiries or minor issues. The system automatically detects sentiment, allowing officials to prioritize emotionally charged complaints that suggest serious dissatisfaction.
 
-\subsection{Top Complaint Categories}
-\begin{figure}[h]
+\begin{figure*}[!t]
     \centering
     \includegraphics[width=0.85\textwidth]{top_categories.png}
     \caption{Distribution of complaints across different categories. "Other" is most common, followed by health problems, quality issues, expired products, weight issues, price complaints, fraud, and packaging problems.}
     \label{fig:categories}
-\end{figure}
+\end{figure*}
 
-Figure \ref{fig:categories} shows the distribution of complaints across different categories. The most common category is "আন্যান্য" (Other), which includes complaints that do not fit into standard categories. After that, significant numbers of complaints about health problems (products that caused health issues), quality issues (poor quality products), expired products (items past their expiration date), weight issues (incorrect product weight), price complaints (overcharging or incorrect pricing), fraud (deceptive practices), and packaging problems (damaged or improper packaging) can be seen.
+\subsection{Top Complaint Categories}
+
+Figure \ref{fig:categories} shows the distribution of complaints across different categories. The most common category is "Other", which includes complaints that do not fit into standard categories. After that, significant numbers of complaints about health problems (products that caused health issues), quality issues (poor quality products), expired products (items past their expiration date), weight issues (incorrect product weight), price complaints (overcharging or incorrect pricing), fraud (deceptive practices), and packaging problems (damaged or improper packaging) can be seen.
 
 This category distribution is important for several reasons. First, it shows government officials which types of problems are most common, helping them focus resources where they are most needed. Second, the high number of "Other" complaints suggests that government marketplaces face diverse problems that need flexible handling. Third, health and quality complaints are serious issues that could affect public safety, making their quick identification crucial. The system automatically categorizes complaints, saving time and ensuring that serious issues like health problems and fraud are identified immediately.
 
 \section{System Architecture and Methodology}
 The complaint management system consists of several components that work together to process complaints efficiently. This section explains how each part functions.
 
-\subsection{System Flow}
-\begin{figure}[h]
+\begin{figure*}[!t]
     \centering
     \includegraphics[width=0.95\textwidth]{system_flow_diagram.png}
     \caption{Complete system flow diagram showing the process from user complaint submission through AI analysis to admin dashboard display. Color-coded components indicate different system layers: green for user interface, blue for processing, purple for AI analysis, orange for output, and red for data storage.}
     \label{fig:system_flow}
-\end{figure}
+\end{figure*}
+
+\subsection{System Flow}
 
 Figure \ref{fig:system_flow} presents the complete system architecture and flow. When a user submits a complaint through the web or mobile interface, the complaint passes through several processing stages before being displayed in the admin dashboard.
 
-\subsection{Layered Architecture}
-\begin{figure}[h]
+\begin{figure*}[!t]
     \centering
     \includegraphics[width=0.95\textwidth]{system_architecture.png}
     \caption{Layered system architecture showing five distinct layers: Presentation Layer (web and mobile interfaces), Application Layer (business logic and processing), AI/NLP Layer (BanglaBERT model and analysis modules), Data Layer (database and storage), and External Services Layer (email, SMS, cloud services). Arrows indicate data flow and interactions between components.}
     \label{fig:architecture}
-\end{figure}
+\end{figure*}
 
+\subsection{Layered Architecture}
 The system follows a five-layer architecture as illustrated in Figure \ref{fig:architecture}. Each layer has specific responsibilities and communicates with adjacent layers through well-defined interfaces. The Presentation Layer handles user interactions, the Application Layer manages business logic and request processing, the AI/NLP Layer performs intelligent analysis using BanglaBERT, the Data Layer manages persistent storage, and the External Services Layer integrates with third-party services for notifications and monitoring.
 
 \subsection{System Components}
@@ -226,7 +232,7 @@ The dataset contains 512 complaints collected from government marketplace users.
     
     \item \textbf{Sentiment Distribution:} Almost all complaints (95\%) show negative sentiment, which is expected since people usually complain when they are unhappy. Only 5\% show neutral sentiment. This validates that sentiment analysis can help identify complaint severity.
     
-    \item \textbf{Category Distribution:} The most common category is "Other" (আন্যান্য), followed by health problems, quality issues, expired products, weight issues, price complaints, fraud, and packaging problems. This distribution shows what problems are most common in government marketplaces.
+    \item \textbf{Category Distribution:} The most common category is "Other", followed by health problems, quality issues, expired products, weight issues, price complaints, fraud, and packaging problems. This distribution shows what problems are most common in government marketplaces.
 \end{itemize}
 
 \subsection{Model Performance}
@@ -243,18 +249,21 @@ The system's performance has been measured using standard metrics:
 \subsection{Comparison with Previous Systems}
 The system outperforms previous approaches:
 
-\begin{center}
-\begin{tabular}{|l|c|c|}
+\begin{table}[!ht]
+\centering
+\small
+\begin{tabular}{|p{2.8cm}|c|p{1.8cm}|}
 \hline
-\textbf{System} & \textbf{Accuracy} & \textbf{Language Support} \\
+\textbf{System} & \textbf{Acc.} & \textbf{Language} \\
 \hline
-Rule-based Systems \cite{zhang2019} & 60\% & English only \\
-SVM Classifier \cite{patel2020} & 78\% & English, Hindi \\
-Chinese Deep Learning \cite{wang2021} & 89\% & Chinese only \\
-\textbf{This System (BanglaBERT)} & \textbf{91.5\%} & \textbf{Bengali, English} \\
+Rule-based \cite{zhang2019} & 60\% & English \\
+SVM \cite{patel2020} & 78\% & En, Hindi \\
+Chinese DL \cite{wang2021} & 89\% & Chinese \\
+\textbf{BanglaBERT} & \textbf{91.5\%} & \textbf{Bn, En} \\
 \hline
 \end{tabular}
-\end{center}
+\caption{Comparison with previous systems}
+\end{table}
 
 An improvement of 11.5\% over rule-based systems, 13.5\% improvement over traditional machine learning, and 2.5\% improvement over previous deep learning approaches has been shown.
 
