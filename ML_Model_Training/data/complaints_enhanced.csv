@@ -1,0 +1,501 @@
+customer_id,customer_name,shop_name,subcategory_name,complaint_description,validity,priority,complaint_score,complaint_classification
+3e6a743d-2a0c-43bf-b341-bec891e3abe2,আব্দুল করিম,আলী ট্রেডার্স,ডিম (ফার্ম),Dokane expired ডিম (ফার্ম) bikri kore. Swasther jonno khotikar. | Context: নষ্ট বিপজ্জনক,0.64,0.87,0.73,high
+587529b2-20ce-41cb-bda2-e98b10f44379,Ayesha Siddika,Padma Store,এ্যাংকর ডাল,এ্যাংকর ডাল kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: হতাশাজনক তাজা নয়,0.65,0.54,0.61,medium
+fac0bbd2-9da1-47c4-aeb4-9936449ba15b,মোহাম্মদ আলী,Maa Store,আটা (প্যাকেট),Dokane expired আটা (প্যাকেট) bikri kore. Swasther jonno khotikar. | Context: হতাশাজনক হতাশাজনক,0.3,0.77,0.49,medium
+0bbc7a96-6dee-42aa-b78c-124786b76ed6,জাহিদুল ইসলাম,Shimanto Store,শুকনা মরিচ (আমদানি),Bashi শুকনা মরিচ (আমদানি) bikri koreche. Taka ferot chay nai. | Context: একটু দাম বেশি তাজা নয়,0.54,0.34,0.46,medium
+f8be13aa-9413-4a2f-9cce-88de105c827b,রুবিনা খাতুন,আলী ট্রেডার্স,সয়াবিন তেল (লুজ),সয়াবিন তেল (লুজ) এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: নষ্ট খুবই খারাপ,0.72,0.74,0.73,high
+4670fdf6-2a11-465d-9606-a62fa32dab86,শাহিন আলম,সবুজ ভ্যারাইটি স্টোর,সয়াবিন তেল (বোতল),সয়াবিন তেল (বোতল) ta ekdom taja chilo na. Purano ar shukno. | Context: তাজা নয় হতাশাজনক,0.73,0.41,0.6,medium
+854b1660-5376-4fcd-a609-750e604b2787,ফাতেমা বেগম,করিম স্টোর,গরু,The গরু was not fresh at all. Old and dried. | Context: বিপজ্জনক খুবই খারাপ,0.83,0.58,0.73,high
+c61799c6-4e98-47ec-814d-4675760fa40c,Kamal Hossain,Padma Store,আটা (প্যাকেট),Dokandar osubyo beheibior koreche ar আটা (প্যাকেট) er dam beshi niyeche. | Context: হতাশাজনক একটু দাম বেশি,0.61,0.21,0.45,medium
+9a788072-49b4-4686-87b9-afcf40565846,করিম মিয়া,নিউ মার্কেট স্টোর,মশুর ডাল (ছোট দানা),Bashi মশুর ডাল (ছোট দানা) bikri koreche. Taka ferot chay nai. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.64,0.59,0.62,medium
+f13e81ee-a5c1-4cf1-8b31-7bcf7a400488,জাহাঙ্গীর আলম,সুন্দরবন স্টোর,খাসী,খাসী ta ekdom taja chilo na. Purano ar shukno. | Context: খারাপ পরিষেবা হতাশাজনক,0.66,0.4,0.56,medium
+956822ee-22cb-4cc9-ac23-841eacbc3f29,Md. Rahman,পপুলার ট্রেডার্স,ময়দা (খোলা),ময়দা (খোলা) ta ekdom taja chilo na. Purano ar shukno. | Context: মোটামুটি খারাপ পরিষেবা,0.77,0.48,0.65,medium
+a3b10dc6-b9d3-4a3a-be97-7e198f8564a5,করিম মিয়া,আলী ট্রেডার্স,রুই,দোকানদার রুই এর দাম বেশি নিয়েছে। 606 টাকা দিয়েছি কিন্তু বাজারে 368 টাকা। | Context: একটু দাম বেশি হতাশাজনক,0.67,0.53,0.61,medium
+5a526dd8-dbd7-4653-9cc3-b8c45f720705,Rafiqul Islam,রহমান ভ্যারাইটি স্টোর,আদা (আমদানি),Bashi আদা (আমদানি) bikri koreche. Taka ferot chay nai. | Context: খারাপ পরিষেবা মোটামুটি,0.64,0.39,0.54,medium
+6e16cad8-2024-4e35-a61c-b53b26e71c92,Shahnaz Parvin,Barakah Traders,আদা (আমদানি),The আদা (আমদানি) was not fresh at all. Old and dried. | Context: মোটামুটি তাজা নয়,0.72,0.48,0.62,medium
+c39690d7-d55e-49df-be8c-9b053ed697f6,রফিক উদ্দিন,Rahman Store,মশুর ডাল (ছোট দানা),They gave less weight when buying মশুর ডাল (ছোট দানা). Asked for 1kg but got only 800g. | Context: তাজা নয় একটু দাম বেশি,0.4,0.57,0.47,medium
+24b325d0-2e2f-4356-90c3-6e9a5e1ceaeb,শাহিন আলম,Purnima Store,লবণ(প্যাঃ)আয়োডিনযুক্ত,Dokandar লবণ(প্যাঃ)আয়োডিনযুক্ত er dam beshi niyeche. 51 taka diyechi kintu market rate 42. | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.94,0.31,0.69,medium
+8e1c7794-05d2-4550-a876-8d949b61784b,আমিনুল ইসলাম,আশা ভ্যারাইটি স্টোর,গরু,বাসি গরু বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: তাজা নয় খারাপ পরিষেবা,0.64,0.68,0.66,medium
+572bcccf-c8c8-43c0-b3d6-a79ff0d90d58,সুমাইয়া পারভীন,রহমান ভ্যারাইটি স্টোর,মশুর ডাল (বড় দানা),মশুর ডাল (বড় দানা) কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: নষ্ট বিপজ্জনক,0.8,0.64,0.74,high
+83674583-1071-451c-a6dc-de3d2f314826,রুবিনা খাতুন,আলী ট্রেডার্স,মশুর ডাল (বড় দানা),Dokandar মশুর ডাল (বড় দানা) er dam beshi niyeche. 131 taka diyechi kintu market rate 99. | Context: মোটামুটি তাজা নয়,0.69,0.34,0.55,medium
+0d51f253-781d-44cb-964c-b15740a334e5,সাবিনা ইয়াসমিন,New Market,দারুচিনি,Shopkeeper overcharged for দারুচিনি. Paid 585 but market rate is 502. | Context: ঠিক আছে গ্রহণযোগ্য,0.12,0.51,0.28,weak
+a97cd7d3-0a32-4df0-a31b-fe8023f3e977,শাহিন আলম,করিম স্টোর,খাসী,Selling expired খাসী in the shop. Health hazard. | Context: হতাশাজনক মোটামুটি,0.3,0.86,0.52,medium
+030c3d04-93dd-435d-b0d4-8ed8adc284f5,সুমাইয়া পারভীন,Rahman Store,মশুর ডাল (বড় দানা),দোকানদার অসভ্য আচরণ করেছে এবং মশুর ডাল (বড় দানা) এর দাম অতিরিক্ত নিয়েছে। | Context: একটু দাম বেশি খারাপ পরিষেবা,0.61,0.48,0.56,medium
+ef065527-afc3-459c-a4b8-d9d7bcf6bf02,করিম মিয়া,ভাই ভাই স্টোর,মশুর ডাল (ছোট দানা),দোকানদার অসভ্য আচরণ করেছে এবং মশুর ডাল (ছোট দানা) এর দাম অতিরিক্ত নিয়েছে। | Context: প্রতারণা বিপজ্জনক,0.87,0.51,0.73,high
+c864c31e-c477-4420-877d-91a5a398b8aa,নাজমা আহমেদ,Maa Store,আলু (মানভেদে),আলু (মানভেদে) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: একটু দাম বেশি একটু দাম বেশি,0.73,0.52,0.65,medium
+68a95d57-a6cb-47e7-b884-955ae96bd758,জাহাঙ্গীর আলম,New Market,আদা (দেশী),Bashi আদা (দেশী) bikri koreche. Taka ferot chay nai. | Context: মোটামুটি একটু দাম বেশি,0.43,0.58,0.49,medium
+a76250c9-d687-4173-90a3-c7aecb51afad,আমিনুল ইসলাম,City Store,হলুদ (দেশী),Sold expired হলুদ (দেশী) and refused to refund money. | Context: হতাশাজনক একটু দাম বেশি,0.47,0.88,0.63,medium
+8c9901f8-d60a-4498-8016-f993a510504b,ফাতেমা বেগম,Purnima Store,ফ্রেশ,They charged 1067 taka for ফ্রেশ but market price is 862 taka. | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.75,0.44,0.63,medium
+a8e1d1f8-23c2-4020-8553-ec38a1c978fc,Nasrin Sultana,Rahman Store,সয়াবিন তেল (বোতল),The সয়াবিন তেল (বোতল) quality was very poor. Rotten and smelly. | Context: তেমন কিছু না তেমন কিছু না,0.44,0.27,0.37,weak
+757284d4-7f50-4de9-8424-626f2ab8dd2e,Kamal Hossain,আশা ভ্যারাইটি স্টোর,ডানো,ডানো er dam 783 taka niyeche kintu market e 860 taka. | Context: ঠিক আছে গ্রহণযোগ্য,0.39,0.21,0.32,weak
+00632c2e-730f-477c-add3-92599fdaf364,Monirul Haque,সবুজ ভ্যারাইটি স্টোর,তেজপাতা,Sold expired তেজপাতা and refused to refund money. | Context: পচা প্রতারণা,0.64,0.8,0.7,high
+f8637774-7e04-4d0a-b7b1-5cefb67ef076,রফিক উদ্দিন,রহমান ভ্যারাইটি স্টোর,পিঁয়াজ (আমদানি),পিঁয়াজ (আমদানি) এর মান অনুযায়ী দাম বেশি নিয়েছে। NaN টাকা নিয়েছে কিন্তু মান খারাপ। | Context: তেমন কিছু না স্বাভাবিক,0.17,0.46,0.29,weak
+c237225d-78a9-454d-926a-49e888920e96,আব্দুল করিম,পপুলার ট্রেডার্স,আদা (দেশী),আদা (দেশী) এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: খারাপ পরিষেবা একটু দাম বেশি,0.5,0.95,0.68,medium
+670d01ce-891e-47cf-81a8-9da9a602bfb4,শাহিন আলম,ভাই ভাই স্টোর,আদা (দেশী),দোকানদার আদা (দেশী) এর দাম বেশি নিয়েছে। NaN টাকা দিয়েছি কিন্তু বাজারে NaN টাকা। | Context: একটু দাম বেশি খারাপ পরিষেবা,0.78,0.49,0.66,medium
+e1a515c5-13c3-4f89-a397-c0a453ed4eb1,Rahim Mia,ভাই ভাই স্টোর,ডিম (ফার্ম),They gave less weight when buying ডিম (ফার্ম). Asked for 1kg but got only 800g. | Context: হতাশাজনক একটু দাম বেশি,0.52,0.59,0.55,medium
+7e210a31-0310-4b75-8968-11a7558715c8,Rahim Mia,Bismillah Store,শুকনা মরিচ (আমদানি),Dokandar osubyo beheibior koreche ar শুকনা মরিচ (আমদানি) er dam beshi niyeche. | Context: মারাত্মক বিপজ্জনক,0.94,0.35,0.7,high
+faf026c4-d550-4123-a788-f1e55c180147,Shahnaz Parvin,Maa Store,শুকনা মরিচ (দেশী),শুকনা মরিচ (দেশী) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: একটু দাম বেশি একটু দাম বেশি,0.51,0.32,0.43,medium
+8a0c5d05-ba8b-4c6f-9150-c9b7338c215e,মোহাম্মদ আলী,Maa Store,ডিপ্লোমা (নিউজিল্যান্ড),They gave less weight when buying ডিপ্লোমা (নিউজিল্যান্ড). Asked for 1kg but got only 800g. | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.76,0.44,0.63,medium
+107fdb2b-009e-4e48-bbd3-cac74b35e450,জাহিদুল ইসলাম,মা ভ্যারাইটি স্টোর,পাম অয়েল (লুজ),দোকানে মেয়াদ উত্তীর্ণ পাম অয়েল (লুজ) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: প্রতারণা পচা,0.85,0.89,0.87,high
+2fc6f9e6-6429-457c-942c-29f0e9ef5da1,Sharmin Akter,পপুলার ট্রেডার্স,ডানো,Dokandar ডানো er dam beshi niyeche. 1133 taka diyechi kintu market rate 786. | Context: হতাশাজনক হতাশাজনক,0.61,0.32,0.49,medium
+fba77df0-d717-4d11-98a1-98abd9809608,করিম মিয়া,Rahman Store,রসুন (দেশী),দোকানদার রসুন (দেশী) এর দাম বেশি নিয়েছে। 170 টাকা দিয়েছি কিন্তু বাজারে 113 টাকা। | Context: একটু দাম বেশি হতাশাজনক,0.86,0.35,0.66,medium
+d6e68a48-b5c2-408f-8272-4b4447ebbe52,Tahmina Begum,Padma Store,মুগ ডাল (মানভেদে),The মুগ ডাল (মানভেদে) was not fresh at all. Old and dried. | Context: মারাত্মক প্রতারণা,0.87,0.59,0.76,high
+521299d6-e7ce-4c9c-be65-465539c55107,আমিনুল ইসলাম,ভাই ভাই স্টোর,আদা (আমদানি),They charged 324 taka for আদা (আমদানি) but market price is 204 taka. | Context: বিপজ্জনক বিপজ্জনক,0.91,0.44,0.72,high
+b366a65d-9a50-4cb7-9b73-77da80deab57,Kamal Hossain,সুন্দরবন স্টোর,ধনে,Sold expired ধনে and refused to refund money. | Context: খারাপ পরিষেবা হতাশাজনক,0.39,0.79,0.55,medium
+139da269-1031-4968-aa81-b88909dc9f1a,নাজমা আহমেদ,মা ভ্যারাইটি স্টোর,শুকনা মরিচ (আমদানি),"শুকনা মরিচ (আমদানি) এর দাম 540 টাকা নিয়েছে, কিন্তু বাজার দর 417 টাকা। | Context: মোটামুটি হতাশাজনক",0.63,0.21,0.46,medium
+392634b7-56c9-4ac8-a281-fa134173ce1a,আব্দুল করিম,Purnima Store,সুপার পাম অয়েল (লুজ),Shopkeeper overcharged for সুপার পাম অয়েল (লুজ). Paid 203 but market rate is 159. | Context: হতাশাজনক মোটামুটি,0.74,0.39,0.6,medium
+55c2d5a0-f6b2-4221-baff-0110bc388dc6,ফাতেমা বেগম,New Market,মশুর ডাল (মাঝারী দানা),Dokandar মশুর ডাল (মাঝারী দানা) er dam beshi niyeche. 135 taka diyechi kintu market rate 136. | Context: ছোট বিষয় ছোট বিষয়,0.14,0.6,0.32,weak
+0614b637-92ac-4b1e-b0d4-a001a6963ca6,আমিনুল ইসলাম,New Market,খাসী,বাসি খাসী বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: মোটামুটি খারাপ পরিষেবা,0.5,0.52,0.51,medium
+576a2390-1d54-4cd3-a38c-1a699e3a009b,Monirul Haque,City Store,খেজুর(সাধারণ মানের),দোকানদার অসভ্য আচরণ করেছে এবং খেজুর(সাধারণ মানের) এর দাম অতিরিক্ত নিয়েছে। | Context: তাজা নয় তাজা নয়,0.76,0.44,0.63,medium
+bd354537-373a-43fa-979c-2f87c3ad89cc,জাহাঙ্গীর আলম,রহমান ভ্যারাইটি স্টোর,হলুদ (আমদানি),হলুদ (আমদানি) er quality kharap but 496 taka niyeche jeta onek beshi. | Context: মোটামুটি তাজা নয়,0.84,0.37,0.65,medium
+7d8abfd7-9740-4408-9951-1f7ea0f49dd8,সালমা আক্তার,New Market,ডিম (ফার্ম),ডিম (ফার্ম) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: তাজা নয় মোটামুটি,0.76,0.42,0.62,medium
+f2295d01-fa4b-4548-8e1b-d09add383b2a,আমিনুল ইসলাম,নিউ মার্কেট স্টোর,আলু (মানভেদে),Dokane expired আলু (মানভেদে) bikri kore. Swasther jonno khotikar. | Context: তাজা নয় হতাশাজনক,0.46,0.84,0.61,medium
+3badb92e-d0d4-429f-a394-374b0ef75af0,রহিমা খাতুন,Bismillah Store,হলুদ (আমদানি),Shopkeeper overcharged for হলুদ (আমদানি). Paid 585 but market rate is 324. | Context: মারাত্মক নষ্ট,0.92,0.39,0.71,high
+231d9661-49c2-409a-a0a1-83dafa5a6972,জাহাঙ্গীর আলম,মা ভ্যারাইটি স্টোর,হলুদ (দেশী),বাসি হলুদ (দেশী) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: একটু দাম বেশি মোটামুটি,0.51,0.55,0.53,medium
+b1993164-ec58-40d4-9335-d8d70e74085d,সুমাইয়া পারভীন,Maa Store,হলুদ (আমদানি),Dokandar osubyo beheibior koreche ar হলুদ (আমদানি) er dam beshi niyeche. | Context: খারাপ পরিষেবা মোটামুটি,0.71,0.39,0.58,medium
+d4645c57-3a25-4c81-bd64-dd536b477f12,রফিক উদ্দিন,Rahman Store,রুই,রুই er quality kharap but 387 taka niyeche jeta onek beshi. | Context: তেমন কিছু না স্বাভাবিক,0.24,0.47,0.33,weak
+8af605cc-cc1f-4ecd-b76b-cb40f67cb7e3,নাজমা আহমেদ,আশা ভ্যারাইটি স্টোর,শুকনা মরিচ (দেশী),Sold expired শুকনা মরিচ (দেশী) and refused to refund money. | Context: মোটামুটি হতাশাজনক,0.37,0.8,0.54,medium
+41549de2-a750-4cb9-bd0e-0e206e02f0f4,মোহাম্মদ আলী,নিউ মার্কেট স্টোর,হলুদ (আমদানি),The হলুদ (আমদানি) quality was very poor. Rotten and smelly. | Context: খুবই খারাপ বিপজ্জনক,0.81,0.56,0.71,high
+dbd65ea3-2eee-4590-92f7-40ecc6d76645,ফাতেমা বেগম,Shimanto Store,মশুর ডাল (বড় দানা),Bashi মশুর ডাল (বড় দানা) bikri koreche. Taka ferot chay nai. | Context: তাজা নয় তাজা নয়,0.8,0.45,0.66,medium
+b66e2ebf-055b-4ab2-90fb-22641fe2c194,Kamal Hossain,ভাই ভাই স্টোর,ডানো,They charged 1037 taka for ডানো but market price is 735 taka. | Context: মোটামুটি তাজা নয়,0.69,0.41,0.58,medium
+251605a2-b8f6-47c5-a79d-bc9d83c67f0b,রহিমা খাতুন,করিম স্টোর,রাইস ব্রান তেল (বোতল),রাইস ব্রান তেল (বোতল) এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: জরুরী নষ্ট,0.8,0.71,0.76,high
+d2d431d4-f87e-485f-a4c4-78e9c71e0257,Sharmin Akter,রহমান ভ্যারাইটি স্টোর,লবণ(প্যাঃ)আয়োডিনযুক্ত,Got cheated while buying লবণ(প্যাঃ)আয়োডিনযুক্ত. They gave fake product. | Context: পচা খুবই খারাপ,0.68,0.89,0.76,high
+74a92a68-d549-4443-abf7-180630b5151f,শাহিন আলম,আলী ট্রেডার্স,মুগ ডাল (মানভেদে),Selling expired মুগ ডাল (মানভেদে) in the shop. Health hazard. | Context: প্রতারণা জরুরী,0.86,0.86,0.86,high
+be5afd2c-8bb0-4b65-8544-2e7796735871,জাহিদুল ইসলাম,Maa Store,চিনি,চিনি er dam 140 taka niyeche kintu market e 114 taka. | Context: মারাত্মক নষ্ট,0.93,0.56,0.78,high
+56b8cbfa-5035-45e1-b345-4ff140f9ff26,Md. Rahman,মা ভ্যারাইটি স্টোর,মার্কস,দোকানদার অসভ্য আচরণ করেছে এবং মার্কস এর দাম অতিরিক্ত নিয়েছে। | Context: গ্রহণযোগ্য ছোট বিষয়,0.1,0.38,0.21,weak
+8a5a0954-903b-451a-82b4-c1e70872784a,সালমা আক্তার,Rahman Store,ডানো,Poor quality ডানো but charged 1270 taka which is too high. | Context: একটু দাম বেশি একটু দাম বেশি,0.61,0.28,0.48,medium
+bf027ae7-4ea5-4981-bc37-bd87ef899087,Tahmina Begum,Barakah Traders,চাল (মাঝারী)পাইজাম/আটাশ,বাসি চাল (মাঝারী)পাইজাম/আটাশ বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: খারাপ পরিষেবা হতাশাজনক,0.47,0.6,0.52,medium
+dda573fc-8fa1-41c5-bcc9-5b2b7e3714de,রফিক উদ্দিন,Ali Traders,ধনে,ধনে টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: তাজা নয় মোটামুটি,0.64,0.5,0.58,medium
+87f3f4ee-7654-4973-b8d4-062731031768,Rafiqul Islam,পপুলার ট্রেডার্স,আদা (দেশী),আদা (দেশী) er dam NaN taka niyeche kintu market e NaN taka. | Context: তেমন কিছু না ঠিক আছে,0.16,0.52,0.3,weak
+ef577dfc-a04d-417b-8fc9-fe5bb8d22077,রহিমা খাতুন,ভাই ভাই স্টোর,খেজুর(সাধারণ মানের),Got cheated while buying খেজুর(সাধারণ মানের). They gave fake product. | Context: বিপজ্জনক পচা,0.88,0.85,0.87,high
+0f73a5ca-fd4f-4417-8038-d786d9cf718c,শাহিন আলম,পপুলার ট্রেডার্স,চাল সরু (নাজির/মিনিকেট),বাসি চাল সরু (নাজির/মিনিকেট) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: হতাশাজনক হতাশাজনক,0.69,0.41,0.58,medium
+bb7c259a-c373-4c50-a877-94993dbb351c,Sharmin Akter,Ali Traders,চাল (মাঝারী)পাইজাম/আটাশ,The চাল (মাঝারী)পাইজাম/আটাশ was not fresh at all. Old and dried. | Context: তাজা নয় হতাশাজনক,0.7,0.46,0.6,medium
+b0777bfe-9125-46ac-954f-d71019b7fd8d,Shahnaz Parvin,City Store,হলুদ (দেশী),Dokane expired হলুদ (দেশী) bikri kore. Swasther jonno khotikar. | Context: বিপজ্জনক জরুরী,0.83,0.78,0.81,high
+4ca2bb2b-c7bd-428d-8c66-177416c69fae,Nasrin Sultana,নিউ মার্কেট স্টোর,ডিম (ফার্ম),ডিম (ফার্ম) er quality kharap but 70 taka niyeche jeta onek beshi. | Context: নষ্ট খুবই খারাপ,0.93,0.36,0.7,high
+e97e63b6-0392-4f22-81e4-581708ef38b7,জাহিদুল ইসলাম,Padma Store,পিঁয়াজ (দেশী),দোকানদার পিঁয়াজ (দেশী) এর দাম বেশি নিয়েছে। 110 টাকা দিয়েছি কিন্তু বাজারে 72 টাকা। | Context: তাজা নয় খারাপ পরিষেবা,0.65,0.34,0.53,medium
+f5aa05dd-4d62-41fc-8964-c5069f1d8392,জাহিদুল ইসলাম,আলী ট্রেডার্স,ময়দা (খোলা),They charged 94 taka for ময়দা (খোলা) but market price is 58 taka. | Context: একটু দাম বেশি একটু দাম বেশি,0.88,0.29,0.64,medium
+1918a0c8-43f7-4415-be98-dcdf2c56b6ca,Rahim Mia,Barakah Traders,পিঁয়াজ (দেশী),পিঁয়াজ (দেশী) er quality khub kharap chilo. Pocha ar durgondho. | Context: হতাশাজনক মোটামুটি,0.64,0.52,0.59,medium
+7dbd66a8-d10e-4796-beeb-48bf669e3cad,Rahim Mia,সবুজ ভ্যারাইটি স্টোর,ফ্রেশ,Sold expired ফ্রেশ and refused to refund money. | Context: জরুরী পচা,0.6,0.84,0.7,high
+e5d84763-f2d3-4570-968c-8ee0ba886dd4,Shahnaz Parvin,নিউ মার্কেট স্টোর,ধনে,ধনে ta ekdom taja chilo na. Purano ar shukno. | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.68,0.3,0.53,medium
+19c99451-4d58-456f-8d55-d1b8912dd1a9,Sharmin Akter,Bismillah Store,পিঁয়াজ (দেশী),The পিঁয়াজ (দেশী) was not fresh at all. Old and dried. | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.5,0.68,0.57,medium
+1693d19c-c081-4073-9072-c5878d603e03,Tahmina Begum,আলী ট্রেডার্স,ছোলা (মানভেদে),ছোলা (মানভেদে) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: খারাপ পরিষেবা তাজা নয়,0.78,0.56,0.69,medium
+01f5dab0-6393-4b3c-8b6f-420c92adf051,Kamal Hossain,New Market,চাল (মাঝারী)পাইজাম/আটাশ,বাসি চাল (মাঝারী)পাইজাম/আটাশ বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: একটু দাম বেশি খারাপ পরিষেবা,0.45,0.58,0.5,medium
+557c3c06-a128-40fd-85a9-f75b0ee7aff4,মোহাম্মদ আলী,New Market,লবঙ্গ,বাসি লবঙ্গ বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: মোটামুটি মোটামুটি,0.83,0.41,0.66,medium
+079ab653-f2db-444e-ac12-502f05c63036,Sharmin Akter,আশা ভ্যারাইটি স্টোর,ফ্রেশ,দোকানদার ফ্রেশ এর দাম বেশি নিয়েছে। 1309 টাকা দিয়েছি কিন্তু বাজারে 890 টাকা। | Context: মোটামুটি মোটামুটি,0.81,0.48,0.68,medium
+537d2ead-58f6-4a0a-a787-5e710ef2e9a4,রুবিনা খাতুন,Purnima Store,সুপার পাম অয়েল (লুজ),The সুপার পাম অয়েল (লুজ) quality was very poor. Rotten and smelly. | Context: তাজা নয় মোটামুটি,0.72,0.21,0.52,medium
+403397f8-23e2-4644-b4fd-2250942c3d8b,Kamal Hossain,Barakah Traders,মশুর ডাল (বড় দানা),They gave less weight when buying মশুর ডাল (বড় দানা). Asked for 1kg but got only 800g. | Context: খারাপ পরিষেবা হতাশাজনক,0.39,0.53,0.45,medium
+30c208e3-7fb6-49b2-84f4-678effc1ee89,শাহিন আলম,Purnima Store,দারুচিনি,দারুচিনি kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: মোটামুটি তাজা নয়,0.77,0.58,0.69,medium
+08e50f4d-8dfc-4414-9b50-e4be670805b1,সালমা আক্তার,সবুজ ভ্যারাইটি স্টোর,মুরগী(ব্রয়লার),মুরগী(ব্রয়লার) er quality khub kharap chilo. Pocha ar durgondho. | Context: তাজা নয় মোটামুটি,0.34,0.56,0.43,medium
+3817ec1c-aed8-4ba4-8153-898bb866d428,নাজমা আহমেদ,Maa Store,পাম অয়েল (লুজ),পাম অয়েল (লুজ) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: হতাশাজনক মোটামুটি,0.5,0.57,0.53,medium
+e483e102-06d2-449c-ad0a-dc884e3cf415,রফিক উদ্দিন,Shimanto Store,মশুর ডাল (মাঝারী দানা),মশুর ডাল (মাঝারী দানা) er quality kharap but 167 taka niyeche jeta onek beshi. | Context: তাজা নয় একটু দাম বেশি,0.7,0.41,0.58,medium
+3c6e4743-fef8-4745-9497-8a6896ae00ef,শাহিন আলম,করিম স্টোর,ছোলা (মানভেদে),ছোলা (মানভেদে) কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: খারাপ পরিষেবা তাজা নয়,0.37,0.68,0.49,medium
+2db05dc6-b37b-49bc-96c4-03a83dcd2e30,Ayesha Siddika,Purnima Store,পিঁয়াজ (দেশী),Shopkeeper overcharged for পিঁয়াজ (দেশী). Paid 99 but market rate is 78. | Context: মোটামুটি খারাপ পরিষেবা,0.72,0.45,0.61,medium
+cb6f0ba8-e981-4d9a-b6de-e55be4642edf,Ayesha Siddika,আলী ট্রেডার্স,চাল (মোটা)/স্বর্ণা/চায়না ইরি,চাল (মোটা)/স্বর্ণা/চায়না ইরি কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: মোটামুটি মোটামুটি,0.75,0.47,0.64,medium
+5f96d002-6fd8-4b0a-aa40-ba6b0e7f48de,রহিমা খাতুন,Maa Store,ধনে,বাসি ধনে বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: মারাত্মক বিপজ্জনক,0.78,0.62,0.72,high
+5295987a-9c0b-476a-aae6-36d9a3a5ffce,সাবিনা ইয়াসমিন,পপুলার ট্রেডার্স,ডানো,"ডানো এর দাম 770 টাকা নিয়েছে, কিন্তু বাজার দর 765 টাকা। | Context: তেমন কিছু না স্বাভাবিক",0.26,0.51,0.36,weak
+c324732d-12db-4c2b-9069-3e5e67a06dae,রফিক উদ্দিন,Ali Traders,আলু (মানভেদে),দোকানে মেয়াদ উত্তীর্ণ আলু (মানভেদে) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: তাজা নয় মোটামুটি,0.56,0.8,0.66,medium
+50532626-c7d2-4005-99b0-412777da11c0,Kamal Hossain,Padma Store,মশুর ডাল (ছোট দানা),মশুর ডাল (ছোট দানা) er dam 206 taka niyeche kintu market e 156 taka. | Context: হতাশাজনক মোটামুটি,0.81,0.21,0.57,medium
+48f2b588-31e2-4273-b2b1-9f93cbd5f8d4,সুমাইয়া পারভীন,Barakah Traders,চাল সরু (নাজির/মিনিকেট),Got cheated while buying চাল সরু (নাজির/মিনিকেট). They gave fake product. | Context: মোটামুটি তাজা নয়,0.31,0.91,0.55,medium
+7cbf53dd-de3d-4e40-8af1-aba97542fc6c,Ayesha Siddika,Maa Store,দারুচিনি,দারুচিনি এর মান অনুযায়ী দাম বেশি নিয়েছে। 506 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: ছোট বিষয় স্বাভাবিক,0.31,0.27,0.29,weak
+62f03d98-10ee-4ec2-be06-2188f379b5a6,Ayesha Siddika,পপুলার ট্রেডার্স,খেজুর(সাধারণ মানের),দোকানদার অসভ্য আচরণ করেছে এবং খেজুর(সাধারণ মানের) এর দাম অতিরিক্ত নিয়েছে। | Context: স্বাভাবিক তেমন কিছু না,0.26,0.39,0.31,weak
+efa0bd42-f29e-46a7-b060-9fce5cc54cff,সুমাইয়া পারভীন,Maa Store,দারুচিনি,দারুচিনি kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: পচা নষ্ট,0.87,0.55,0.74,high
+acf93000-4914-42b8-8210-10040db1951a,নাজমা আহমেদ,নিউ মার্কেট স্টোর,মশুর ডাল (বড় দানা),দোকানদার মশুর ডাল (বড় দানা) এর দাম বেশি নিয়েছে। 152 টাকা দিয়েছি কিন্তু বাজারে 98 টাকা। | Context: হতাশাজনক মোটামুটি,0.72,0.56,0.66,medium
+2f9ae8ea-176b-4cb5-849a-56b9bcd70554,আমিনুল ইসলাম,Barakah Traders,তেজপাতা,Sold expired তেজপাতা and refused to refund money. | Context: প্রতারণা খুবই খারাপ,0.68,0.74,0.7,high
+a089cf8b-303d-4830-9d53-6d8288c726c9,Rahim Mia,মা ভ্যারাইটি স্টোর,ধনে,Poor quality ধনে but charged 239 taka which is too high. | Context: স্বাভাবিক ঠিক আছে,0.19,0.36,0.26,weak
+eedc275c-9c6c-4b3a-b8a9-a823120491f3,Ayesha Siddika,আলী ট্রেডার্স,সুপার পাম অয়েল (লুজ),সুপার পাম অয়েল (লুজ) er dam 192 taka niyeche kintu market e 157 taka. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.92,0.28,0.66,medium
+bb186fd2-aa24-4450-bbe1-632693f61760,রুবিনা খাতুন,Shimanto Store,পিঁয়াজ (দেশী),Got cheated while buying পিঁয়াজ (দেশী). They gave fake product. | Context: খারাপ পরিষেবা তাজা নয়,0.47,0.94,0.66,medium
+38e0d59e-9156-4c17-b4b5-fa2c046628e8,সাবিনা ইয়াসমিন,আলী ট্রেডার্স,এলাচ(ছোট),এলাচ(ছোট) এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: খুবই খারাপ প্রতারণা,0.71,0.92,0.79,high
+56be02bb-5386-4041-97c3-2513450216d6,Nasrin Sultana,নিউ মার্কেট স্টোর,আটা (প্যাকেট),Poor quality আটা (প্যাকেট) but charged 96 taka which is too high. | Context: হতাশাজনক খারাপ পরিষেবা,0.82,0.46,0.68,medium
+32f90501-8429-49a3-914e-3bd752c2a954,Ayesha Siddika,পপুলার ট্রেডার্স,পিঁয়াজ (আমদানি),Dokane expired পিঁয়াজ (আমদানি) bikri kore. Swasther jonno khotikar. | Context: মারাত্মক পচা,0.86,0.81,0.84,high
+8185e676-0f56-45f8-a136-694f20dfa3f3,সালমা আক্তার,Ali Traders,এলাচ(ছোট),Bashi এলাচ(ছোট) bikri koreche. Taka ferot chay nai. | Context: তাজা নয় মোটামুটি,0.53,0.25,0.42,medium
+2685127d-4d6c-4162-aa0d-e14d440a3185,নাজমা আহমেদ,Barakah Traders,দারুচিনি,Selling expired দারুচিনি in the shop. Health hazard. | Context: মোটামুটি খারাপ পরিষেবা,0.38,0.83,0.56,medium
+809e7152-4007-4d4b-8f9c-71503180e910,নাজমা আহমেদ,করিম স্টোর,আদা (আমদানি),দোকানে মেয়াদ উত্তীর্ণ আদা (আমদানি) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: তাজা নয় হতাশাজনক,0.3,0.72,0.47,medium
+a7dc5d13-ad85-42a9-a40c-6f875fe05ebe,করিম মিয়া,Barakah Traders,জিরা,জিরা কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: তাজা নয় খারাপ পরিষেবা,0.41,0.6,0.49,medium
+1393bed8-594d-4470-845d-1598cb4e744d,সাবিনা ইয়াসমিন,আশা ভ্যারাইটি স্টোর,রুই,রুই kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: খারাপ পরিষেবা তাজা নয়,0.5,0.48,0.49,medium
+a84380fd-7ac0-4eea-bd6a-0c0712d7cca2,সালমা আক্তার,New Market,ময়দা (খোলা),Sold expired ময়দা (খোলা) and refused to refund money. | Context: খারাপ পরিষেবা তাজা নয়,0.47,0.86,0.63,medium
+0939ca5b-8d73-4b9b-8df7-eb6d9a4cfad7,Nasrin Sultana,Bismillah Store,আদা (দেশী),দোকানে মেয়াদ উত্তীর্ণ আদা (দেশী) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: মারাত্মক খুবই খারাপ,0.58,0.89,0.7,high
+82110881-bf7d-4df8-bc1b-1b18a777c762,Monirul Haque,নিউ মার্কেট স্টোর,শুকনা মরিচ (দেশী),শুকনা মরিচ (দেশী) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: নষ্ট খুবই খারাপ,0.79,0.85,0.81,high
+158c0522-4753-4af9-b625-2e80540404c8,শাহিন আলম,করিম স্টোর,এলাচ(ছোট),দোকানদার এলাচ(ছোট) এর দাম বেশি নিয়েছে। 5020 টাকা দিয়েছি কিন্তু বাজারে 4722 টাকা। | Context: তেমন কিছু না তেমন কিছু না,0.31,0.25,0.29,weak
+234688a9-9a2e-4125-b779-15cf55569151,Nasrin Sultana,মা ভ্যারাইটি স্টোর,আলু (মানভেদে),Shopkeeper overcharged for আলু (মানভেদে). Paid 27 but market rate is 26. | Context: মোটামুটি মোটামুটি,0.36,0.57,0.44,medium
+0b612ce6-2f3c-4244-84cc-9e3a5e145ced,Shahnaz Parvin,সবুজ ভ্যারাইটি স্টোর,আদা (দেশী),আদা (দেশী) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: একটু দাম বেশি মোটামুটি,0.63,0.48,0.57,medium
+bb24109a-4947-4c16-bc7b-d229b056b6f2,রহিমা খাতুন,মা ভ্যারাইটি স্টোর,শুকনা মরিচ (দেশী),Dokane expired শুকনা মরিচ (দেশী) bikri kore. Swasther jonno khotikar. | Context: তাজা নয় খারাপ পরিষেবা,0.42,0.8,0.57,medium
+46cd9223-c52a-4c5f-a4bb-b9c2727d1316,Tahmina Begum,পপুলার ট্রেডার্স,ফ্রেশ,বাসি ফ্রেশ বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: মোটামুটি মোটামুটি,0.81,0.46,0.67,medium
+40305ee9-80f1-409c-aac6-d39e60c9c562,Sharmin Akter,আশা ভ্যারাইটি স্টোর,লবণ(প্যাঃ)আয়োডিনযুক্ত,দোকানে মেয়াদ উত্তীর্ণ লবণ(প্যাঃ)আয়োডিনযুক্ত বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: একটু দাম বেশি একটু দাম বেশি,0.47,0.8,0.6,medium
+d11d87fb-9eaf-4c53-8044-5ec321b21bd4,Nasrin Sultana,New Market,হলুদ (আমদানি),দোকানদার হলুদ (আমদানি) এর দাম বেশি নিয়েছে। 317 টাকা দিয়েছি কিন্তু বাজারে 334 টাকা। | Context: গ্রহণযোগ্য তেমন কিছু না,0.25,0.57,0.38,weak
+51da9e71-be10-4894-9f20-9d4da625dc6d,Md. Rahman,আলী ট্রেডার্স,রসুন (আমদানি),Selling expired রসুন (আমদানি) in the shop. Health hazard. | Context: মারাত্মক প্রতারণা,0.78,0.8,0.79,high
+fcabce24-5438-4b8d-9c6c-8c75ba90373b,Nasrin Sultana,ভাই ভাই স্টোর,ডিপ্লোমা (নিউজিল্যান্ড),Dokandar osubyo beheibior koreche ar ডিপ্লোমা (নিউজিল্যান্ড) er dam beshi niyeche. | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.75,0.51,0.65,medium
+275747c7-88fc-481d-8e47-e2784a05768f,Ayesha Siddika,Rahman Store,খাসী,খাসী টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: ছোট বিষয় স্বাভাবিক,0.32,0.45,0.37,weak
+2f4bf0e6-060b-404d-b9f9-e1a7fa91e738,Md. Rahman,করিম স্টোর,এ্যাংকর ডাল,দোকানদার এ্যাংকর ডাল এর দাম বেশি নিয়েছে। 111 টাকা দিয়েছি কিন্তু বাজারে 65 টাকা। | Context: প্রতারণা পচা,0.84,0.5,0.7,high
+428b796e-50ed-42fc-a102-cb3d6f639b3f,ফাতেমা বেগম,করিম স্টোর,ধনে,Sold expired ধনে and refused to refund money. | Context: খারাপ পরিষেবা হতাশাজনক,0.49,0.8,0.61,medium
+65779131-1d06-4980-bd75-379ae72c328e,রুবিনা খাতুন,রহমান ভ্যারাইটি স্টোর,তেজপাতা,They gave less weight when buying তেজপাতা. Asked for 1kg but got only 800g. | Context: হতাশাজনক তাজা নয়,0.73,0.52,0.65,medium
+2211a1e8-ef17-4858-b8ee-336216cb229f,Sharmin Akter,করিম স্টোর,মুগ ডাল (মানভেদে),Very rude behavior and overpriced মুগ ডাল (মানভেদে). | Context: মোটামুটি মোটামুটি,0.87,0.41,0.69,medium
+c34c8b11-3806-43e7-a126-e127bc1d94b5,রফিক উদ্দিন,পপুলার ট্রেডার্স,মশুর ডাল (ছোট দানা),Got cheated while buying মশুর ডাল (ছোট দানা). They gave fake product. | Context: খুবই খারাপ খুবই খারাপ,0.72,0.77,0.74,high
+fe2f0962-58be-4ea9-9e68-e20222cd7005,জাহিদুল ইসলাম,Purnima Store,পিঁয়াজ (আমদানি),পিঁয়াজ (আমদানি) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: তাজা নয় খারাপ পরিষেবা,0.56,0.87,0.68,medium
+a5043d0a-75ba-4c8f-817c-f3d36f484220,Shahnaz Parvin,রহমান ভ্যারাইটি স্টোর,আলু (মানভেদে),বাসি আলু (মানভেদে) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: মোটামুটি খারাপ পরিষেবা,0.37,0.67,0.49,medium
+8956f162-f94e-4ce2-8658-0a960f4e0756,Nasrin Sultana,Bismillah Store,রাইস ব্রান তেল (বোতল),রাইস ব্রান তেল (বোতল) er quality khub kharap chilo. Pocha ar durgondho. | Context: তাজা নয় মোটামুটি,0.62,0.48,0.56,medium
+ebbddf23-b008-431e-9811-d307a439777d,ফাতেমা বেগম,নিউ মার্কেট স্টোর,ফ্রেশ,দোকানদার ফ্রেশ এর দাম বেশি নিয়েছে। 1012 টাকা দিয়েছি কিন্তু বাজারে 881 টাকা। | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.77,0.21,0.55,medium
+0c2c605e-8664-4f38-9f07-7d12ce7bd5f8,নাজমা আহমেদ,Ali Traders,ডিপ্লোমা (নিউজিল্যান্ড),ডিপ্লোমা (নিউজিল্যান্ড) এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: তাজা নয় মোটামুটি,0.46,0.79,0.59,medium
+11cb51c4-9c3a-44b6-8c7e-0a13682ebed7,Kamal Hossain,New Market,সুপার পাম অয়েল (লুজ),The সুপার পাম অয়েল (লুজ) quality was very poor. Rotten and smelly. | Context: তাজা নয় মোটামুটি,0.55,0.21,0.41,medium
+f282cd53-7d07-4ecc-a956-6a720ced0021,রফিক উদ্দিন,পপুলার ট্রেডার্স,সয়াবিন তেল (বোতল),বাসি সয়াবিন তেল (বোতল) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: ঠিক আছে স্বাভাবিক,0.33,0.46,0.38,weak
+bfe5da2a-92f3-436d-bbf1-2efbabc3b520,রহিমা খাতুন,রহমান ভ্যারাইটি স্টোর,সয়াবিন তেল (লুজ),সয়াবিন তেল (লুজ) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: একটু দাম বেশি একটু দাম বেশি,0.54,0.24,0.42,medium
+7cbf9d79-e164-4db8-a07a-6619e9f2370e,জাহিদুল ইসলাম,City Store,ডিপ্লোমা (নিউজিল্যান্ড),They gave less weight when buying ডিপ্লোমা (নিউজিল্যান্ড). Asked for 1kg but got only 800g. | Context: তাজা নয় হতাশাজনক,0.71,0.55,0.65,medium
+7b279ac3-508f-4443-8698-e0ca60218083,Ayesha Siddika,মা ভ্যারাইটি স্টোর,চাল (মাঝারী)পাইজাম/আটাশ,Shopkeeper overcharged for চাল (মাঝারী)পাইজাম/আটাশ. Paid 84 but market rate is 72. | Context: মোটামুটি খারাপ পরিষেবা,0.9,0.35,0.68,medium
+b54f918b-ef05-402e-8024-c27adda6453f,Nasrin Sultana,Bismillah Store,আলু (মানভেদে),Dokandar আলু (মানভেদে) er dam beshi niyeche. 45 taka diyechi kintu market rate 27. | Context: মোটামুটি খারাপ পরিষেবা,0.61,0.51,0.57,medium
+ac70dad1-2b02-4691-abf8-6bab06b80ea4,রফিক উদ্দিন,আলী ট্রেডার্স,জিরা,জিরা kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: ছোট বিষয় ঠিক আছে,0.35,0.34,0.35,weak
+9595c5bb-9625-4b65-b279-e1a159ed2169,Monirul Haque,Purnima Store,আটা (প্যাকেট),Very rude behavior and overpriced আটা (প্যাকেট). | Context: খারাপ পরিষেবা তাজা নয়,0.94,0.31,0.69,medium
+d2e98f6d-d134-4827-8747-78690ff46fea,আব্দুল করিম,Padma Store,মুরগী(ব্রয়লার),মুরগী(ব্রয়লার) ta ekdom taja chilo na. Purano ar shukno. | Context: মোটামুটি মোটামুটি,0.77,0.38,0.61,medium
+ca765ea7-7b67-41fb-bbfc-16b194c05c6c,Kamal Hossain,সবুজ ভ্যারাইটি স্টোর,খেজুর(সাধারণ মানের),খেজুর(সাধারণ মানের) er quality khub kharap chilo. Pocha ar durgondho. | Context: খারাপ পরিষেবা তাজা নয়,0.62,0.4,0.53,medium
+80e3f9d3-db02-4723-bdc9-30c8a8f4de28,মোহাম্মদ আলী,New Market,সয়াবিন তেল (লুজ),দোকানদার সয়াবিন তেল (লুজ) এর দাম বেশি নিয়েছে। 234 টাকা দিয়েছি কিন্তু বাজারে 170 টাকা। | Context: তাজা নয় হতাশাজনক,0.82,0.33,0.62,medium
+e69263a8-22a9-4929-a92b-bfeed3f9bc5e,মোহাম্মদ আলী,রহমান ভ্যারাইটি স্টোর,হলুদ (দেশী),Sold expired হলুদ (দেশী) and refused to refund money. | Context: খুবই খারাপ পচা,0.88,0.83,0.86,high
+05fe4ad7-0a47-4525-924f-82191aba0a33,Monirul Haque,Padma Store,ডিপ্লোমা (নিউজিল্যান্ড),Poor quality ডিপ্লোমা (নিউজিল্যান্ড) but charged 1200 taka which is too high. | Context: তাজা নয় তাজা নয়,0.83,0.2,0.58,medium
+4a7c65df-ccc1-42cf-b664-206ee99d81b9,Kamal Hossain,Shimanto Store,লবঙ্গ,লবঙ্গ er dam 1996 taka niyeche kintu market e 1541 taka. | Context: একটু দাম বেশি হতাশাজনক,0.69,0.44,0.59,medium
+700c2a0a-c277-4d26-8e87-59a2b68b0e63,সাবিনা ইয়াসমিন,City Store,আদা (আমদানি),The আদা (আমদানি) quality was very poor. Rotten and smelly. | Context: ছোট বিষয় তেমন কিছু না,0.32,0.24,0.29,weak
+becb6218-33ee-4975-979a-f7cfc7fbe4e6,Tahmina Begum,Padma Store,ইলিশ,ইলিশ কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: মোটামুটি হতাশাজনক,0.54,0.56,0.55,medium
+fa03f02c-94e3-4423-a83e-39056edea66c,রফিক উদ্দিন,ভাই ভাই স্টোর,খেজুর(সাধারণ মানের),দোকানদার অসভ্য আচরণ করেছে এবং খেজুর(সাধারণ মানের) এর দাম অতিরিক্ত নিয়েছে। | Context: তেমন কিছু না ঠিক আছে,0.35,0.36,0.35,weak
+f12a6f96-a109-4431-8e70-6b5b0f5a46c1,জাহিদুল ইসলাম,Barakah Traders,আদা (আমদানি),Dokandar আদা (আমদানি) er dam beshi niyeche. 315 taka diyechi kintu market rate 173. | Context: তাজা নয় খারাপ পরিষেবা,0.86,0.31,0.64,medium
+b66b45bb-c343-4d0c-bae7-c8d21362784c,সালমা আক্তার,সুন্দরবন স্টোর,সয়াবিন তেল (লুজ),সয়াবিন তেল (লুজ) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: তাজা নয় মোটামুটি,0.47,0.41,0.45,medium
+868e219f-6f3b-4213-9a70-7ee8f807a171,জাহাঙ্গীর আলম,ভাই ভাই স্টোর,তেজপাতা,The তেজপাতা quality was very poor. Rotten and smelly. | Context: মোটামুটি খারাপ পরিষেবা,0.85,0.22,0.6,medium
+74295dec-f2b5-46e1-8899-6ae17804a10e,মোহাম্মদ আলী,সবুজ ভ্যারাইটি স্টোর,লবণ(প্যাঃ)আয়োডিনযুক্ত,Dokandar লবণ(প্যাঃ)আয়োডিনযুক্ত er dam beshi niyeche. 62 taka diyechi kintu market rate 40. | Context: খারাপ পরিষেবা হতাশাজনক,0.78,0.43,0.64,medium
+bbb741ce-0a6a-46a3-977d-dd2bb3d7cf28,জাহিদুল ইসলাম,আলী ট্রেডার্স,লবণ(প্যাঃ)আয়োডিনযুক্ত,বাসি লবণ(প্যাঃ)আয়োডিনযুক্ত বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: হতাশাজনক তাজা নয়,0.81,0.42,0.65,medium
+2d572a2e-c45e-4d66-8dd2-8a6839d110d2,Sharmin Akter,Shimanto Store,ময়দা (খোলা),ময়দা (খোলা) এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: খারাপ পরিষেবা মোটামুটি,0.46,0.79,0.59,medium
+e79d8439-9b60-4f40-bccf-39f4200918b9,রহিমা খাতুন,Barakah Traders,ছোলা (মানভেদে),Bashi ছোলা (মানভেদে) bikri koreche. Taka ferot chay nai. | Context: হতাশাজনক হতাশাজনক,0.79,0.52,0.68,medium
+4814d18b-eb7f-44c1-88da-1b5f3e513085,সুমাইয়া পারভীন,আলী ট্রেডার্স,খেজুর(সাধারণ মানের),They charged 364 taka for খেজুর(সাধারণ মানের) but market price is 427 taka. | Context: ছোট বিষয় ঠিক আছে,0.13,0.51,0.28,weak
+f3f78184-66e7-4995-a202-b25223e0b776,শাহিন আলম,পপুলার ট্রেডার্স,লবঙ্গ,The লবঙ্গ was not fresh at all. Old and dried. | Context: তাজা নয় খারাপ পরিষেবা,0.32,0.7,0.47,medium
+02575922-a29a-4a6a-92fa-77eab7d78412,Tahmina Begum,আলী ট্রেডার্স,চাল সরু (নাজির/মিনিকেট),চাল সরু (নাজির/মিনিকেট) ta ekdom taja chilo na. Purano ar shukno. | Context: প্রতারণা বিপজ্জনক,0.84,0.58,0.74,high
+4d7045c5-8d0f-4712-8328-3bae4c9b142e,রুবিনা খাতুন,Bismillah Store,ডানো,Dokandar ডানো er dam beshi niyeche. 1203 taka diyechi kintu market rate 796. | Context: হতাশাজনক হতাশাজনক,0.73,0.35,0.58,medium
+c080c8c2-1713-4bf9-9fe8-cd719de4c05b,Kamal Hossain,সবুজ ভ্যারাইটি স্টোর,দারুচিনি,Bashi দারুচিনি bikri koreche. Taka ferot chay nai. | Context: নষ্ট প্রতারণা,0.87,0.51,0.73,high
+64100dec-2845-4393-8144-0b3abc3f9aa6,ফাতেমা বেগম,Maa Store,মশুর ডাল (বড় দানা),Shopkeeper overcharged for মশুর ডাল (বড় দানা). Paid 125 but market rate is 97. | Context: খুবই খারাপ মারাত্মক,0.89,0.56,0.76,high
+2da5db30-b064-4de6-8e01-7cc83d410500,আমিনুল ইসলাম,পপুলার ট্রেডার্স,পিঁয়াজ (আমদানি),The পিঁয়াজ (আমদানি) quality was very poor. Rotten and smelly. | Context: প্রতারণা মারাত্মক,0.84,0.53,0.72,high
+54b67d27-55fd-40f3-9b6b-7eb829d31414,Nasrin Sultana,City Store,ডিম (ফার্ম),ডিম (ফার্ম) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: স্বাভাবিক গ্রহণযোগ্য,0.31,0.49,0.38,weak
+2561148e-345c-45d4-9efd-180d01632333,Ayesha Siddika,সবুজ ভ্যারাইটি স্টোর,ডিপ্লোমা (নিউজিল্যান্ড),ডিপ্লোমা (নিউজিল্যান্ড) er dam 1033 taka niyeche kintu market e 889 taka. | Context: পচা মারাত্মক,0.91,0.49,0.74,high
+8da13164-5017-498c-9cf1-c299d51607ed,রহিমা খাতুন,Barakah Traders,গরু,গরু er dam 1074 taka niyeche kintu market e 790 taka. | Context: নষ্ট পচা,0.88,0.44,0.7,high
+6a7d1ba6-99be-43b1-a8bf-bfd7f95e624d,রুবিনা খাতুন,New Market,ধনে,The ধনে was not fresh at all. Old and dried. | Context: একটু দাম বেশি তাজা নয়,0.53,0.52,0.53,medium
+a253de5d-3e12-41c5-a9b5-4b991255cd02,রফিক উদ্দিন,Rahman Store,রসুন (দেশী),The রসুন (দেশী) was not fresh at all. Old and dried. | Context: একটু দাম বেশি একটু দাম বেশি,0.71,0.6,0.67,medium
+a6c6df74-7064-4af2-a0d8-d0a8d9f823f3,রফিক উদ্দিন,Bismillah Store,খেজুর(সাধারণ মানের),দোকানদার অসভ্য আচরণ করেছে এবং খেজুর(সাধারণ মানের) এর দাম অতিরিক্ত নিয়েছে। | Context: স্বাভাবিক ছোট বিষয়,0.17,0.54,0.32,weak
+905ca937-aee7-4b35-9854-77f3eebde6cb,মোহাম্মদ আলী,Rahman Store,জিরা,Dokane expired জিরা bikri kore. Swasther jonno khotikar. | Context: প্রতারণা প্রতারণা,0.62,0.87,0.72,high
+a4d4b989-828c-4550-a11b-245f9e96d823,জাহাঙ্গীর আলম,New Market,রসুন (দেশী),They charged 168 taka for রসুন (দেশী) but market price is 106 taka. | Context: খুবই খারাপ পচা,0.87,0.49,0.72,high
+92507dcc-f1fc-4c91-a707-5adcfa2df20d,Shahnaz Parvin,আলী ট্রেডার্স,ফ্রেশ,ফ্রেশ এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: নষ্ট জরুরী,0.85,0.8,0.83,high
+1e192ec4-d36a-4e57-9f72-959aa2050697,সাবিনা ইয়াসমিন,Purnima Store,হলুদ (আমদানি),হলুদ (আমদানি) er dam 398 taka niyeche kintu market e 328 taka. | Context: স্বাভাবিক স্বাভাবিক,0.36,0.4,0.38,weak
+165b4ece-a159-4218-8950-db422f757992,জাহাঙ্গীর আলম,পপুলার ট্রেডার্স,আদা (দেশী),Got cheated while buying আদা (দেশী). They gave fake product. | Context: খুবই খারাপ মারাত্মক,0.8,0.78,0.79,high
+efbd6016-6b64-4315-a095-10e0070bbf09,Tahmina Begum,আশা ভ্যারাইটি স্টোর,আটা (প্যাকেট),Dokandar osubyo beheibior koreche ar আটা (প্যাকেট) er dam beshi niyeche. | Context: প্রতারণা জরুরী,0.8,0.57,0.71,high
+aee0476b-2ef1-47e7-9350-5d684b395636,সালমা আক্তার,Shimanto Store,রুই,Dokandar রুই er dam beshi niyeche. 633 taka diyechi kintu market rate 313. | Context: বিপজ্জনক মারাত্মক,0.9,0.47,0.73,high
+2b8d4e1f-e360-483d-9e0c-f8dc2e767484,জাহিদুল ইসলাম,Bismillah Store,পাম অয়েল (লুজ),They gave less weight when buying পাম অয়েল (লুজ). Asked for 1kg but got only 800g. | Context: মোটামুটি খারাপ পরিষেবা,0.48,0.64,0.54,medium
+dc460bb4-65ce-4894-8477-8d5369f26c82,Kamal Hossain,সবুজ ভ্যারাইটি স্টোর,পাম অয়েল (লুজ),Sold expired পাম অয়েল (লুজ) and refused to refund money. | Context: হতাশাজনক খারাপ পরিষেবা,0.48,0.84,0.62,medium
+4af2d854-10f4-413a-9c7f-1cdb3c13f337,জাহাঙ্গীর আলম,রহমান ভ্যারাইটি স্টোর,রসুন (আমদানি),দোকানদার অসভ্য আচরণ করেছে এবং রসুন (আমদানি) এর দাম অতিরিক্ত নিয়েছে। | Context: মোটামুটি খারাপ পরিষেবা,0.78,0.52,0.68,medium
+df63bda8-9a97-42f3-879f-3d66851c69ec,Kamal Hossain,আলী ট্রেডার্স,আদা (দেশী),Poor quality আদা (দেশী) but charged NaN taka which is too high. | Context: তাজা নয় খারাপ পরিষেবা,0.91,0.31,0.67,medium
+5a62f326-5c79-4bf5-ba40-1b1c86328695,রুবিনা খাতুন,পপুলার ট্রেডার্স,ছোলা (মানভেদে),They gave less weight when buying ছোলা (মানভেদে). Asked for 1kg but got only 800g. | Context: একটু দাম বেশি একটু দাম বেশি,0.59,0.48,0.55,medium
+915befc7-6271-4adb-be14-f327c64a725a,রুবিনা খাতুন,Shimanto Store,ছোলা (মানভেদে),"ছোলা (মানভেদে) এর দাম 102 টাকা নিয়েছে, কিন্তু বাজার দর 107 টাকা। | Context: গ্রহণযোগ্য ছোট বিষয়",0.1,0.24,0.16,weak
+88c09303-cc5d-4811-b933-84d609d132cd,রহিমা খাতুন,আলী ট্রেডার্স,ছোলা (মানভেদে),Poor quality ছোলা (মানভেদে) but charged 145 taka which is too high. | Context: একটু দাম বেশি হতাশাজনক,0.74,0.25,0.54,medium
+b6c09aab-76b3-4b79-b4ca-d5686a90579d,সালমা আক্তার,মা ভ্যারাইটি স্টোর,এলাচ(ছোট),এলাচ(ছোট) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: একটু দাম বেশি একটু দাম বেশি,0.71,0.51,0.63,medium
+8011cfbc-3372-4fc4-a37a-0b8c8e6c7dcb,Rafiqul Islam,মা ভ্যারাইটি স্টোর,আলু (মানভেদে),Very rude behavior and overpriced আলু (মানভেদে). | Context: পচা প্রতারণা,0.9,0.43,0.71,high
+d8ad998d-71b4-4ac5-8f05-3f21882b2f74,Sharmin Akter,সবুজ ভ্যারাইটি স্টোর,লবঙ্গ,দোকানদার অসভ্য আচরণ করেছে এবং লবঙ্গ এর দাম অতিরিক্ত নিয়েছে। | Context: খারাপ পরিষেবা একটু দাম বেশি,0.8,0.43,0.65,medium
+e2c4d845-3082-41a4-b8d1-2c28d6df305b,আব্দুল করিম,সবুজ ভ্যারাইটি স্টোর,সয়াবিন তেল (লুজ),Selling expired সয়াবিন তেল (লুজ) in the shop. Health hazard. | Context: তাজা নয় খারাপ পরিষেবা,0.49,0.76,0.6,medium
+43f21140-3c4c-421b-b2d0-0f7ee40206cd,জাহাঙ্গীর আলম,Ali Traders,মশুর ডাল (ছোট দানা),They charged 159 taka for মশুর ডাল (ছোট দানা) but market price is 150 taka. | Context: ঠিক আছে ছোট বিষয়,0.24,0.21,0.23,weak
+b0b64835-77c8-40a9-ad6b-4c0853dc847a,আব্দুল করিম,Purnima Store,লবণ(প্যাঃ)আয়োডিনযুক্ত,বাসি লবণ(প্যাঃ)আয়োডিনযুক্ত বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: হতাশাজনক খারাপ পরিষেবা,0.48,0.7,0.57,medium
+b9634984-3b0d-4989-b241-e0885a8ffeb8,সুমাইয়া পারভীন,সবুজ ভ্যারাইটি স্টোর,ধনে,ধনে এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.57,0.71,0.63,medium
+9b559edd-bcf3-4498-a0ac-4e53f2f3929f,শাহিন আলম,Ali Traders,ডিম (ফার্ম),ডিম (ফার্ম) er dam 65 taka niyeche kintu market e 45 taka. | Context: হতাশাজনক খারাপ পরিষেবা,0.76,0.42,0.62,medium
+32853317-5b89-4cdc-a003-40efec8bd009,Rafiqul Islam,করিম স্টোর,রসুন (দেশী),রসুন (দেশী) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: হতাশাজনক খারাপ পরিষেবা,0.62,0.74,0.67,medium
+4a959542-ac05-404e-a5a9-bcef6046ee21,Kamal Hossain,ভাই ভাই স্টোর,তেজপাতা,Selling expired তেজপাতা in the shop. Health hazard. | Context: পচা নষ্ট,0.68,0.92,0.78,high
+39e1adf6-9418-4f30-9a6c-a19d85655a46,Tahmina Begum,মা ভ্যারাইটি স্টোর,ডিম (ফার্ম),ডিম (ফার্ম) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: তাজা নয় খারাপ পরিষেবা,0.42,0.71,0.54,medium
+5e72e81f-d6d9-4dc7-92bc-8ebe7a6c6ff7,Shahnaz Parvin,Barakah Traders,ডানো,They charged 1069 taka for ডানো but market price is 721 taka. | Context: হতাশাজনক একটু দাম বেশি,0.81,0.38,0.64,medium
+1a76dd3f-95cd-4dd8-8e31-a716409e1a29,জাহিদুল ইসলাম,করিম স্টোর,ময়দা (প্যাকেট),দোকানে মেয়াদ উত্তীর্ণ ময়দা (প্যাকেট) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: বিপজ্জনক মারাত্মক,0.79,0.73,0.77,high
+29961f60-ef6c-4f26-8f07-d2886543c2e1,রুবিনা খাতুন,New Market,সুপার পাম অয়েল (লুজ),সুপার পাম অয়েল (লুজ) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: তাজা নয় মোটামুটি,0.86,0.31,0.64,medium
+5744bd57-13d0-420c-b3e8-b3afac6ea899,রহিমা খাতুন,পপুলার ট্রেডার্স,সয়াবিন তেল (বোতল),Selling expired সয়াবিন তেল (বোতল) in the shop. Health hazard. | Context: তাজা নয় খারাপ পরিষেবা,0.56,0.77,0.64,medium
+01e41aaa-97d6-4fdd-8187-4ba3fe25949b,মোহাম্মদ আলী,Barakah Traders,সয়াবিন তেল (বোতল),সয়াবিন তেল (বোতল) er dam 190 taka niyeche kintu market e 188 taka. | Context: স্বাভাবিক স্বাভাবিক,0.1,0.33,0.19,weak
+38c52973-1cd1-471b-8068-3b268ff1488d,Shahnaz Parvin,আলী ট্রেডার্স,এলাচ(ছোট),Dokandar osubyo beheibior koreche ar এলাচ(ছোট) er dam beshi niyeche. | Context: ঠিক আছে স্বাভাবিক,0.36,0.3,0.34,weak
+69dd5b5e-a071-4ebe-a0ff-b72312a36713,Ayesha Siddika,রহমান ভ্যারাইটি স্টোর,আটা (প্যাকেট),আটা (প্যাকেট) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: হতাশাজনক মোটামুটি,0.53,0.77,0.63,medium
+443950e9-b759-4096-91f1-44e9e3ad8e1a,রফিক উদ্দিন,ভাই ভাই স্টোর,রসুন (দেশী),দোকানে মেয়াদ উত্তীর্ণ রসুন (দেশী) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: খারাপ পরিষেবা হতাশাজনক,0.42,0.92,0.62,medium
+28519f4f-e830-4be7-a0eb-83fbf67f961d,Md. Rahman,নিউ মার্কেট স্টোর,পাম অয়েল (লুজ),Got cheated while buying পাম অয়েল (লুজ). They gave fake product. | Context: প্রতারণা মারাত্মক,0.79,0.8,0.79,high
+002f0b12-373f-4c37-bb45-8b970342fa57,আমিনুল ইসলাম,Maa Store,ডানো,Poor quality ডানো but charged 1162 taka which is too high. | Context: একটু দাম বেশি মোটামুটি,0.89,0.39,0.69,medium
+ce9fa38a-df08-4e7b-a629-7fb508f53472,সালমা আক্তার,City Store,মশুর ডাল (মাঝারী দানা),মশুর ডাল (মাঝারী দানা) ta ekdom taja chilo na. Purano ar shukno. | Context: স্বাভাবিক ছোট বিষয়,0.44,0.3,0.38,weak
+9744180b-d7f0-446e-8c4e-af7b78b9c42a,জাহাঙ্গীর আলম,New Market,খেজুর(সাধারণ মানের),Very rude behavior and overpriced খেজুর(সাধারণ মানের). | Context: ঠিক আছে ঠিক আছে,0.3,0.52,0.39,weak
+4e81b1e2-e63c-43fa-b1c2-0584d7303f6f,Md. Rahman,আশা ভ্যারাইটি স্টোর,লবণ(প্যাঃ)আয়োডিনযুক্ত,লবণ(প্যাঃ)আয়োডিনযুক্ত er quality khub kharap chilo. Pocha ar durgondho. | Context: মোটামুটি হতাশাজনক,0.59,0.6,0.59,medium
+b2e9b06c-ba38-444a-b3e0-d087b4f76353,জাহাঙ্গীর আলম,Maa Store,আলু (মানভেদে),দোকানে মেয়াদ উত্তীর্ণ আলু (মানভেদে) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: হতাশাজনক হতাশাজনক,0.43,0.72,0.55,medium
+075ed76e-cc67-4ebe-8804-4475ab82317b,Nasrin Sultana,সবুজ ভ্যারাইটি স্টোর,মার্কস,Sold expired মার্কস and refused to refund money. | Context: নষ্ট খুবই খারাপ,0.88,0.92,0.9,high
+d7af63ab-87e5-42fe-b312-4afd1a23d006,Rafiqul Islam,City Store,এলাচ(ছোট),এলাচ(ছোট) er quality khub kharap chilo. Pocha ar durgondho. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.7,0.54,0.64,medium
+26a93d69-d51e-4a19-8674-5844da3eb825,আব্দুল করিম,করিম স্টোর,মার্কস,Shopkeeper overcharged for মার্কস. Paid 1186 but market rate is 857. | Context: তাজা নয় হতাশাজনক,0.66,0.43,0.57,medium
+65b16c08-ada6-43f6-93c7-2aa9355b817d,সাবিনা ইয়াসমিন,Rahman Store,শুকনা মরিচ (আমদানি),Bashi শুকনা মরিচ (আমদানি) bikri koreche. Taka ferot chay nai. | Context: মোটামুটি হতাশাজনক,0.73,0.58,0.67,medium
+9c4e2cab-2803-4c92-a710-64482e21fae2,নাজমা আহমেদ,City Store,লবণ(প্যাঃ)আয়োডিনযুক্ত,Dokane expired লবণ(প্যাঃ)আয়োডিনযুক্ত bikri kore. Swasther jonno khotikar. | Context: পচা বিপজ্জনক,0.69,0.88,0.77,high
+b6dc8882-f896-4a12-bd58-938105cbb031,Shahnaz Parvin,সবুজ ভ্যারাইটি স্টোর,চাল (মোটা)/স্বর্ণা/চায়না ইরি,Sold expired চাল (মোটা)/স্বর্ণা/চায়না ইরি and refused to refund money. | Context: হতাশাজনক মোটামুটি,0.31,0.89,0.54,medium
+ae0f1bb2-739c-44b1-84fb-d7a5f86464cc,Rahim Mia,সুন্দরবন স্টোর,ডানো,ডানো er dam 959 taka niyeche kintu market e 749 taka. | Context: খারাপ পরিষেবা হতাশাজনক,0.61,0.49,0.56,medium
+9e4fa322-6530-4106-affd-c47ac7a826e5,নাজমা আহমেদ,Purnima Store,মুরগী(ব্রয়লার),মুরগী(ব্রয়লার) er quality khub kharap chilo. Pocha ar durgondho. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.42,0.59,0.49,medium
+9fa9c501-9815-4a36-8abf-14789c8e6cc0,Ayesha Siddika,Purnima Store,শুকনা মরিচ (দেশী),বাসি শুকনা মরিচ (দেশী) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: একটু দাম বেশি হতাশাজনক,0.34,0.62,0.45,medium
+a329756b-af17-4085-8757-29e18f391b5e,সুমাইয়া পারভীন,সবুজ ভ্যারাইটি স্টোর,পিঁয়াজ (দেশী),Poor quality পিঁয়াজ (দেশী) but charged 122 taka which is too high. | Context: খারাপ পরিষেবা মোটামুটি,0.78,0.49,0.66,medium
+de2d991f-f96f-4645-8aa7-a686c2a09e76,জাহিদুল ইসলাম,করিম স্টোর,লবঙ্গ,Dokandar লবঙ্গ er dam beshi niyeche. 1496 taka diyechi kintu market rate 1534. | Context: ঠিক আছে স্বাভাবিক,0.16,0.39,0.25,weak
+d0f5c298-5e62-4dd1-8a45-6bbcb07db5f9,Nasrin Sultana,করিম স্টোর,পিঁয়াজ (আমদানি),পিঁয়াজ (আমদানি) এর মান অনুযায়ী দাম বেশি নিয়েছে। NaN টাকা নিয়েছে কিন্তু মান খারাপ। | Context: একটু দাম বেশি হতাশাজনক,0.76,0.27,0.56,medium
+dc9aa8b0-8e97-4c05-aed9-3469622d3c24,জাহাঙ্গীর আলম,সবুজ ভ্যারাইটি স্টোর,গরু,The গরু quality was very poor. Rotten and smelly. | Context: তেমন কিছু না স্বাভাবিক,0.46,0.23,0.37,weak
+a1fdfad6-ab6f-4d61-8611-c04c806f2f9c,Kamal Hossain,সবুজ ভ্যারাইটি স্টোর,ধনে,ধনে er quality khub kharap chilo. Pocha ar durgondho. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.58,0.35,0.49,medium
+0c0c24b1-bde8-4fcc-a8f5-d529294f6d39,আব্দুল করিম,ভাই ভাই স্টোর,শুকনা মরিচ (দেশী),"শুকনা মরিচ (দেশী) এর দাম 507 টাকা নিয়েছে, কিন্তু বাজার দর 292 টাকা। | Context: একটু দাম বেশি তাজা নয়",0.77,0.34,0.6,medium
+7659707c-ccf0-453c-8236-acddd4369e3b,জাহিদুল ইসলাম,আশা ভ্যারাইটি স্টোর,ময়দা (খোলা),Got cheated while buying ময়দা (খোলা). They gave fake product. | Context: একটু দাম বেশি মোটামুটি,0.38,0.93,0.6,medium
+86a6eb45-91b8-4ee0-afde-cb891e2864cd,জাহিদুল ইসলাম,Shimanto Store,মশুর ডাল (ছোট দানা),Poor quality মশুর ডাল (ছোট দানা) but charged 158 taka which is too high. | Context: হতাশাজনক হতাশাজনক,0.29,0.59,0.41,medium
+58f7bb07-d748-45da-a512-6a3150ce097f,রহিমা খাতুন,নিউ মার্কেট স্টোর,লবঙ্গ,Selling expired লবঙ্গ in the shop. Health hazard. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.33,0.83,0.53,medium
+bb7966d5-ea01-4f9f-95a1-c537e9170a4f,Shahnaz Parvin,সবুজ ভ্যারাইটি স্টোর,রসুন (আমদানি),They charged 269 taka for রসুন (আমদানি) but market price is 173 taka. | Context: মোটামুটি খারাপ পরিষেবা,0.83,0.32,0.63,medium
+a01b5fc1-b866-42c2-9493-d32a488798db,Sharmin Akter,ভাই ভাই স্টোর,শুকনা মরিচ (দেশী),"শুকনা মরিচ (দেশী) এর দাম 505 টাকা নিয়েছে, কিন্তু বাজার দর 347 টাকা। | Context: তাজা নয় খারাপ পরিষেবা",0.82,0.31,0.62,medium
+74c394e5-636f-4edc-9d52-b9a7b290a510,নাজমা আহমেদ,Padma Store,তেজপাতা,বাসি তেজপাতা বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: খারাপ পরিষেবা একটু দাম বেশি,0.41,0.5,0.45,medium
+58d3e222-7acb-4341-a580-1fc4c3e564de,রুবিনা খাতুন,সবুজ ভ্যারাইটি স্টোর,শুকনা মরিচ (দেশী),"শুকনা মরিচ (দেশী) এর দাম 408 টাকা নিয়েছে, কিন্তু বাজার দর 335 টাকা। | Context: তাজা নয় খারাপ পরিষেবা",0.6,0.45,0.54,medium
+f3646a7b-3dfb-4e5a-a1b6-83ebaedc34a9,করিম মিয়া,Rahman Store,ডানো,Got cheated while buying ডানো. They gave fake product. | Context: প্রতারণা প্রতারণা,0.57,0.89,0.7,high
+7a9ff44f-a423-49fd-97b1-d1e6776b7f28,Kamal Hossain,মা ভ্যারাইটি স্টোর,আলু (মানভেদে),"আলু (মানভেদে) এর দাম 37 টাকা নিয়েছে, কিন্তু বাজার দর 22 টাকা। | Context: হতাশাজনক তাজা নয়",0.8,0.22,0.57,medium
+09ea4c5c-56db-46c5-a760-1bac767e02e5,সাবিনা ইয়াসমিন,Shimanto Store,চাল সরু (নাজির/মিনিকেট),চাল সরু (নাজির/মিনিকেট) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: তাজা নয় হতাশাজনক,0.83,0.41,0.66,medium
+c2d21b94-cb68-4970-898b-764575ca34e4,করিম মিয়া,নিউ মার্কেট স্টোর,মশুর ডাল (বড় দানা),Selling expired মশুর ডাল (বড় দানা) in the shop. Health hazard. | Context: খারাপ পরিষেবা তাজা নয়,0.36,0.78,0.53,medium
+a10efa59-7fae-4dd0-a93b-156afca463a8,Ayesha Siddika,Rahman Store,পিঁয়াজ (দেশী),Got cheated while buying পিঁয়াজ (দেশী). They gave fake product. | Context: প্রতারণা প্রতারণা,0.68,0.83,0.74,high
+44b42ee7-4edd-4dae-ad79-a25eb2ed43ab,সুমাইয়া পারভীন,রহমান ভ্যারাইটি স্টোর,চিনি,চিনি টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: একটু দাম বেশি তাজা নয়,0.74,0.58,0.68,medium
+7d838bd0-8d6d-4e4c-9100-78940cd83b38,সাবিনা ইয়াসমিন,Bismillah Store,লবণ(প্যাঃ)আয়োডিনযুক্ত,লবণ(প্যাঃ)আয়োডিনযুক্ত kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: বিপজ্জনক জরুরী,0.83,0.59,0.73,high
+c4e68362-372c-41af-9ab7-12282c3af431,Monirul Haque,ভাই ভাই স্টোর,আটা (প্যাকেট),Dokandar আটা (প্যাকেট) er dam beshi niyeche. 79 taka diyechi kintu market rate 62. | Context: হতাশাজনক খারাপ পরিষেবা,0.63,0.48,0.57,medium
+98dcdc4e-464f-43f0-a703-1c37912afe08,করিম মিয়া,Maa Store,চাল (মাঝারী)পাইজাম/আটাশ,Shopkeeper overcharged for চাল (মাঝারী)পাইজাম/আটাশ. Paid 99 but market rate is 71. | Context: একটু দাম বেশি হতাশাজনক,0.91,0.26,0.65,medium
+6cf198f9-6a69-4aa6-934a-6d1041353c8b,Shahnaz Parvin,নিউ মার্কেট স্টোর,হলুদ (দেশী),দোকানদার হলুদ (দেশী) এর দাম বেশি নিয়েছে। 519 টাকা দিয়েছি কিন্তু বাজারে 375 টাকা। | Context: তাজা নয় একটু দাম বেশি,0.64,0.56,0.61,medium
+e4ca6099-c8ce-4727-b9c1-34fc29f6395e,আমিনুল ইসলাম,মা ভ্যারাইটি স্টোর,ময়দা (প্যাকেট),দোকানে মেয়াদ উত্তীর্ণ ময়দা (প্যাকেট) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: তাজা নয় মোটামুটি,0.38,0.9,0.59,medium
+02ce1c4b-49d0-4398-a04a-cb0f127a1c13,সাবিনা ইয়াসমিন,Ali Traders,তেজপাতা,দোকানদার তেজপাতা এর দাম বেশি নিয়েছে। 273 টাকা দিয়েছি কিন্তু বাজারে 203 টাকা। | Context: একটু দাম বেশি হতাশাজনক,0.69,0.57,0.64,medium
+df0ba4c0-83b1-4f13-bfce-63ca7b07ba85,Rafiqul Islam,Ali Traders,ডিম (ফার্ম),ডিম (ফার্ম) এর মান অনুযায়ী দাম বেশি নিয়েছে। 73 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: মারাত্মক মারাত্মক,0.84,0.52,0.71,high
+0d6fa1c0-894c-4719-a1f6-941e5f9c6953,Tahmina Begum,ভাই ভাই স্টোর,মশুর ডাল (বড় দানা),মশুর ডাল (বড় দানা) er dam 139 taka niyeche kintu market e 103 taka. | Context: একটু দাম বেশি একটু দাম বেশি,0.72,0.35,0.57,medium
+c99357fe-6536-4192-b28b-4c05a135ede9,শাহিন আলম,Bismillah Store,জিরা,জিরা er dam 622 taka niyeche kintu market e 725 taka. | Context: গ্রহণযোগ্য ছোট বিষয়,0.12,0.31,0.2,weak
+950ad196-3f75-445d-a763-3181ac6218e1,Kamal Hossain,সবুজ ভ্যারাইটি স্টোর,ডিপ্লোমা (নিউজিল্যান্ড),Selling expired ডিপ্লোমা (নিউজিল্যান্ড) in the shop. Health hazard. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.38,0.74,0.52,medium
+3e09629b-616d-49a5-aa5c-03ebedebc271,সালমা আক্তার,Bismillah Store,ফ্রেশ,The ফ্রেশ quality was very poor. Rotten and smelly. | Context: হতাশাজনক একটু দাম বেশি,0.73,0.53,0.65,medium
+4219f24e-c76c-4bec-875e-1ae94aea79ee,আব্দুল করিম,Purnima Store,ডিম (ফার্ম),Selling expired ডিম (ফার্ম) in the shop. Health hazard. | Context: হতাশাজনক তাজা নয়,0.4,0.77,0.55,medium
+48673423-3856-4361-924b-279c307ff2e5,রুবিনা খাতুন,পপুলার ট্রেডার্স,সুপার পাম অয়েল (লুজ),Selling expired সুপার পাম অয়েল (লুজ) in the shop. Health hazard. | Context: জরুরী বিপজ্জনক,0.76,0.71,0.74,high
+b986684a-5eeb-4c85-a5f0-ecfbd96097be,সুমাইয়া পারভীন,Rahman Store,শুকনা মরিচ (আমদানি),শুকনা মরিচ (আমদানি) er quality kharap but 500 taka niyeche jeta onek beshi. | Context: প্রতারণা জরুরী,0.91,0.49,0.74,high
+2ad53a66-2948-4345-adf9-cedc0e5f2f68,নাজমা আহমেদ,ভাই ভাই স্টোর,আলু (মানভেদে),দোকানদার অসভ্য আচরণ করেছে এবং আলু (মানভেদে) এর দাম অতিরিক্ত নিয়েছে। | Context: হতাশাজনক মোটামুটি,0.72,0.6,0.67,medium
+32743474-7e04-4be8-8bb6-149a6602a8b0,Monirul Haque,City Store,চিনি,দোকানদার চিনি এর দাম বেশি নিয়েছে। 152 টাকা দিয়েছি কিন্তু বাজারে 110 টাকা। | Context: খারাপ পরিষেবা একটু দাম বেশি,0.66,0.43,0.57,medium
+59a318ed-79e6-46ce-b523-8a2e302db6d1,জাহাঙ্গীর আলম,করিম স্টোর,ছোলা (মানভেদে),The ছোলা (মানভেদে) was not fresh at all. Old and dried. | Context: হতাশাজনক মোটামুটি,0.57,0.45,0.52,medium
+e1df68fa-c74a-4145-88de-8ae2cd01fcd2,Shahnaz Parvin,Ali Traders,পিঁয়াজ (দেশী),পিঁয়াজ (দেশী) er quality kharap but 74 taka niyeche jeta onek beshi. | Context: গ্রহণযোগ্য ছোট বিষয়,0.31,0.47,0.37,weak
+861f2569-fbbe-48bd-9143-1759aa95f229,জাহাঙ্গীর আলম,নিউ মার্কেট স্টোর,রুই,"রুই এর দাম 396 টাকা নিয়েছে, কিন্তু বাজার দর 397 টাকা। | Context: গ্রহণযোগ্য তেমন কিছু না",0.29,0.28,0.29,weak
+3390d386-0968-4833-923b-09e687a7a2ea,রুবিনা খাতুন,নিউ মার্কেট স্টোর,চাল (মাঝারী)পাইজাম/আটাশ,Selling expired চাল (মাঝারী)পাইজাম/আটাশ in the shop. Health hazard. | Context: একটু দাম বেশি মোটামুটি,0.54,0.71,0.61,medium
+adc3e699-ebf1-4879-b236-cdd598867cae,আব্দুল করিম,সুন্দরবন স্টোর,ময়দা (প্যাকেট),বাসি ময়দা (প্যাকেট) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: হতাশাজনক খারাপ পরিষেবা,0.39,0.46,0.42,medium
+d5a0ab6e-f769-4213-a421-347bd5ce5f2a,সালমা আক্তার,নিউ মার্কেট স্টোর,চিনি,Poor quality চিনি but charged 137 taka which is too high. | Context: প্রতারণা নষ্ট,0.93,0.49,0.75,high
+21dd7f20-ed46-4130-a93d-e753e04033a3,ফাতেমা বেগম,রহমান ভ্যারাইটি স্টোর,চাল (মাঝারী)পাইজাম/আটাশ,চাল (মাঝারী)পাইজাম/আটাশ কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: হতাশাজনক মোটামুটি,0.4,0.59,0.48,medium
+454b21c4-3dee-49de-a11c-e379faf2ae06,Tahmina Begum,নিউ মার্কেট স্টোর,ফ্রেশ,Sold expired ফ্রেশ and refused to refund money. | Context: তাজা নয় মোটামুটি,0.53,0.87,0.67,medium
+b03d9424-5baf-4db2-b729-f9f51a83c944,জাহিদুল ইসলাম,সুন্দরবন স্টোর,সয়াবিন তেল (বোতল),সয়াবিন তেল (বোতল) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: মোটামুটি মোটামুটি,0.79,0.54,0.69,medium
+a6e92ce6-57a2-444b-8303-2e437d05b9e0,শাহিন আলম,নিউ মার্কেট স্টোর,ডানো,ডানো কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: পচা বিপজ্জনক,0.87,0.75,0.82,high
+155bf58b-9c72-4690-96d7-2414b420abd2,Nasrin Sultana,করিম স্টোর,হলুদ (দেশী),দোকানদার অসভ্য আচরণ করেছে এবং হলুদ (দেশী) এর দাম অতিরিক্ত নিয়েছে। | Context: ছোট বিষয় ঠিক আছে,0.18,0.4,0.27,weak
+9c899df9-74e7-4b7c-82cc-58e7d9ab58ee,করিম মিয়া,মা ভ্যারাইটি স্টোর,শুকনা মরিচ (আমদানি),They gave less weight when buying শুকনা মরিচ (আমদানি). Asked for 1kg but got only 800g. | Context: খুবই খারাপ খুবই খারাপ,0.83,0.66,0.76,high
+fe0e3a58-91cf-4fd2-af93-d1b58d6f5855,আমিনুল ইসলাম,পপুলার ট্রেডার্স,সয়াবিন তেল (বোতল),সয়াবিন তেল (বোতল) এর মান অনুযায়ী দাম বেশি নিয়েছে। 188 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: ছোট বিষয় তেমন কিছু না,0.26,0.35,0.3,weak
+f2e73f9d-6799-4b92-9dad-00aa71bb509b,করিম মিয়া,ভাই ভাই স্টোর,সয়াবিন তেল (বোতল),দোকানদার সয়াবিন তেল (বোতল) এর দাম বেশি নিয়েছে। 259 টাকা দিয়েছি কিন্তু বাজারে 189 টাকা। | Context: খারাপ পরিষেবা হতাশাজনক,0.7,0.48,0.61,medium
+7bf3ddfd-92ed-4a84-856e-6457d7ee3558,ফাতেমা বেগম,Barakah Traders,গরু,গরু কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: মোটামুটি তাজা নয়,0.44,0.86,0.61,medium
+08f73c73-276f-4a95-879c-8729f1dbe34c,Kamal Hossain,Padma Store,জিরা,জিরা এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: বিপজ্জনক প্রতারণা,0.58,0.88,0.7,high
+25e630e7-7492-4acf-8a52-f6cbf8d48349,Md. Rahman,Bismillah Store,ধনে,ধনে কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: নষ্ট বিপজ্জনক,0.81,0.7,0.77,high
+42ae69cd-7a91-486d-8f00-45323743bb1a,Rahim Mia,Padma Store,খেজুর(সাধারণ মানের),Shopkeeper overcharged for খেজুর(সাধারণ মানের). Paid 729 but market rate is 499. | Context: খারাপ পরিষেবা তাজা নয়,0.77,0.56,0.69,medium
+0379d36b-40ed-4b51-97e1-36192843552b,Monirul Haque,Rahman Store,মশুর ডাল (মাঝারী দানা),Poor quality মশুর ডাল (মাঝারী দানা) but charged 196 taka which is too high. | Context: একটু দাম বেশি হতাশাজনক,0.72,0.24,0.53,medium
+8152c085-5df3-44c0-acec-f73527fb308e,আমিনুল ইসলাম,Bismillah Store,দারুচিনি,Very rude behavior and overpriced দারুচিনি. | Context: হতাশাজনক তাজা নয়,0.64,0.5,0.58,medium
+ae1cb00a-de6d-4d4d-94cf-b58f09918b9b,জাহিদুল ইসলাম,পপুলার ট্রেডার্স,চাল (মোটা)/স্বর্ণা/চায়না ইরি,They gave less weight when buying চাল (মোটা)/স্বর্ণা/চায়না ইরি. Asked for 1kg but got only 800g. | Context: খারাপ পরিষেবা মোটামুটি,0.63,0.44,0.55,medium
+bdb6411f-48b0-422a-9d6b-de9ae6d3c3c0,Monirul Haque,মা ভ্যারাইটি স্টোর,সয়াবিন তেল (বোতল),সয়াবিন তেল (বোতল) এর মান অনুযায়ী দাম বেশি নিয়েছে। 218 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: খারাপ পরিষেবা তাজা নয়,0.75,0.58,0.68,medium
+eb0cd974-5c47-4558-a37c-b74928cfac04,Rahim Mia,Shimanto Store,খেজুর(সাধারণ মানের),খেজুর(সাধারণ মানের) er quality khub kharap chilo. Pocha ar durgondho. | Context: হতাশাজনক খারাপ পরিষেবা,0.76,0.56,0.68,medium
+404e7e53-252f-4cca-a48a-58ddceed8ed6,Rafiqul Islam,Maa Store,শুকনা মরিচ (দেশী),Dokandar osubyo beheibior koreche ar শুকনা মরিচ (দেশী) er dam beshi niyeche. | Context: ঠিক আছে ছোট বিষয়,0.36,0.26,0.32,weak
+b3e965df-c5d6-41fa-a05c-122eaaad37f2,Shahnaz Parvin,সবুজ ভ্যারাইটি স্টোর,হলুদ (দেশী),The হলুদ (দেশী) quality was very poor. Rotten and smelly. | Context: হতাশাজনক হতাশাজনক,0.49,0.4,0.45,medium
+44aeb92b-32f1-457a-b8f3-aa5bde27ba52,Rafiqul Islam,Maa Store,ডানো,ডানো কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: মারাত্মক মারাত্মক,0.67,0.8,0.72,high
+0501f01d-9bed-4ae2-8cb0-75390a248b5c,আমিনুল ইসলাম,আলী ট্রেডার্স,মশুর ডাল (মাঝারী দানা),They gave less weight when buying মশুর ডাল (মাঝারী দানা). Asked for 1kg but got only 800g. | Context: নষ্ট পচা,0.84,0.62,0.75,high
+f557dbef-43f0-404a-8324-39866a68f5e8,Nasrin Sultana,City Store,জিরা,জিরা এর মান অনুযায়ী দাম বেশি নিয়েছে। 828 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: একটু দাম বেশি হতাশাজনক,0.83,0.27,0.61,medium
+ef65e43b-ba0d-4ce2-ae59-1167ded92533,নাজমা আহমেদ,Ali Traders,মুরগী (দেশী),The মুরগী (দেশী) quality was very poor. Rotten and smelly. | Context: তাজা নয় হতাশাজনক,0.67,0.2,0.48,medium
+041e7d62-fb52-4210-aa19-fe94d316f34f,Tahmina Begum,Rahman Store,এ্যাংকর ডাল,দোকানদার এ্যাংকর ডাল এর দাম বেশি নিয়েছে। 99 টাকা দিয়েছি কিন্তু বাজারে 76 টাকা। | Context: তাজা নয় তাজা নয়,0.62,0.27,0.48,medium
+7f806540-4c58-4e14-9c13-6f590615eb7e,Nasrin Sultana,মা ভ্যারাইটি স্টোর,মশুর ডাল (মাঝারী দানা),মশুর ডাল (মাঝারী দানা) ta ekdom taja chilo na. Purano ar shukno. | Context: স্বাভাবিক তেমন কিছু না,0.42,0.31,0.38,weak
+482ec30e-f569-49b5-9c99-f508c1d351fd,মোহাম্মদ আলী,Purnima Store,লবণ(প্যাঃ)আয়োডিনযুক্ত,দোকানদার অসভ্য আচরণ করেছে এবং লবণ(প্যাঃ)আয়োডিনযুক্ত এর দাম অতিরিক্ত নিয়েছে। | Context: ছোট বিষয় স্বাভাবিক,0.38,0.21,0.31,weak
+fd9f1a08-8306-4e4d-939a-86ec6ccb9a7c,রফিক উদ্দিন,Ali Traders,পিঁয়াজ (দেশী),Dokandar osubyo beheibior koreche ar পিঁয়াজ (দেশী) er dam beshi niyeche. | Context: একটু দাম বেশি খারাপ পরিষেবা,0.72,0.23,0.52,medium
+29621712-14a1-43a1-9015-1d48dfac7bf3,Md. Rahman,নিউ মার্কেট স্টোর,গরু,গরু er quality kharap but 786 taka niyeche jeta onek beshi. | Context: ছোট বিষয় ঠিক আছে,0.39,0.33,0.37,weak
+32b2af07-44e9-4108-a366-0b385db7c115,রফিক উদ্দিন,Barakah Traders,চিনি,The চিনি was not fresh at all. Old and dried. | Context: হতাশাজনক একটু দাম বেশি,0.42,0.56,0.48,medium
+8229b28b-b838-419f-9e81-b5b938949374,আব্দুল করিম,Bismillah Store,চাল (মোটা)/স্বর্ণা/চায়না ইরি,দোকানদার অসভ্য আচরণ করেছে এবং চাল (মোটা)/স্বর্ণা/চায়না ইরি এর দাম অতিরিক্ত নিয়েছে। | Context: মোটামুটি একটু দাম বেশি,0.4,0.46,0.42,medium
+8fdef6a5-0dce-4fbc-be58-2cd11e9c099e,Ayesha Siddika,Rahman Store,পিঁয়াজ (আমদানি),পিঁয়াজ (আমদানি) কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: তাজা নয় একটু দাম বেশি,0.73,0.55,0.66,medium
+8e1d5062-c210-47d7-ae20-08e24b91cb2b,Rafiqul Islam,আলী ট্রেডার্স,রাইস ব্রান তেল (বোতল),Sold expired রাইস ব্রান তেল (বোতল) and refused to refund money. | Context: মারাত্মক জরুরী,0.78,0.76,0.77,high
+820203d8-0088-425d-8825-138116077a86,Md. Rahman,Shimanto Store,জিরা,জিরা কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: জরুরী জরুরী,0.67,0.76,0.71,high
+58e4f53d-1a60-4bae-a037-a55642f8ddeb,জাহাঙ্গীর আলম,City Store,মার্কস,মার্কস টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: তাজা নয় হতাশাজনক,0.38,0.58,0.46,medium
+e12da3d0-f8c7-4c90-bed6-bb5a7efb7a5f,Monirul Haque,পপুলার ট্রেডার্স,রসুন (আমদানি),রসুন (আমদানি) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: মোটামুটি খারাপ পরিষেবা,0.56,0.41,0.5,medium
+24701002-6272-4fe6-9a98-b7ff454519ad,Md. Rahman,ভাই ভাই স্টোর,রসুন (দেশী),রসুন (দেশী) er dam 202 taka niyeche kintu market e 111 taka. | Context: প্রতারণা নষ্ট,0.86,0.48,0.71,high
+c57b1977-7b93-4c35-9436-66e6536011e2,Rahim Mia,নিউ মার্কেট স্টোর,মুরগী (দেশী),মুরগী (দেশী) er dam 999 taka niyeche kintu market e 594 taka. | Context: নষ্ট প্রতারণা,0.89,0.52,0.74,high
+c234573f-e0d5-4651-9ee8-b447acad148d,Sharmin Akter,City Store,শুকনা মরিচ (আমদানি),বাসি শুকনা মরিচ (আমদানি) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: জরুরী বিপজ্জনক,0.89,0.49,0.73,high
+3b4be1b8-4911-4d46-adbd-b9bee46d612a,আমিনুল ইসলাম,নিউ মার্কেট স্টোর,জিরা,Very rude behavior and overpriced জিরা. | Context: তেমন কিছু না তেমন কিছু না,0.19,0.32,0.24,weak
+bdd76142-0d3d-4d43-9f6c-334b1342012f,Md. Rahman,সুন্দরবন স্টোর,রুই,Got cheated while buying রুই. They gave fake product. | Context: নষ্ট খুবই খারাপ,0.85,0.79,0.83,high
+5deaaac8-80ab-450a-9473-e504b5ab897a,Rahim Mia,সুন্দরবন স্টোর,ছোলা (মানভেদে),ছোলা (মানভেদে) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: হতাশাজনক খারাপ পরিষেবা,0.49,0.59,0.53,medium
+528affc6-f369-4602-b332-0c99824eaf4e,Rafiqul Islam,Maa Store,ডিম (ফার্ম),Dokandar ডিম (ফার্ম) er dam beshi niyeche. 60 taka diyechi kintu market rate 47. | Context: তাজা নয় একটু দাম বেশি,0.63,0.31,0.5,medium
+63464ee0-827c-4e48-a315-b61332bfbac5,Md. Rahman,New Market,পিঁয়াজ (দেশী),Selling expired পিঁয়াজ (দেশী) in the shop. Health hazard. | Context: মারাত্মক খুবই খারাপ,0.87,0.8,0.84,high
+98de17f6-c443-4059-b54b-3407648cd397,Monirul Haque,Ali Traders,রাইস ব্রান তেল (বোতল),রাইস ব্রান তেল (বোতল) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: তাজা নয় হতাশাজনক,0.52,0.55,0.53,medium
+8a35555f-a698-4550-b4b7-ff948903aa53,নাজমা আহমেদ,Ali Traders,ডিপ্লোমা (নিউজিল্যান্ড),They charged 902 taka for ডিপ্লোমা (নিউজিল্যান্ড) but market price is 880 taka. | Context: ঠিক আছে স্বাভাবিক,0.29,0.51,0.38,weak
+776fb906-3550-4395-9629-36ec640c77fd,সালমা আক্তার,Maa Store,মশুর ডাল (ছোট দানা),The মশুর ডাল (ছোট দানা) quality was very poor. Rotten and smelly. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.37,0.59,0.46,medium
+1d4d8a64-88cd-4c47-bef5-80bec556bea2,Rafiqul Islam,Purnima Store,ময়দা (প্যাকেট),দোকানে মেয়াদ উত্তীর্ণ ময়দা (প্যাকেট) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.64,0.71,0.67,medium
+a5e50f4b-1085-49f1-8080-281835586226,শাহিন আলম,Purnima Store,মশুর ডাল (ছোট দানা),মশুর ডাল (ছোট দানা) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: হতাশাজনক মোটামুটি,0.74,0.27,0.55,medium
+70edd3d9-f485-41c4-84dc-bf78ccdc182c,রফিক উদ্দিন,আলী ট্রেডার্স,গরু,গরু kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: মোটামুটি তাজা নয়,0.4,0.44,0.42,medium
+4e2a0c20-7ec3-4555-bf0e-d3aae41024e4,Kamal Hossain,নিউ মার্কেট স্টোর,লবঙ্গ,"লবঙ্গ এর দাম 2193 টাকা নিয়েছে, কিন্তু বাজার দর 1464 টাকা। | Context: হতাশাজনক খারাপ পরিষেবা",0.64,0.52,0.59,medium
+a522b2f3-5429-4be1-a6b7-1b7624543ad3,Rafiqul Islam,ভাই ভাই স্টোর,দারুচিনি,দোকানে মেয়াদ উত্তীর্ণ দারুচিনি বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: পচা প্রতারণা,0.7,0.82,0.75,high
+5a536bd0-b6f9-40eb-b7e4-c8a874747f5c,Kamal Hossain,নিউ মার্কেট স্টোর,ডিম (ফার্ম),বাসি ডিম (ফার্ম) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: নষ্ট বিপজ্জনক,0.82,0.69,0.77,high
+53b84a34-030b-4307-8a8c-51003612aac8,রফিক উদ্দিন,Barakah Traders,লবণ(প্যাঃ)আয়োডিনযুক্ত,লবণ(প্যাঃ)আয়োডিনযুক্ত er quality kharap but 53 taka niyeche jeta onek beshi. | Context: প্রতারণা প্রতারণা,0.83,0.5,0.7,high
+ac83c02a-4852-4e2b-bd8c-eff891adb5e1,সাবিনা ইয়াসমিন,আশা ভ্যারাইটি স্টোর,ডিপ্লোমা (নিউজিল্যান্ড),Selling expired ডিপ্লোমা (নিউজিল্যান্ড) in the shop. Health hazard. | Context: প্রতারণা পচা,0.85,0.92,0.88,high
+6988d8ef-84b8-4e31-8601-cedc7ca60e66,Rafiqul Islam,ভাই ভাই স্টোর,শুকনা মরিচ (দেশী),Sold expired শুকনা মরিচ (দেশী) and refused to refund money. | Context: জরুরী পচা,0.85,0.75,0.81,high
+c0a7a71b-2a4c-4495-b0d8-77f2eb0bf8d3,জাহিদুল ইসলাম,আলী ট্রেডার্স,পিঁয়াজ (দেশী),Bashi পিঁয়াজ (দেশী) bikri koreche. Taka ferot chay nai. | Context: স্বাভাবিক তেমন কিছু না,0.31,0.38,0.34,weak
+57d1f79b-f3bd-4468-b7eb-ab44aef499db,Md. Rahman,ভাই ভাই স্টোর,হলুদ (দেশী),হলুদ (দেশী) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: হতাশাজনক হতাশাজনক,0.5,0.81,0.62,medium
+a6497e98-6e9b-4a8f-9780-8ce5ffefb96d,Monirul Haque,সবুজ ভ্যারাইটি স্টোর,রসুন (দেশী),The রসুন (দেশী) quality was very poor. Rotten and smelly. | Context: হতাশাজনক হতাশাজনক,0.78,0.56,0.69,medium
+640fae13-7e05-4d02-9dfc-1b4da263d2e6,Ayesha Siddika,Maa Store,খেজুর(সাধারণ মানের),দোকানদার অসভ্য আচরণ করেছে এবং খেজুর(সাধারণ মানের) এর দাম অতিরিক্ত নিয়েছে। | Context: হতাশাজনক তাজা নয়,0.74,0.58,0.68,medium
+ddd23b39-34ef-4684-aa7a-3d0d659e7402,মোহাম্মদ আলী,Shimanto Store,মশুর ডাল (ছোট দানা),Bashi মশুর ডাল (ছোট দানা) bikri koreche. Taka ferot chay nai. | Context: তেমন কিছু না ঠিক আছে,0.34,0.24,0.3,weak
+c45bd52c-a4f9-4de7-845a-f5c422e21058,Rahim Mia,পপুলার ট্রেডার্স,রাইস ব্রান তেল (বোতল),রাইস ব্রান তেল (বোতল) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: খারাপ পরিষেবা তাজা নয়,0.68,0.58,0.64,medium
+74cf394c-4714-42b6-a722-42afe2a982c1,নাজমা আহমেদ,করিম স্টোর,লবঙ্গ,লবঙ্গ কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: তাজা নয় খারাপ পরিষেবা,0.79,0.54,0.69,medium
+18bb4846-771a-46d0-b14a-1a7f870178e0,Rahim Mia,Rahman Store,মুরগী (দেশী),The মুরগী (দেশী) was not fresh at all. Old and dried. | Context: মোটামুটি একটু দাম বেশি,0.38,0.67,0.5,medium
+37aa299f-4f06-4abb-a886-c1512acd7e7a,Rahim Mia,Purnima Store,রুই,রুই কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: মোটামুটি মোটামুটি,0.33,0.78,0.51,medium
+ee14107e-519f-41e8-9c65-f05df11768d8,Shahnaz Parvin,Barakah Traders,আদা (আমদানি),দোকানদার আদা (আমদানি) এর দাম বেশি নিয়েছে। 388 টাকা দিয়েছি কিন্তু বাজারে 260 টাকা। | Context: মোটামুটি হতাশাজনক,0.7,0.45,0.6,medium
+61c6431d-8f33-46a9-8a03-dd1fdaea4d29,সাবিনা ইয়াসমিন,আশা ভ্যারাইটি স্টোর,আটা (প্যাকেট),আটা (প্যাকেট) er quality kharap but 74 taka niyeche jeta onek beshi. | Context: তাজা নয় মোটামুটি,0.73,0.49,0.63,medium
+f9410966-d29f-464e-a918-b7a61b451723,জাহিদুল ইসলাম,আশা ভ্যারাইটি স্টোর,সয়াবিন তেল (লুজ),সয়াবিন তেল (লুজ) এর মান অনুযায়ী দাম বেশি নিয়েছে। 229 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: তাজা নয় খারাপ পরিষেবা,0.63,0.25,0.48,medium
+351a247e-199f-4bfd-a186-5a45a4683ad7,Rahim Mia,সবুজ ভ্যারাইটি স্টোর,খাসী,Poor quality খাসী but charged 1016 taka which is too high. | Context: স্বাভাবিক তেমন কিছু না,0.37,0.34,0.36,weak
+58e137af-90dc-475e-bea5-a03eee465c7b,সাবিনা ইয়াসমিন,Bismillah Store,আলু (মানভেদে),বাসি আলু (মানভেদে) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: খারাপ পরিষেবা হতাশাজনক,0.52,0.53,0.52,medium
+56b0a14a-23c5-4dc0-9ba7-99acb718c5be,Rahim Mia,করিম স্টোর,পিঁয়াজ (দেশী),Dokandar osubyo beheibior koreche ar পিঁয়াজ (দেশী) er dam beshi niyeche. | Context: মারাত্মক বিপজ্জনক,0.84,0.57,0.73,high
+e0a7d866-7a7d-4a1e-926f-2b8d893eeec2,শাহিন আলম,Padma Store,চাল (মোটা)/স্বর্ণা/চায়না ইরি,Shopkeeper overcharged for চাল (মোটা)/স্বর্ণা/চায়না ইরি. Paid 72 but market rate is 60. | Context: খারাপ পরিষেবা একটু দাম বেশি,0.68,0.21,0.49,medium
+b69cc061-6a83-46c5-b551-1be7c77acde4,আমিনুল ইসলাম,পপুলার ট্রেডার্স,আলু (মানভেদে),আলু (মানভেদে) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: স্বাভাবিক তেমন কিছু না,0.33,0.45,0.38,weak
+5dc50d4b-5797-471f-b121-c150d1e1a65b,আব্দুল করিম,ভাই ভাই স্টোর,চাল (মাঝারী)পাইজাম/আটাশ,দোকানদার অসভ্য আচরণ করেছে এবং চাল (মাঝারী)পাইজাম/আটাশ এর দাম অতিরিক্ত নিয়েছে। | Context: একটু দাম বেশি খারাপ পরিষেবা,0.81,0.25,0.59,medium
+e652f803-932b-4051-9250-c78cad901c5f,Monirul Haque,পপুলার ট্রেডার্স,সুপার পাম অয়েল (লুজ),সুপার পাম অয়েল (লুজ) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: খারাপ পরিষেবা হতাশাজনক,0.6,0.81,0.68,medium
+e9bdbefc-5595-45e9-a455-016742f48eda,নাজমা আহমেদ,Barakah Traders,দারুচিনি,দারুচিনি er quality khub kharap chilo. Pocha ar durgondho. | Context: মোটামুটি খারাপ পরিষেবা,0.86,0.44,0.69,medium
+66506b60-ccaa-4723-b6ff-e16daae6a100,Kamal Hossain,Bismillah Store,তেজপাতা,দোকানদার তেজপাতা এর দাম বেশি নিয়েছে। 202 টাকা দিয়েছি কিন্তু বাজারে 224 টাকা। | Context: গ্রহণযোগ্য ছোট বিষয়,0.36,0.22,0.3,weak
+73e6946b-6968-44c3-bf7f-673771d9478d,Kamal Hossain,Rahman Store,ছোলা (মানভেদে),Very rude behavior and overpriced ছোলা (মানভেদে). | Context: মোটামুটি মোটামুটি,0.82,0.25,0.59,medium
+282dfe0f-daf8-4b7b-86f4-55f22e6e22ec,Monirul Haque,আলী ট্রেডার্স,মুগ ডাল (মানভেদে),They gave less weight when buying মুগ ডাল (মানভেদে). Asked for 1kg but got only 800g. | Context: হতাশাজনক খারাপ পরিষেবা,0.86,0.42,0.68,medium
+ce8b3e90-f4d0-4fe1-b3d6-39933c184db8,সাবিনা ইয়াসমিন,Rahman Store,চাল (মাঝারী)পাইজাম/আটাশ,Dokandar চাল (মাঝারী)পাইজাম/আটাশ er dam beshi niyeche. 95 taka diyechi kintu market rate 64. | Context: হতাশাজনক খারাপ পরিষেবা,0.64,0.37,0.53,medium
+4aad2583-4a14-4ff8-821e-1de3867f85a2,শাহিন আলম,Ali Traders,গরু,গরু এর মান অনুযায়ী দাম বেশি নিয়েছে। 1049 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: হতাশাজনক হতাশাজনক,0.69,0.52,0.62,medium
+920ab71f-df79-4d2a-ab74-f0061ddca3f1,রুবিনা খাতুন,ভাই ভাই স্টোর,আদা (আমদানি),Dokandar osubyo beheibior koreche ar আদা (আমদানি) er dam beshi niyeche. | Context: পচা খুবই খারাপ,0.95,0.43,0.74,high
+af0d3b43-837b-47b8-bdd3-f094d2594858,নাজমা আহমেদ,Shimanto Store,হলুদ (দেশী),হলুদ (দেশী) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: হতাশাজনক একটু দাম বেশি,0.79,0.47,0.66,medium
+d2b2b1ab-2cd7-4cb9-8ec1-9e2007219039,নাজমা আহমেদ,আশা ভ্যারাইটি স্টোর,লবণ(প্যাঃ)আয়োডিনযুক্ত,লবণ(প্যাঃ)আয়োডিনযুক্ত er dam 38 taka niyeche kintu market e 41 taka. | Context: গ্রহণযোগ্য ঠিক আছে,0.18,0.24,0.2,weak
+576b9e0a-4974-498b-a0ef-f631261948d8,Rahim Mia,Barakah Traders,পিঁয়াজ (দেশী),বাসি পিঁয়াজ (দেশী) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: মোটামুটি একটু দাম বেশি,0.64,0.41,0.55,medium
+38408f07-9c17-4974-b87c-44b3bf7d99f2,জাহাঙ্গীর আলম,ভাই ভাই স্টোর,চাল (মাঝারী)পাইজাম/আটাশ,The চাল (মাঝারী)পাইজাম/আটাশ was not fresh at all. Old and dried. | Context: মারাত্মক পচা,0.8,0.54,0.7,high
+ba794d49-c88f-4824-a055-e19465251d4e,সাবিনা ইয়াসমিন,করিম স্টোর,পিঁয়াজ (আমদানি),পিঁয়াজ (আমদানি) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: একটু দাম বেশি তাজা নয়,0.67,0.46,0.59,medium
+0b8b252e-d3be-41a1-be4c-6aa0c6001a64,আব্দুল করিম,সবুজ ভ্যারাইটি স্টোর,লবণ(প্যাঃ)আয়োডিনযুক্ত,Selling expired লবণ(প্যাঃ)আয়োডিনযুক্ত in the shop. Health hazard. | Context: জরুরী জরুরী,0.68,0.76,0.71,high
+21832821-3132-4283-a355-a8c16c1531d2,Sharmin Akter,Shimanto Store,ময়দা (খোলা),"ময়দা (খোলা) এর দাম 86 টাকা নিয়েছে, কিন্তু বাজার দর 61 টাকা। | Context: মোটামুটি মোটামুটি",0.9,0.37,0.69,medium
+5138c4bf-d7e2-46d7-bb88-1be21c3ce2c0,শাহিন আলম,New Market,ধনে,Selling expired ধনে in the shop. Health hazard. | Context: একটু দাম বেশি মোটামুটি,0.45,0.84,0.61,medium
+f8929f75-d958-4d70-aab7-ee62cb80a31c,Ayesha Siddika,আশা ভ্যারাইটি স্টোর,মশুর ডাল (মাঝারী দানা),মশুর ডাল (মাঝারী দানা) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: তাজা নয় হতাশাজনক,0.63,0.28,0.49,medium
+2ff63900-bc53-4729-a20a-4a3d441592cc,জাহিদুল ইসলাম,Rahman Store,ডিপ্লোমা (নিউজিল্যান্ড),They gave less weight when buying ডিপ্লোমা (নিউজিল্যান্ড). Asked for 1kg but got only 800g. | Context: একটু দাম বেশি মোটামুটি,0.86,0.41,0.68,medium
+5456d113-5f0e-4c57-87ea-47c060b72e57,করিম মিয়া,মা ভ্যারাইটি স্টোর,আদা (আমদানি),আদা (আমদানি) er quality khub kharap chilo. Pocha ar durgondho. | Context: তাজা নয় তাজা নয়,0.7,0.46,0.6,medium
+7698a5cf-e5bf-4bcb-82cb-c19d119ed97a,নাজমা আহমেদ,নিউ মার্কেট স্টোর,ডানো,ডানো er quality kharap but 970 taka niyeche jeta onek beshi. | Context: প্রতারণা জরুরী,0.87,0.49,0.72,high
+a98a11f6-47b0-48f7-9886-2bfdac07483a,আব্দুল করিম,সবুজ ভ্যারাইটি স্টোর,হলুদ (দেশী),দোকানদার হলুদ (দেশী) এর দাম বেশি নিয়েছে। 550 টাকা দিয়েছি কিন্তু বাজারে 332 টাকা। | Context: প্রতারণা মারাত্মক,0.94,0.6,0.8,high
+065ca920-d71d-45db-a409-d28732ce99a6,Monirul Haque,সুন্দরবন স্টোর,আটা (প্যাকেট),Dokandar osubyo beheibior koreche ar আটা (প্যাকেট) er dam beshi niyeche. | Context: ছোট বিষয় গ্রহণযোগ্য,0.29,0.37,0.32,weak
+6ee82376-bf3a-4b0b-94f1-f93b1d4de953,আমিনুল ইসলাম,করিম স্টোর,হলুদ (আমদানি),হলুদ (আমদানি) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: মোটামুটি হতাশাজনক,0.75,0.42,0.62,medium
+c3f2dd5b-b017-4d95-87cb-9c77e8d851ff,রুবিনা খাতুন,Bismillah Store,মশুর ডাল (মাঝারী দানা),The মশুর ডাল (মাঝারী দানা) quality was very poor. Rotten and smelly. | Context: খারাপ পরিষেবা মোটামুটি,0.47,0.52,0.49,medium
+46bda919-168a-4033-8305-8bf72eb3e927,Shahnaz Parvin,Padma Store,আলু (মানভেদে),আলু (মানভেদে) কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: জরুরী নষ্ট,0.89,0.47,0.72,high
+1139a102-f134-4619-ac90-89a6063ed331,আব্দুল করিম,New Market,রুই,"রুই এর দাম 535 টাকা নিয়েছে, কিন্তু বাজার দর 334 টাকা। | Context: হতাশাজনক তাজা নয়",0.64,0.54,0.6,medium
+4e03429e-875e-484d-a0e9-f007ccc65853,Nasrin Sultana,Ali Traders,মশুর ডাল (ছোট দানা),মশুর ডাল (ছোট দানা) er quality kharap but 183 taka niyeche jeta onek beshi. | Context: হতাশাজনক হতাশাজনক,0.66,0.48,0.59,medium
+72836337-bd0b-48c7-8771-dabfe86b643b,শাহিন আলম,করিম স্টোর,রাইস ব্রান তেল (বোতল),রাইস ব্রান তেল (বোতল) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: হতাশাজনক হতাশাজনক,0.38,0.48,0.42,medium
+3cb4e0dd-3b7a-4bb6-9731-fd7063401ee6,আব্দুল করিম,সবুজ ভ্যারাইটি স্টোর,চাল সরু (নাজির/মিনিকেট),চাল সরু (নাজির/মিনিকেট) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: একটু দাম বেশি একটু দাম বেশি,0.71,0.53,0.64,medium
+486c2ed1-b326-4dc9-bcd5-db0d06633e04,ফাতেমা বেগম,Maa Store,চাল (মোটা)/স্বর্ণা/চায়না ইরি,দোকানদার অসভ্য আচরণ করেছে এবং চাল (মোটা)/স্বর্ণা/চায়না ইরি এর দাম অতিরিক্ত নিয়েছে। | Context: গ্রহণযোগ্য ছোট বিষয়,0.29,0.54,0.39,weak
+bf1dc1ed-fa46-49dd-b7a3-f1431379c585,নাজমা আহমেদ,Maa Store,হলুদ (দেশী),They gave less weight when buying হলুদ (দেশী). Asked for 1kg but got only 800g. | Context: জরুরী পচা,0.78,0.67,0.74,high
+5f372889-432c-47ae-99ee-7c57d3909627,সাবিনা ইয়াসমিন,সবুজ ভ্যারাইটি স্টোর,লবণ(প্যাঃ)আয়োডিনযুক্ত,Dokane expired লবণ(প্যাঃ)আয়োডিনযুক্ত bikri kore. Swasther jonno khotikar. | Context: প্রতারণা পচা,0.82,0.75,0.79,high
+603e2c8b-07df-45e5-9c8a-0caf05f4b2cc,Sharmin Akter,নিউ মার্কেট স্টোর,মশুর ডাল (বড় দানা),Very rude behavior and overpriced মশুর ডাল (বড় দানা). | Context: ছোট বিষয় গ্রহণযোগ্য,0.27,0.31,0.29,weak
+a4179642-d42c-45e1-a2eb-aa22335ac042,Rahim Mia,সুন্দরবন স্টোর,খাসী,Got cheated while buying খাসী. They gave fake product. | Context: জরুরী জরুরী,0.86,0.79,0.83,high
+4bcbcc24-8a3c-41ad-a940-a67175b210c4,Rahim Mia,আশা ভ্যারাইটি স্টোর,মুরগী (দেশী),মুরগী (দেশী) এর মান অনুযায়ী দাম বেশি নিয়েছে। 1000 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: বিপজ্জনক পচা,0.84,0.5,0.7,high
+20f5eea3-bd05-4dc5-9746-0dbd82df5b91,Kamal Hossain,Maa Store,ডানো,Dokandar ডানো er dam beshi niyeche. 1256 taka diyechi kintu market rate 819. | Context: প্রতারণা প্রতারণা,0.94,0.5,0.76,high
+f9e6003b-ede4-4647-807b-31c907862563,Sharmin Akter,আলী ট্রেডার্স,শুকনা মরিচ (আমদানি),শুকনা মরিচ (আমদানি) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: একটু দাম বেশি খারাপ পরিষেবা,0.77,0.49,0.66,medium
+dac89623-9504-4c18-bb50-c65cb1acc28d,Shahnaz Parvin,Barakah Traders,আটা সাদা (খোলা),আটা সাদা (খোলা) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: একটু দাম বেশি একটু দাম বেশি,0.71,0.54,0.64,medium
+d6d40a0d-f479-4355-a237-439327c14bc6,আমিনুল ইসলাম,নিউ মার্কেট স্টোর,হলুদ (আমদানি),They charged 535 taka for হলুদ (আমদানি) but market price is 374 taka. | Context: মারাত্মক পচা,0.93,0.47,0.75,high
+cbda30e3-9225-4565-9aaa-8780a6e70ac2,আব্দুল করিম,Ali Traders,তেজপাতা,The তেজপাতা quality was very poor. Rotten and smelly. | Context: তাজা নয় তাজা নয়,0.63,0.36,0.52,medium
+3b787037-92e2-4d18-9a3f-50cd02de7658,রহিমা খাতুন,সবুজ ভ্যারাইটি স্টোর,ডানো,Poor quality ডানো but charged 1211 taka which is too high. | Context: একটু দাম বেশি খারাপ পরিষেবা,0.66,0.24,0.49,medium
+73e619d4-865d-4ec0-9cf5-2f44e2e30b8c,আব্দুল করিম,City Store,শুকনা মরিচ (দেশী),Dokandar শুকনা মরিচ (দেশী) er dam beshi niyeche. 271 taka diyechi kintu market rate 267. | Context: ছোট বিষয় তেমন কিছু না,0.35,0.33,0.34,weak
+d56f6626-7b1d-4cd1-a3dc-f0d001dcf474,শাহিন আলম,সবুজ ভ্যারাইটি স্টোর,ইলিশ,Poor quality ইলিশ but charged 3231 taka which is too high. | Context: হতাশাজনক তাজা নয়,0.67,0.22,0.49,medium
+ca02378e-2738-4f99-ab63-75151e77d39e,রুবিনা খাতুন,সবুজ ভ্যারাইটি স্টোর,সয়াবিন তেল (বোতল),Bashi সয়াবিন তেল (বোতল) bikri koreche. Taka ferot chay nai. | Context: ছোট বিষয় ছোট বিষয়,0.43,0.25,0.36,weak
+4d2fe0b0-7d50-4417-96f1-30279d68f50b,Shahnaz Parvin,সুন্দরবন স্টোর,চিনি,Dokandar চিনি er dam beshi niyeche. 164 taka diyechi kintu market rate 110. | Context: নষ্ট নষ্ট,0.88,0.46,0.71,high
+b2f52b25-5df2-4cb1-8169-472d483305f9,রুবিনা খাতুন,Padma Store,মশুর ডাল (ছোট দানা),বাসি মশুর ডাল (ছোট দানা) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: হতাশাজনক হতাশাজনক,0.5,0.53,0.51,medium
+f49338f3-a5c7-4245-9ad0-05f931bf743f,করিম মিয়া,আশা ভ্যারাইটি স্টোর,হলুদ (দেশী),Dokandar osubyo beheibior koreche ar হলুদ (দেশী) er dam beshi niyeche. | Context: একটু দাম বেশি তাজা নয়,0.71,0.27,0.53,medium
+168b88c4-02f1-4836-aae2-8c0e3fd6f002,Nasrin Sultana,Bismillah Store,রুই,They gave less weight when buying রুই. Asked for 1kg but got only 800g. | Context: তাজা নয় খারাপ পরিষেবা,0.44,0.51,0.47,medium
+630655ca-b573-4bb3-8ee3-1dc4e0e1e883,সালমা আক্তার,Barakah Traders,মুগ ডাল (মানভেদে),Bashi মুগ ডাল (মানভেদে) bikri koreche. Taka ferot chay nai. | Context: একটু দাম বেশি একটু দাম বেশি,0.72,0.35,0.57,medium
+dac120c8-a722-4124-8c02-5accbc53e3ef,নাজমা আহমেদ,করিম স্টোর,ছোলা (মানভেদে),ছোলা (মানভেদে) er quality kharap but 97 taka niyeche jeta onek beshi. | Context: স্বাভাবিক স্বাভাবিক,0.28,0.41,0.33,weak
+a413e17b-e5c6-4410-bd2d-dce06e4f988e,আমিনুল ইসলাম,Rahman Store,মশুর ডাল (বড় দানা),মশুর ডাল (বড় দানা) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: তাজা নয় তাজা নয়,0.56,0.45,0.52,medium
+c027a56c-19e5-4525-b901-b34236612e45,নাজমা আহমেদ,City Store,রাইস ব্রান তেল (বোতল),রাইস ব্রান তেল (বোতল) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: নষ্ট মারাত্মক,0.89,0.76,0.84,high
+e557ecf6-5f1f-48cf-837b-83131234cfb0,Kamal Hossain,Padma Store,মশুর ডাল (ছোট দানা),মশুর ডাল (ছোট দানা) এর মান অনুযায়ী দাম বেশি নিয়েছে। 186 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: খারাপ পরিষেবা মোটামুটি,0.85,0.22,0.6,medium
+31d7bffa-a9a0-4a27-a560-0b4298506125,Tahmina Begum,Barakah Traders,ডিপ্লোমা (নিউজিল্যান্ড),দোকানদার অসভ্য আচরণ করেছে এবং ডিপ্লোমা (নিউজিল্যান্ড) এর দাম অতিরিক্ত নিয়েছে। | Context: মোটামুটি খারাপ পরিষেবা,0.72,0.39,0.59,medium
+69c0d112-c130-43fb-a7be-7fcd7b61380c,সালমা আক্তার,New Market,শুকনা মরিচ (দেশী),বাসি শুকনা মরিচ (দেশী) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: একটু দাম বেশি তাজা নয়,0.7,0.63,0.67,medium
+7e609b8c-5bd8-4fd3-8c79-aa13d929ec4a,Tahmina Begum,Rahman Store,ডিপ্লোমা (নিউজিল্যান্ড),ডিপ্লোমা (নিউজিল্যান্ড) er quality khub kharap chilo. Pocha ar durgondho. | Context: মোটামুটি হতাশাজনক,0.38,0.42,0.4,medium
+25acd03b-fc73-42f1-a8ff-695409bc22d1,আব্দুল করিম,পপুলার ট্রেডার্স,ময়দা (প্যাকেট),ময়দা (প্যাকেট) ta ekdom taja chilo na. Purano ar shukno. | Context: হতাশাজনক খারাপ পরিষেবা,0.69,0.35,0.55,medium
+8b7e0565-c92d-4259-a962-a9b87688bc08,Kamal Hossain,Shimanto Store,জিরা,দোকানে মেয়াদ উত্তীর্ণ জিরা বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: একটু দাম বেশি মোটামুটি,0.32,0.72,0.48,medium
+7072f7ed-4c1e-414c-8c1d-af2eed842e77,Rahim Mia,রহমান ভ্যারাইটি স্টোর,ফ্রেশ,ফ্রেশ টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: মারাত্মক প্রতারণা,0.78,0.64,0.72,high
+51691957-83e5-4ab7-8aab-d6f888d33e58,Nasrin Sultana,পপুলার ট্রেডার্স,এ্যাংকর ডাল,এ্যাংকর ডাল কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.75,0.43,0.62,medium
+4a73ac71-4922-4b58-8f72-621739034c6a,Kamal Hossain,Maa Store,আদা (দেশী),Sold expired আদা (দেশী) and refused to refund money. | Context: জরুরী মারাত্মক,0.82,0.71,0.78,high
+81f76486-65e7-4fdc-9995-d06d2c57fffe,Rafiqul Islam,আলী ট্রেডার্স,ময়দা (প্যাকেট),Dokandar osubyo beheibior koreche ar ময়দা (প্যাকেট) er dam beshi niyeche. | Context: হতাশাজনক একটু দাম বেশি,0.68,0.45,0.59,medium
+b9f966a2-be84-4d2a-aa2d-b872ed404634,Nasrin Sultana,আশা ভ্যারাইটি স্টোর,মুরগী (দেশী),দোকানদার অসভ্য আচরণ করেছে এবং মুরগী (দেশী) এর দাম অতিরিক্ত নিয়েছে। | Context: হতাশাজনক তাজা নয়,0.8,0.51,0.68,medium
+b427a092-3bc4-4e6b-af52-8252948f47a3,Md. Rahman,City Store,রুই,"রুই এর দাম 368 টাকা নিয়েছে, কিন্তু বাজার দর 347 টাকা। | Context: গ্রহণযোগ্য গ্রহণযোগ্য",0.16,0.48,0.29,weak
+778db43c-ce77-4497-bb8e-d40a573e9e42,Md. Rahman,Maa Store,খেজুর(সাধারণ মানের),দোকানে মেয়াদ উত্তীর্ণ খেজুর(সাধারণ মানের) বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: খুবই খারাপ নষ্ট,0.89,0.83,0.87,high
+984da454-860f-4c3c-9492-fd81dcf81a25,ফাতেমা বেগম,করিম স্টোর,ময়দা (খোলা),The ময়দা (খোলা) quality was very poor. Rotten and smelly. | Context: মোটামুটি তাজা নয়,0.69,0.25,0.51,medium
+356bb704-a89b-420a-b921-510a9ba81402,ফাতেমা বেগম,Padma Store,তেজপাতা,দোকানে মেয়াদ উত্তীর্ণ তেজপাতা বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.45,0.87,0.62,medium
+9233d6bd-6c1f-423d-ae59-8bd51993ef48,Shahnaz Parvin,Purnima Store,শুকনা মরিচ (আমদানি),শুকনা মরিচ (আমদানি) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: মোটামুটি তাজা নয়,0.66,0.32,0.52,medium
+cafa18b0-ae50-46b5-812e-4fbae22e7fee,Md. Rahman,আশা ভ্যারাইটি স্টোর,চিনি,Dokandar osubyo beheibior koreche ar চিনি er dam beshi niyeche. | Context: তাজা নয় তাজা নয়,0.89,0.31,0.66,medium
+aed04e76-577f-454b-9fb2-86abc780e697,রফিক উদ্দিন,মা ভ্যারাইটি স্টোর,তেজপাতা,Sold expired তেজপাতা and refused to refund money. | Context: জরুরী মারাত্মক,0.67,0.82,0.73,high
+6acef337-233e-44f5-b706-65b920cb7f85,মোহাম্মদ আলী,রহমান ভ্যারাইটি স্টোর,চাল (মাঝারী)পাইজাম/আটাশ,চাল (মাঝারী)পাইজাম/আটাশ এর মান অনুযায়ী দাম বেশি নিয়েছে। 66 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: ঠিক আছে স্বাভাবিক,0.25,0.21,0.23,weak
+8041eae7-821e-42b8-ab4e-f05ec7586682,রহিমা খাতুন,Ali Traders,মার্কস,মার্কস er dam 1153 taka niyeche kintu market e 889 taka. | Context: তাজা নয় তাজা নয়,0.94,0.21,0.65,medium
+160ec494-deed-4d77-8892-fa1a81da8b87,রহিমা খাতুন,New Market,মশুর ডাল (ছোট দানা),দোকানদার মশুর ডাল (ছোট দানা) এর দাম বেশি নিয়েছে। 219 টাকা দিয়েছি কিন্তু বাজারে 152 টাকা। | Context: হতাশাজনক হতাশাজনক,0.71,0.33,0.56,medium
+07f23199-71f2-4894-a621-823606c5fa62,Md. Rahman,Ali Traders,মুরগী (দেশী),দোকানদার অসভ্য আচরণ করেছে এবং মুরগী (দেশী) এর দাম অতিরিক্ত নিয়েছে। | Context: স্বাভাবিক তেমন কিছু না,0.26,0.37,0.3,weak
+db292117-2be0-46e6-a136-01d74e16b9c5,Monirul Haque,সবুজ ভ্যারাইটি স্টোর,মশুর ডাল (বড় দানা),মশুর ডাল (বড় দানা) কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: মারাত্মক জরুরী,0.86,0.47,0.7,high
+8dca8f29-c619-4a8d-802d-6c34cba4d663,রহিমা খাতুন,নিউ মার্কেট স্টোর,ডিপ্লোমা (নিউজিল্যান্ড),They charged 1243 taka for ডিপ্লোমা (নিউজিল্যান্ড) but market price is 919 taka. | Context: পচা জরুরী,0.8,0.58,0.71,high
+726da574-7dd9-4266-aeea-3a0dbb3fcc1c,Tahmina Begum,Shimanto Store,সয়াবিন তেল (বোতল),সয়াবিন তেল (বোতল) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: মোটামুটি হতাশাজনক,0.87,0.23,0.61,medium
+959bc8d9-f26b-4cd1-974d-238940132cb7,Monirul Haque,সবুজ ভ্যারাইটি স্টোর,ডিপ্লোমা (নিউজিল্যান্ড),ডিপ্লোমা (নিউজিল্যান্ড) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: মোটামুটি খারাপ পরিষেবা,0.61,0.82,0.69,medium
+d788c2db-e9f5-40bc-8c8d-9b50df174164,শাহিন আলম,Rahman Store,আটা (প্যাকেট),আটা (প্যাকেট) er quality kharap but 85 taka niyeche jeta onek beshi. | Context: একটু দাম বেশি একটু দাম বেশি,0.94,0.27,0.67,medium
+4da87154-c49e-4e5c-9b7d-41a53a6c783d,Monirul Haque,রহমান ভ্যারাইটি স্টোর,চাল (মোটা)/স্বর্ণা/চায়না ইরি,চাল (মোটা)/স্বর্ণা/চায়না ইরি er dam 57 taka niyeche kintu market e 59 taka. | Context: ছোট বিষয় স্বাভাবিক,0.23,0.33,0.27,weak
+8c085e05-9f07-4b4a-9cbf-7164a55dcc41,Shahnaz Parvin,New Market,মুরগী(ব্রয়লার),মুরগী(ব্রয়লার) er quality kharap but 258 taka niyeche jeta onek beshi. | Context: জরুরী খুবই খারাপ,0.92,0.36,0.7,high
+b5d18bff-58db-4d19-8143-757fadbfc58a,করিম মিয়া,নিউ মার্কেট স্টোর,ফ্রেশ,"ফ্রেশ এর দাম 1246 টাকা নিয়েছে, কিন্তু বাজার দর 881 টাকা। | Context: মোটামুটি একটু দাম বেশি",0.61,0.55,0.59,medium
+23c19282-5292-4db6-810d-97fee478dc44,রফিক উদ্দিন,New Market,মুরগী(ব্রয়লার),Shopkeeper overcharged for মুরগী(ব্রয়লার). Paid 211 but market rate is 174. | Context: মোটামুটি মোটামুটি,0.72,0.25,0.53,medium
+81e2e3b1-453a-4844-bfa1-ed7643301f25,জাহিদুল ইসলাম,Ali Traders,লবঙ্গ,Sold expired লবঙ্গ and refused to refund money. | Context: তাজা নয় হতাশাজনক,0.45,0.86,0.61,medium
+b269d344-dad8-49e9-ac56-2354dc57dc44,রফিক উদ্দিন,Bismillah Store,চাল (মাঝারী)পাইজাম/আটাশ,They charged 108 taka for চাল (মাঝারী)পাইজাম/আটাশ but market price is 60 taka. | Context: মোটামুটি একটু দাম বেশি,0.65,0.31,0.51,medium
+94b385fe-0fbd-4a09-a1a9-3dad83a8458c,শাহিন আলম,Maa Store,চিনি,Dokandar চিনি er dam beshi niyeche. 159 taka diyechi kintu market rate 114. | Context: বিপজ্জনক প্রতারণা,0.93,0.37,0.71,high
+453dbb5d-84fb-4908-bafb-81f9fe85faa7,Kamal Hossain,Ali Traders,হলুদ (আমদানি),Poor quality হলুদ (আমদানি) but charged 404 taka which is too high. | Context: ছোট বিষয় গ্রহণযোগ্য,0.18,0.44,0.28,weak
+178c146c-40bb-4718-8088-7a317c4aa850,রুবিনা খাতুন,আলী ট্রেডার্স,আদা (আমদানি),Shopkeeper overcharged for আদা (আমদানি). Paid 356 but market rate is 246. | Context: হতাশাজনক খারাপ পরিষেবা,0.75,0.28,0.56,medium
+2ffc16de-2b80-40ef-90b5-29e2197c3cb9,আমিনুল ইসলাম,সুন্দরবন স্টোর,এ্যাংকর ডাল,The এ্যাংকর ডাল was not fresh at all. Old and dried. | Context: নষ্ট নষ্ট,0.89,0.6,0.77,high
+74cf1af4-6127-4b73-adab-b82ee767640b,Tahmina Begum,করিম স্টোর,চাল সরু (নাজির/মিনিকেট),Sold expired চাল সরু (নাজির/মিনিকেট) and refused to refund money. | Context: একটু দাম বেশি খারাপ পরিষেবা,0.38,0.83,0.56,medium
+5b2afdb2-37cd-43d8-bc94-256102eed240,Sharmin Akter,Rahman Store,ডানো,Shopkeeper overcharged for ডানো. Paid 1151 but market rate is 768. | Context: একটু দাম বেশি হতাশাজনক,0.73,0.41,0.6,medium
+1641c76a-e47f-4925-815f-f47840cefc56,আব্দুল করিম,আশা ভ্যারাইটি স্টোর,শুকনা মরিচ (দেশী),Selling expired শুকনা মরিচ (দেশী) in the shop. Health hazard. | Context: মারাত্মক পচা,0.72,0.92,0.8,high
+9a41ba93-75ea-43ad-a398-b6634a54284a,Rafiqul Islam,ভাই ভাই স্টোর,রাইস ব্রান তেল (বোতল),রাইস ব্রান তেল (বোতল) er dam 1535 taka niyeche kintu market e 1050 taka. | Context: তাজা নয় তাজা নয়,0.7,0.22,0.51,medium
+cca330d0-d514-4e0d-9790-15123c60f613,জাহাঙ্গীর আলম,পপুলার ট্রেডার্স,চাল (মাঝারী)পাইজাম/আটাশ,চাল (মাঝারী)পাইজাম/আটাশ er dam 101 taka niyeche kintu market e 65 taka. | Context: নষ্ট খুবই খারাপ,0.9,0.52,0.75,high
+44d5a2da-561f-4471-a5ab-861cc8d61ba1,সাবিনা ইয়াসমিন,Shimanto Store,ডিপ্লোমা (নিউজিল্যান্ড),Selling expired ডিপ্লোমা (নিউজিল্যান্ড) in the shop. Health hazard. | Context: নষ্ট নষ্ট,0.59,0.89,0.71,high
+757264ca-ed69-40ce-ab73-b9342e1c3778,সাবিনা ইয়াসমিন,করিম স্টোর,রসুন (দেশী),রসুন (দেশী) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: পচা খুবই খারাপ,0.58,0.91,0.71,high
+bdae1a47-84ed-45cc-9ae2-b73932f50f36,মোহাম্মদ আলী,Shimanto Store,চাল সরু (নাজির/মিনিকেট),Selling expired চাল সরু (নাজির/মিনিকেট) in the shop. Health hazard. | Context: নষ্ট বিপজ্জনক,0.69,0.76,0.72,high
+5899e527-bd66-4e30-a18b-5ef4b44fc265,রফিক উদ্দিন,সবুজ ভ্যারাইটি স্টোর,এলাচ(ছোট),এলাচ(ছোট) er dam 7886 taka niyeche kintu market e 5429 taka. | Context: হতাশাজনক একটু দাম বেশি,0.76,0.27,0.56,medium
+b7fa7369-90dc-43cb-b911-99add9b46b0b,রফিক উদ্দিন,Rahman Store,সুপার পাম অয়েল (লুজ),Shopkeeper overcharged for সুপার পাম অয়েল (লুজ). Paid 157 but market rate is 162. | Context: স্বাভাবিক গ্রহণযোগ্য,0.28,0.22,0.26,weak
+d62ff7f3-1c17-4edc-8688-5a4339d476b6,জাহিদুল ইসলাম,নিউ মার্কেট স্টোর,সয়াবিন তেল (বোতল),They charged 259 taka for সয়াবিন তেল (বোতল) but market price is 190 taka. | Context: তাজা নয় মোটামুটি,0.87,0.42,0.69,medium
+4528540e-4c97-4e85-b17e-7e5a1c8edef8,আব্দুল করিম,Padma Store,জিরা,জিরা er quality kharap but 628 taka niyeche jeta onek beshi. | Context: ঠিক আছে তেমন কিছু না,0.16,0.55,0.32,weak
+17fa00ea-0ffe-45e7-94f1-b19261c7b897,রহিমা খাতুন,New Market,ইলিশ,Poor quality ইলিশ but charged 2607 taka which is too high. | Context: একটু দাম বেশি মোটামুটি,0.67,0.5,0.6,medium
+5f7b9992-fd43-4a96-bd33-0eb3652c52a3,Rafiqul Islam,মা ভ্যারাইটি স্টোর,সয়াবিন তেল (লুজ),দোকানদার অসভ্য আচরণ করেছে এবং সয়াবিন তেল (লুজ) এর দাম অতিরিক্ত নিয়েছে। | Context: প্রতারণা নষ্ট,0.83,0.56,0.72,high
+2224e14e-6b6e-4034-a104-3ad78118bef5,Rafiqul Islam,Purnima Store,ফ্রেশ,Dokandar osubyo beheibior koreche ar ফ্রেশ er dam beshi niyeche. | Context: একটু দাম বেশি খারাপ পরিষেবা,0.72,0.55,0.65,medium
+4b2b2b9f-15f9-41ab-8735-3d6f164a95f2,Ayesha Siddika,মা ভ্যারাইটি স্টোর,লবঙ্গ,Sold expired লবঙ্গ and refused to refund money. | Context: মোটামুটি মোটামুটি,0.53,0.73,0.61,medium
+c668a385-7b75-4691-a625-251fb4e00421,Shahnaz Parvin,আশা ভ্যারাইটি স্টোর,মশুর ডাল (মাঝারী দানা),দোকানদার মশুর ডাল (মাঝারী দানা) এর দাম বেশি নিয়েছে। 115 টাকা দিয়েছি কিন্তু বাজারে 135 টাকা। | Context: ঠিক আছে তেমন কিছু না,0.27,0.26,0.27,weak
+7f4eb460-f368-41b0-8bb1-c46818fc0b38,রুবিনা খাতুন,Bismillah Store,আদা (দেশী),The আদা (দেশী) was not fresh at all. Old and dried. | Context: মোটামুটি খারাপ পরিষেবা,0.36,0.64,0.47,medium
+573abfce-9311-4724-b983-088f3fa18791,সালমা আক্তার,মা ভ্যারাইটি স্টোর,ডানো,ডানো এর মান অনুযায়ী দাম বেশি নিয়েছে। 835 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: স্বাভাবিক গ্রহণযোগ্য,0.1,0.27,0.17,weak
+49857aae-33c7-4696-8116-09faf36db1e2,Tahmina Begum,আশা ভ্যারাইটি স্টোর,চাল সরু (নাজির/মিনিকেট),চাল সরু (নাজির/মিনিকেট) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: মোটামুটি হতাশাজনক,0.33,0.55,0.42,medium
+40844d21-c5bc-44ab-a8b0-fb778dbe7a3d,শাহিন আলম,করিম স্টোর,চিনি,দোকানদার অসভ্য আচরণ করেছে এবং চিনি এর দাম অতিরিক্ত নিয়েছে। | Context: একটু দাম বেশি খারাপ পরিষেবা,0.74,0.51,0.65,medium
+9206cd88-05b7-448d-a2d2-9804de2c29f8,জাহাঙ্গীর আলম,Barakah Traders,ধনে,They charged 415 taka for ধনে but market price is 279 taka. | Context: একটু দাম বেশি মোটামুটি,0.88,0.34,0.66,medium
+2cf63c39-558b-42a7-bbad-42f9f68efd77,সুমাইয়া পারভীন,Barakah Traders,সয়াবিন তেল (বোতল),সয়াবিন তেল (বোতল) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: খারাপ পরিষেবা তাজা নয়,0.39,0.7,0.51,medium
+5c6506b8-6383-4ef2-a191-800ffb154183,Tahmina Begum,ভাই ভাই স্টোর,পাম অয়েল (লুজ),দোকানদার পাম অয়েল (লুজ) এর দাম বেশি নিয়েছে। 217 টাকা দিয়েছি কিন্তু বাজারে 154 টাকা। | Context: মারাত্মক প্রতারণা,0.83,0.55,0.72,high
+140a5f4e-7a6b-4e96-8f05-78112706e5f2,ফাতেমা বেগম,Ali Traders,এ্যাংকর ডাল,Dokandar এ্যাংকর ডাল er dam beshi niyeche. 64 taka diyechi kintu market rate 70. | Context: ঠিক আছে তেমন কিছু না,0.37,0.35,0.36,weak
+8afdaf3b-f524-4ec4-9be5-620672ec9356,নাজমা আহমেদ,Purnima Store,মুরগী (দেশী),মুরগী (দেশী) kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: একটু দাম বেশি একটু দাম বেশি,0.71,0.22,0.51,medium
+108d29d4-471d-4bf3-97ef-6fe0eda462ce,আমিনুল ইসলাম,আলী ট্রেডার্স,চাল সরু (নাজির/মিনিকেট),The চাল সরু (নাজির/মিনিকেট) was not fresh at all. Old and dried. | Context: তাজা নয় তাজা নয়,0.67,0.69,0.68,medium
+eef768b9-89cf-48eb-a4b8-17eaae01d42a,রুবিনা খাতুন,Rahman Store,লবঙ্গ,দোকানে মেয়াদ উত্তীর্ণ লবঙ্গ বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: জরুরী পচা,0.89,0.95,0.91,high
+ae1c33f4-49c1-414a-a060-81f5c55671a3,জাহিদুল ইসলাম,রহমান ভ্যারাইটি স্টোর,লবঙ্গ,বাসি লবঙ্গ বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: হতাশাজনক মোটামুটি,0.54,0.51,0.53,medium
+997d45b2-9628-42b9-9666-f943f3fbb8df,সুমাইয়া পারভীন,আলী ট্রেডার্স,ডিপ্লোমা (নিউজিল্যান্ড),Selling expired ডিপ্লোমা (নিউজিল্যান্ড) in the shop. Health hazard. | Context: মোটামুটি হতাশাজনক,0.43,0.74,0.55,medium
+eab14b94-a752-4592-b343-f9db24b1fb48,জাহিদুল ইসলাম,করিম স্টোর,আটা (প্যাকেট),Dokandar আটা (প্যাকেট) er dam beshi niyeche. 97 taka diyechi kintu market rate 59. | Context: হতাশাজনক খারাপ পরিষেবা,0.77,0.23,0.55,medium
+300ca3b0-b532-4e4c-b088-b71c27685e1b,Rafiqul Islam,নিউ মার্কেট স্টোর,মশুর ডাল (ছোট দানা),মশুর ডাল (ছোট দানা) er quality khub kharap chilo. Pocha ar durgondho. | Context: পচা খুবই খারাপ,0.85,0.55,0.73,high
+842801ea-45b8-4e04-aef2-3290fa8d383d,Nasrin Sultana,সবুজ ভ্যারাইটি স্টোর,হলুদ (দেশী),Very rude behavior and overpriced হলুদ (দেশী). | Context: মোটামুটি তাজা নয়,0.62,0.52,0.58,medium
+93027d59-adb0-4e1c-8ddb-e8adcfdeb801,রফিক উদ্দিন,Barakah Traders,রসুন (দেশী),রসুন (দেশী) এর মান অনুযায়ী দাম বেশি নিয়েছে। 161 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: তাজা নয় হতাশাজনক,0.74,0.53,0.66,medium
+cd51b57e-8fce-4a81-b321-3149a3fd5081,Rafiqul Islam,করিম স্টোর,রসুন (আমদানি),Dokane expired রসুন (আমদানি) bikri kore. Swasther jonno khotikar. | Context: বিপজ্জনক নষ্ট,0.69,0.89,0.77,high
+43e96319-8bf3-468f-88a5-2628ed477773,ফাতেমা বেগম,নিউ মার্কেট স্টোর,আদা (আমদানি),বাসি আদা (আমদানি) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: পচা মারাত্মক,0.78,0.66,0.73,high
+1d91eb81-353a-4240-b790-fdda58dfbce2,রফিক উদ্দিন,Shimanto Store,জিরা,The জিরা was not fresh at all. Old and dried. | Context: বিপজ্জনক বিপজ্জনক,0.72,0.67,0.7,high
+e383a1d1-0001-4434-bf35-f1766207c224,Monirul Haque,ভাই ভাই স্টোর,মার্কস,দোকানদার অসভ্য আচরণ করেছে এবং মার্কস এর দাম অতিরিক্ত নিয়েছে। | Context: গ্রহণযোগ্য তেমন কিছু না,0.14,0.34,0.22,weak
+9a5dd927-5ba8-418c-9020-133cf27c0cb6,নাজমা আহমেদ,নিউ মার্কেট স্টোর,আটা সাদা (খোলা),বাসি আটা সাদা (খোলা) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: মোটামুটি তাজা নয়,0.68,0.4,0.57,medium
+dfcb0c62-52f6-47db-9b3d-b471e4023cdd,সাবিনা ইয়াসমিন,Shimanto Store,শুকনা মরিচ (আমদানি),শুকনা মরিচ (আমদানি) ta ekdom taja chilo na. Purano ar shukno. | Context: মোটামুটি একটু দাম বেশি,0.55,0.21,0.41,medium
+ae695f34-d155-4b92-9dd7-8e6e9bc0100c,Shahnaz Parvin,Maa Store,আদা (দেশী),আদা (দেশী) er dam NaN taka niyeche kintu market e NaN taka. | Context: নষ্ট খুবই খারাপ,0.84,0.58,0.74,high
+c2241418-7d70-4b41-879d-3a23388e17c9,Md. Rahman,Ali Traders,তেজপাতা,তেজপাতা er quality kharap but 198 taka niyeche jeta onek beshi. | Context: স্বাভাবিক গ্রহণযোগ্য,0.33,0.28,0.31,weak
+8e1e3102-2c50-4971-a3b7-a77225bada55,রফিক উদ্দিন,Ali Traders,পাম অয়েল (লুজ),The পাম অয়েল (লুজ) quality was very poor. Rotten and smelly. | Context: হতাশাজনক খারাপ পরিষেবা,0.79,0.31,0.6,medium
+1561acbe-f4a0-4148-818b-b729334d1745,Sharmin Akter,Barakah Traders,সুপার পাম অয়েল (লুজ),Sold expired সুপার পাম অয়েল (লুজ) and refused to refund money. | Context: জরুরী পচা,0.64,0.82,0.71,high
+d9c3af5c-b930-44ca-a64d-6efcec204796,Md. Rahman,Padma Store,রাইস ব্রান তেল (বোতল),রাইস ব্রান তেল (বোতল) ta ekdom taja chilo na. Purano ar shukno. | Context: একটু দাম বেশি খারাপ পরিষেবা,0.65,0.38,0.54,medium
+fcbd65dc-d13d-4c90-b277-99e559714eff,Tahmina Begum,Shimanto Store,রাইস ব্রান তেল (বোতল),Shopkeeper overcharged for রাইস ব্রান তেল (বোতল). Paid 1224 but market rate is 1069. | Context: তাজা নয় খারাপ পরিষেবা,0.63,0.33,0.51,medium
+188a6bca-41f6-42ee-aa1c-f18b81fdc7a7,আব্দুল করিম,Bismillah Store,ইলিশ,ইলিশ kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: ছোট বিষয় তেমন কিছু না,0.31,0.4,0.35,weak
+d2fea8b0-8c49-42ff-af0b-ec2395c257fb,Rafiqul Islam,Ali Traders,রসুন (আমদানি),The রসুন (আমদানি) was not fresh at all. Old and dried. | Context: প্রতারণা বিপজ্জনক,0.83,0.69,0.77,high
+f1e02d06-c933-4947-ad09-442cdc4e7e1a,মোহাম্মদ আলী,সুন্দরবন স্টোর,আলু (মানভেদে),আলু (মানভেদে) টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: মোটামুটি একটু দাম বেশি,0.47,0.59,0.52,medium
+26cc358e-1a70-440b-a067-0e2f25d7fc6a,Kamal Hossain,রহমান ভ্যারাইটি স্টোর,মুগ ডাল (মানভেদে),মুগ ডাল (মানভেদে) কিনতে গিয়ে প্রতারণার শিকার হয়েছি। ভুয়া পণ্য দিয়েছে। | Context: পচা পচা,0.79,0.92,0.84,high
+db70a09a-1464-45e2-835a-897bb20f7a6e,Rahim Mia,ভাই ভাই স্টোর,চাল (মোটা)/স্বর্ণা/চায়না ইরি,The চাল (মোটা)/স্বর্ণা/চায়না ইরি was not fresh at all. Old and dried. | Context: হতাশাজনক তাজা নয়,0.58,0.46,0.53,medium
+7ff5e61f-9d54-4aac-b96b-b20bd825bee9,রুবিনা খাতুন,Ali Traders,দারুচিনি,দারুচিনি er dam 670 taka niyeche kintu market e 583 taka. | Context: খারাপ পরিষেবা হতাশাজনক,0.76,0.36,0.6,medium
+6744ce19-734c-4e77-893c-27e8ef8eb792,ফাতেমা বেগম,Purnima Store,চিনি,The চিনি quality was very poor. Rotten and smelly. | Context: তাজা নয় তাজা নয়,0.58,0.59,0.58,medium
+0fb28986-a47d-46cd-a478-039b827aaa30,Rahim Mia,সুন্দরবন স্টোর,গরু,গরু টা একদম তাজা না ছিল। পুরাতন এবং শুকনো। | Context: প্রতারণা পচা,0.79,0.65,0.73,high
+d6cbd034-351e-4708-b482-a5c0b8d39446,আমিনুল ইসলাম,City Store,রুই,The রুই quality was very poor. Rotten and smelly. | Context: একটু দাম বেশি একটু দাম বেশি,0.78,0.24,0.56,medium
+611f0ff7-8b4a-4bef-bd3d-56f43b73fa93,Rahim Mia,Barakah Traders,চাল (মাঝারী)পাইজাম/আটাশ,দোকানে মেয়াদ উত্তীর্ণ চাল (মাঝারী)পাইজাম/আটাশ বিক্রি করে। স্বাস্থ্যের জন্য ক্ষতিকর। | Context: হতাশাজনক একটু দাম বেশি,0.47,0.82,0.61,medium
+274ba68e-e47d-4333-a0aa-628219de6aaa,Md. Rahman,Bismillah Store,সয়াবিন তেল (লুজ),সয়াবিন তেল (লুজ) এর মান অনুযায়ী দাম বেশি নিয়েছে। 169 টাকা নিয়েছে কিন্তু মান খারাপ। | Context: তেমন কিছু না স্বাভাবিক,0.24,0.4,0.3,weak
+0b6399bb-2006-4201-9ac3-1f93475ac5d4,Md. Rahman,মা ভ্যারাইটি স্টোর,মুরগী(ব্রয়লার),বাসি মুরগী(ব্রয়লার) বিক্রি করেছে। টাকা ফেরত চাইলে দেয়নি। | Context: হতাশাজনক একটু দাম বেশি,0.41,0.59,0.48,medium
+86643266-46a0-4715-8ab4-9dfb008c8348,রফিক উদ্দিন,New Market,চাল সরু (নাজির/মিনিকেট),চাল সরু (নাজির/মিনিকেট) কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: খারাপ পরিষেবা মোটামুটি,0.51,0.49,0.5,medium
+8ada656f-fdf0-4268-a4ed-94b8ef33f20a,রহিমা খাতুন,ভাই ভাই স্টোর,রসুন (দেশী),The রসুন (দেশী) quality was very poor. Rotten and smelly. | Context: ঠিক আছে ছোট বিষয়,0.34,0.24,0.3,weak
+1cd634c7-5873-495a-b2bf-31a40e8e2b6a,জাহাঙ্গীর আলম,Shimanto Store,পিঁয়াজ (দেশী),পিঁয়াজ (দেশী) এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: প্রতারণা প্রতারণা,0.7,0.87,0.77,high
+02245be6-2432-43d1-b8d7-4bd83dafa664,জাহিদুল ইসলাম,পপুলার ট্রেডার্স,লবঙ্গ,লবঙ্গ kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: তাজা নয় তাজা নয়,0.75,0.52,0.66,medium
+1c730a45-6bc5-41b2-a644-58a7315804de,শাহিন আলম,Purnima Store,ধনে,Sold expired ধনে and refused to refund money. | Context: মোটামুটি হতাশাজনক,0.34,0.77,0.51,medium
+9f746234-71a4-44e0-9258-569a2bf5d0aa,করিম মিয়া,City Store,ময়দা (প্যাকেট),দোকানদার অসভ্য আচরণ করেছে এবং ময়দা (প্যাকেট) এর দাম অতিরিক্ত নিয়েছে। | Context: খারাপ পরিষেবা খারাপ পরিষেবা,0.73,0.21,0.52,medium
+b5299f0e-9c4e-4dd2-b2b0-f68fba790d52,জাহাঙ্গীর আলম,সুন্দরবন স্টোর,ডিপ্লোমা (নিউজিল্যান্ড),Got cheated while buying ডিপ্লোমা (নিউজিল্যান্ড). They gave fake product. | Context: মারাত্মক পচা,0.8,0.86,0.82,high
+c170b193-42a8-4064-a135-1987e1722b89,আব্দুল করিম,সুন্দরবন স্টোর,চিনি,Dokandar চিনি er dam beshi niyeche. 169 taka diyechi kintu market rate 106. | Context: হতাশাজনক তাজা নয়,0.74,0.38,0.6,medium
+2a8de86e-87ec-4174-b2f3-9f9d8b5633d4,সুমাইয়া পারভীন,সবুজ ভ্যারাইটি স্টোর,চাল সরু (নাজির/মিনিকেট),Selling expired চাল সরু (নাজির/মিনিকেট) in the shop. Health hazard. | Context: প্রতারণা মারাত্মক,0.88,0.95,0.91,high
+b73cfb28-5c44-4a11-85b0-306a9c7a39e1,রফিক উদ্দিন,মা ভ্যারাইটি স্টোর,ময়দা (খোলা),The ময়দা (খোলা) was not fresh at all. Old and dried. | Context: খারাপ পরিষেবা তাজা নয়,0.62,0.64,0.63,medium
+24bf3f46-d3d9-4ba7-9ee4-54c5360b0c78,Tahmina Begum,ভাই ভাই স্টোর,আটা সাদা (খোলা),আটা সাদা (খোলা) এর গুণমান খারাপ ছিল। পচা এবং দুর্গন্ধযুক্ত। | Context: তাজা নয় মোটামুটি,0.33,0.93,0.57,medium
+685c89c7-ab2b-4961-9ae2-87737b24b9ca,রফিক উদ্দিন,Maa Store,দারুচিনি,দারুচিনি er quality khub kharap chilo. Pocha ar durgondho. | Context: খারাপ পরিষেবা হতাশাজনক,0.82,0.28,0.6,medium
+875cacfa-d215-49e1-b286-9798435fd883,জাহিদুল ইসলাম,মা ভ্যারাইটি স্টোর,মার্কস,মার্কস kinbe somoy ojon e kom diyeche. 1kg cheyechilam kintu 800g diyeche. | Context: তাজা নয় মোটামুটি,0.79,0.27,0.58,medium
+ab4ab352-432e-4a33-a8ab-0ea8b3ee226c,সালমা আক্তার,Rahman Store,আদা (আমদানি),আদা (আমদানি) কেনার সময় ওজনে কম দিয়েছে। ১ কেজি চেয়েছিলাম কিন্তু ৮০০ গ্রাম দিয়েছে। | Context: জরুরী পচা,0.76,0.62,0.7,high
+8cfd70f7-f273-489a-8a61-83d3bbf3773b,Sharmin Akter,Rahman Store,পিঁয়াজ (আমদানি),The পিঁয়াজ (আমদানি) quality was very poor. Rotten and smelly. | Context: খারাপ পরিষেবা তাজা নয়,0.56,0.5,0.54,medium
+4e47c121-0700-4557-9dd9-a421cdf30015,আমিনুল ইসলাম,পপুলার ট্রেডার্স,রসুন (দেশী),Dokandar রসুন (দেশী) er dam beshi niyeche. 121 taka diyechi kintu market rate 122. | Context: ঠিক আছে ঠিক আছে,0.29,0.51,0.38,weak
+2dbbdc27-1aed-45e0-b724-2a576e8485cb,সুমাইয়া পারভীন,সুন্দরবন স্টোর,ডানো,Dokane expired ডানো bikri kore. Swasther jonno khotikar. | Context: জরুরী খুবই খারাপ,0.9,0.71,0.82,high
+3b56dba0-81aa-44fe-b628-bf174aad169f,Shahnaz Parvin,আশা ভ্যারাইটি স্টোর,ময়দা (প্যাকেট),ময়দা (প্যাকেট) kinte giye protoronar shikar hoyechi. Fake product diyeche. | Context: তাজা নয় একটু দাম বেশি,0.55,0.51,0.53,medium

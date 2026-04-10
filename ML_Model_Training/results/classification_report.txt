@@ -1,0 +1,12 @@
+Original Dataset Metrics - NLP + Backend Pricing variables + Subcategory contexts
+Final Accuracy: 58.00%
+==================================================
+              precision    recall  f1-score   support
+
+    weak (0)       0.31      0.29      0.30        14
+  medium (1)       0.70      0.63      0.66        62
+    high (2)       0.48      0.62      0.55        24
+
+    accuracy                           0.58       100
+   macro avg       0.50      0.51      0.50       100
+weighted avg       0.59      0.58      0.58       100

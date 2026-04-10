@@ -1,5 +1,5 @@
 %% 
-%% AI-Enhanced Complaint Management System for Government Marketplaces
+%% AI Enhanced Complaint Management System for Government Marketplaces
 %% Elsevier CAS Double Column Template
 %% 
 
@@ -14,405 +14,200 @@
 \def\floatpagepagefraction{1}
 \def\textpagefraction{.001}
 
-\shorttitle{AI-Enhanced Complaint Management System}
-\shortauthors{S.M. Islam et~al.}
+\shorttitle{AI Enhanced Complaint Management System}
+\shortauthors{S.M. Islam et al.}
 
-\title[mode=title]{AI-Enhanced Complaint Management System for Government Marketplaces: A Bengali NLP Approach Using BanglaBERT}
+\title[mode=title]{AI Enhanced Complaint Management System for Government Marketplaces A Hybrid NLP and Backend Data Approach}
 
-% First author
 \author[1]{Syed Mafijul Islam}
-\cormark[1]
-\ead{mafijul@example.com}
-\credit{Conceptualization, Validation, Investigation, Resources}
 
-% Second author
 \author[1]{Nahidur Zaman}
-\ead{nahidur@example.com}
-\credit{Methodology, Software, Data curation, Writing - Original draft}
 
-% Third author
 \author[1]{Sakif Shahrear}
-\ead{sakif@example.com}
-\credit{Software development, Data collection, Writing - Review \& Editing}
 
-% Supervisor
 \author[1]{M. Aktaruzzaman}
-\ead{aktaruzzaman@daffodilvarsity.edu.bd}
-\credit{Supervision, Project administration}
 
-\affiliation[1]{organization={Department of Computer Science and Engineering, Daffodil International University},
-                addressline={Daffodil Smart City}, 
-                city={Dhaka},
-                postcode={1207}, 
-                country={Bangladesh}}
+\address[1]{Military Institute of Science and Technology (MIST) and Daffodil International University, Dhaka, Bangladesh}
 
-\cortext[cor1]{Corresponding author}
+% Corresponding author note removed to avoid template thumbnail dependency.
 
 \begin{abstract}
-Government marketplaces in Bangladesh receive thousands of complaints from citizens every day. Most of these complaints are written in Bengali, which makes manual processing difficult and time-consuming. Officials struggle to read, understand, and categorize all complaints quickly, leading to delays in response time and citizen dissatisfaction. An AI-enhanced complaint management system has been developed that uses BanglaBERT, a state-of-the-art Bengali language model, to automatically read, understand, and categorize complaints. Natural Language Processing (NLP) techniques are employed to extract important information from complaints, classify them into appropriate categories, and route them to the correct department for quick action. The system has been evaluated using 512 real complaints and high accuracy has been achieved in sentiment analysis, priority detection, and category classification. The results show that complaints can be processed in seconds, significantly reducing response time and improving citizen satisfaction. This research contributes to the growing field of Bengali NLP and demonstrates practical applications of AI in government services.
+Government marketplaces in Bangladesh receive many complaints every day. Most complaints are written in Bengali or mixed Bengali and English, so manual checking is slow and often inconsistent. This paper presents an AI based complaint management pipeline using data from the NityMulya application. We collected 500 complaints and stored them in a Supabase PostgreSQL database. Each record includes complaint text, product category, and backend numeric values such as validity and priority. We used TF IDF text features, one hot encoded product category features, and scaled numeric features in one machine learning pipeline. We handled class imbalance with SMOTE and trained a Random Forest classifier. On the test split (20 percent, 100 complaints), the model achieved 58.00 percent accuracy, weighted precision of 0.59, weighted recall of 0.58, and weighted F1 score of 0.58. The medium class performed best, while weak and high classes overlapped. This system gives a useful baseline and shows clear directions for future improvement.
 \end{abstract}
 
 \begin{keywords}
-Bengali NLP \sep BanglaBERT \sep Complaint Management \sep Text Classification \sep Sentiment Analysis \sep Government Services \sep Deep Learning \sep Transformers
+Bengali NLP \sep Complaint Management \sep Text Classification \sep Random Forest \sep TF IDF \sep Supabase \sep NityMulya Application \sep E-Governance
 \end{keywords}
 
 \maketitle
 
 \section{Introduction}
 
-Government marketplaces in Bangladesh play a vital role in providing goods and services to citizens. These platforms serve millions of people who depend on them for their daily needs. However, when problems occur, citizens need a way to voice their concerns and get help quickly.
+Government marketplaces in Bangladesh are very important. They provide daily goods and services to millions of people. When problems happen, citizens need a fast way to submit complaints and get support. 
 
-Currently, most citizens write their complaints in Bengali, which is the national language of Bangladesh. This creates a challenge because the complaint management process is mostly manual. Government officials must read each complaint carefully, understand the problem, decide which category it belongs to, and then send it to the appropriate department. This manual process has several problems:
+Today, complaint handling is mostly manual. Citizens usually write complaints in Bengali. Government staff must read each complaint, understand it, and choose a category. This takes a lot of time. 
 
-\begin{enumerate}
-    \item \textbf{Slow Processing:} With thousands of complaints arriving daily, officials cannot keep up with the workload.
-    \item \textbf{Human Errors:} When reading many complaints, officials may make mistakes in understanding or categorizing them.
-    \item \textbf{Inconsistent Classification:} Different officials may categorize the same type of complaint differently.
-    \item \textbf{Delayed Response:} Citizens often wait days or weeks to get a response because of processing delays.
-    \item \textbf{Low Citizen Trust:} When responses are slow, citizens lose trust in government services.
-\end{enumerate}
+Handling thousands of complaints this way creates many problems. Staff cannot manage the full workload. Mistakes happen when people are tired. Citizens become frustrated when they wait many days for a response. Over time, trust in the system drops.
 
-To solve these problems, an AI-enhanced complaint management system has been developed that uses modern Natural Language Processing (NLP) technology. The system is specifically designed for Bengali language complaints, making it suitable for the Bangladeshi context. Complaints can be automatically read, their meaning understood, classified into categories, sentiment and priority detected, and routed to the correct department—all within seconds.
-
-This research addresses an important gap in Bengali NLP applications and demonstrates how AI can improve government services in developing countries like Bangladesh.
+To solve these problems, we built an AI complaint management system. Complaints are collected from citizens through the NityMulya mobile application. The complaint text is analyzed with NLP methods. The system also uses backend numeric values, such as validity and priority, instead of using only text. This hybrid design gives better support for administrators and provides a clear baseline for future model upgrades.
 
 \section{Literature Review}
 
-Many researchers have worked on complaint management systems and text classification using NLP. In this section, important related work is reviewed and the differences and improvements of this research are explained.
+Many researchers have worked on text classification and NLP. Their work guided this study.
 
-\subsection{Traditional Complaint Management Systems}
+Arif et al. (2024) studied deep learning for Bengali hate speech detection on social media \cite{arif2024}. Their work helps explain how short and informal Bengali text can be represented for machine learning.
 
-Traditional complaint management systems use manual processes where human workers read and categorize complaints \cite{kumar2018}. These systems work well for small numbers of complaints but become inefficient when the volume increases. Kumar and Singh (2018) found that manual complaint processing can take 3-5 days on average, which makes citizens unhappy.
+Ahmed et al. (2023) used transformer models for context based emotion detection from Bengali text \cite{ahmed2023}. They showed that context is important for good prediction. However, transformer models usually need high computing resources.
 
-Several companies have tried to improve these systems using rule-based approaches \cite{zhang2019}. Rule-based systems use predefined keywords to categorize complaints. However, these systems have problems. Zhang et al. (2019) showed that rule-based systems have low accuracy (around 60\%) because they cannot understand context or handle complex language.
+Ali et al. (2023) compared Google T5 and SpaCy for text summarization \cite{ali2023}. Their analysis shows that choosing the right text processing method is very important.
 
-\textbf{Improvement in This Research:} Unlike traditional systems, AI and deep learning have been used to understand the actual meaning of complaints, not just keywords. This approach provides much higher accuracy (91.5\% vs 60\%).
+To handle class imbalance, Chawla et al. (2002) introduced SMOTE \cite{chawla2002}. This method creates synthetic minority samples and is widely used to reduce bias toward majority classes.
 
-\subsection{English Text Classification Systems}
+Traditional feature extraction methods are still useful for many tasks. Trstenjak et al. (2014) evaluated TF IDF for document classification and showed it is a strong baseline \cite{trstenjak2014}.
 
-Many researchers have built text classification systems for English language \cite{devlin2019,liu2019}. BERT (Bidirectional Encoder Representations from Transformers) by Devlin et al. (2019) was a major breakthrough. BERT can understand context and meaning in English text very well.
+In public administration, Al-Ruaily et al. (2018) highlighted the need for automated grievance systems in e-governance platforms \cite{alruaily2018}.
 
-Liu and Zhang (2019) used BERT to classify customer complaints in English and achieved 92\% accuracy. However, these systems only work for English. They cannot handle Bengali text because Bengali has different grammar, sentence structure, and writing style.
+Unlike many text only deep learning studies, our work uses a hybrid model. We found that short government complaints are hard to classify with text alone. By combining backend numeric values with TF IDF features, we get a stronger and more practical system at lower cost.
 
-\textbf{Improvement in This Research:} BanglaBERT has been utilized, which is specifically trained on Bengali text. This allows Bengali complaints to be handled effectively, which English models cannot do.
+\section{Data Collection and Analysis}
 
-\subsection{Bengali NLP Research}
+Reliable machine learning needs reliable data. Our dataset was collected from real users.
 
-Bengali is spoken by over 230 million people worldwide, making it the 7th most spoken language. However, Bengali NLP research is limited compared to English \cite{alam2020}. Alam et al. (2020) noted that most NLP tools and models are designed for English, and there is a big gap for Bengali language processing.
+\subsection{NityMulya App and Supabase Integration}
+Citizens submit complaints through the NityMulya application. The form captures complaint text, product category, and shop information. After submission, data is stored in a Supabase PostgreSQL database.
 
-Recent work has tried to fill this gap. Sarkar (2021) created a Bengali text classification system for news articles and achieved 85\% accuracy \cite{sarkar2021}. Bhattacharjee et al. (2022) developed a sentiment analysis model for Bengali social media posts \cite{bhattacharjee2022}.
+During insertion, the backend automatically calculates numeric fields using predefined logic. It computes validity and priority scores using pricing related rules.
 
-BanglaBERT was introduced by Sarker (2020) as a pre-trained model specifically for Bengali language \cite{sarker2020}. BanglaBERT was trained on millions of Bengali sentences from the internet.
+\subsection{Dataset Characteristics}
+A total of 500 real complaints were extracted from the database for this research. Each record has multiple features.
+The primary features include:
+\begin{enumerate}
+	\item Complaint Description: The text written by the user in Bengali, English, or Banglish.
+	\item Product Category Name: The product category associated with the complaint.
+	\item Validity: A backend generated numeric score indicating complaint legitimacy.
+	\item Priority: A backend generated numeric score indicating urgency.
+	\item Target Classification: The final label in three classes: weak, medium, and high.
+\end{enumerate}
 
-\textbf{Improvement in This Research:} While previous Bengali NLP research focused on news or social media, BanglaBERT has been applied to government complaint management—a practical, real-world application that can help millions of citizens.
-
-\subsection{Complaint Classification in Government Services}
-
-Some researchers have worked on complaint systems for government services. Patel and Kumar (2020) built a complaint management system for Indian government offices \cite{patel2020}. Their system used traditional machine learning methods like Support Vector Machines (SVM) and achieved 78\% accuracy. However, they only handled English and Hindi, not Bengali.
-
-Wang et al. (2021) created an AI system for Chinese government complaint portals \cite{wang2021}. They used deep learning and achieved 89\% accuracy. However, their approach was designed specifically for Chinese language and cannot be directly applied to Bengali.
-
-\textbf{Improvement in This Research:} The developed system combines the best practices from previous research but has been adapted specifically for Bengali language and Bangladeshi government context. The achieved accuracy (91.5\%) is higher than both SVM-based (78\%) and previous deep learning systems (89\%).
-
-\subsection{Multi-task Learning in NLP}
-
-Recent research shows that performing multiple tasks together (multi-task learning) can improve overall performance \cite{ruder2017}. In complaint management, several tasks need to be performed: understanding the complaint, detecting sentiment, identifying priority level, and classifying category. Chen et al. (2020) showed that multi-task learning for customer service improved accuracy by 8\% compared to single-task models \cite{chen2020}.
-
-\textbf{Improvement in This Research:} Multi-task learning has been implemented to simultaneously perform sentiment analysis, priority detection, and category classification.
-
-\section{Data Analysis}
-
-A dataset of 512 complaints has been collected from government marketplace users. The data has been analyzed to understand the types of complaints and their characteristics.
-
-\subsection{Language Distribution}
+Most complaints express dissatisfaction, which is normal for a grievance platform. The label distribution is imbalanced, and this affects model learning. In the test split (100 records), class counts were 14 for weak, 62 for medium, and 24 for high. Supabase backend fields keep numeric values consistent with marketplace rules, but text still overlaps across classes.
 
 \begin{figure}[!ht]
-    \centering
-    \includegraphics[width=\columnwidth]{../MY Thesis Paper/language_distribution.png}
-    \caption{Language distribution of complaints showing 48.8\% in English, 14.8\% in Bengali, and 36.3\% in Banglish (mixed language).}
-    \label{fig:language_dist}
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/test_set_distribution.png}
+\caption{Distribution of evaluation samples in the test set generated by the training pipeline.}
+\label{fig:test_distribution}
 \end{figure}
 
-Figure \ref{fig:language_dist} shows the language distribution of the complaint dataset. It has been found that 48.8\% of complaints are written in English, 14.8\% in pure Bengali, and 36.3\% in Banglish (mixed Bengali-English). This distribution reveals the multilingual communication patterns of Bangladeshi citizens. The system handles all three language types effectively through BanglishBERT for translation and mBERT for classification.
+\section{System Architecture}
 
-\subsection{Priority Distribution}
+The processing pipeline was built with Python and Scikit Learn. It converts raw complaint records into model predictions.
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=\columnwidth]{../MY Thesis Paper/priority_distribution.png}
-    \caption{Priority distribution showing approximately 70\% classified as Medium priority and 30\% as High priority.}
-    \label{fig:priority_dist}
-\end{figure}
+\subsection{Feature Engineering}
+Text cannot be used directly by Random Forest. Complaint text was converted to numeric vectors using TF IDF. We used a Feature Union with word and character level features. This helps the model handle spelling variation and mixed language text.
 
-Figure \ref{fig:priority_dist} shows how complaints are distributed by priority level. Most complaints (approximately 70\%) are classified as Medium priority, while about 30\% are High priority. This distribution helps government offices allocate resources properly.
+The numeric features validity and priority were processed with StandardScaler. This puts values on a comparable scale.
 
-\subsection{Sentiment Distribution}
+Product category is a categorical feature. We used OneHotEncoder to convert product category names into machine readable binary vectors.
 
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[width=\columnwidth]{../MY Thesis Paper/sentiment_distribution.png}
-    \caption{Sentiment distribution revealing 95\% negative sentiment and 5\% neutral sentiment.}
-    \label{fig:sentiment_dist}
-\end{figure}
+\subsection{Data Balancing and Training}
+In real data, some classes have fewer samples. We used SMOTE to balance the training set without removing records.
 
-The sentiment analysis chart (Figure \ref{fig:sentiment_dist}) reveals that almost all complaints (95\%) express negative sentiment, while only 5\% show neutral sentiment. This validates that the complaint dataset represents real problems that citizens are facing.
+Finally, the processed data was trained with RandomForestClassifier. Random Forest combines many decision trees and gives stable results.
 
-\subsection{Top Complaint Categories}
+\subsection{Implementation Details}
+The main experiment was run from the model training workspace using the pipeline script. The workflow includes data loading, preprocessing, feature building, SMOTE balancing, model training, and automatic report generation. Output files include a classification report and visual charts: confusion matrix, test distribution, PCA clusters, and K Means PCA clusters.
 
-\begin{figure*}[!t]
-    \centering
-    \includegraphics[width=0.85\textwidth]{../MY Thesis Paper/top_categories.png}
-    \caption{Distribution of complaints across different categories.}
-    \label{fig:categories}
-\end{figure*}
+\section{Results and Analysis}
 
-Figure \ref{fig:categories} shows the distribution of complaints across different categories. The most common category is "Other", followed by health problems, quality issues, expired products, weight issues, price complaints, fraud, and packaging problems. This distribution shows government officials which types of problems are most common.
+We evaluated the system on a hold out test split of 20 percent from the 500 complaint dataset. This gives 100 records for final testing.
 
-\section{System Architecture and Methodology}
-
-The complaint management system consists of several components that work together to process complaints efficiently.
-
-\subsection{System Flow}
-
-\begin{figure*}[!t]
-    \centering
-    \includegraphics[width=0.95\textwidth]{../MY Thesis Paper/system_flow_diagram.png}
-    \caption{Complete system flow diagram showing the process from user complaint submission through AI analysis to admin dashboard display.}
-    \label{fig:system_flow}
-\end{figure*}
-
-Figure \ref{fig:system_flow} presents the complete system architecture and flow. When a user submits a complaint through the web or mobile interface, the complaint passes through several processing stages before being displayed in the admin dashboard.
-
-\subsection{Layered Architecture}
-
-\begin{figure*}[!t]
-    \centering
-    \includegraphics[width=0.95\textwidth]{../MY Thesis Paper/system_architecture.png}
-    \caption{Layered system architecture showing five distinct layers with component interactions.}
-    \label{fig:architecture}
-\end{figure*}
-
-The system follows a five-layer architecture as illustrated in Figure \ref{fig:architecture}. The Presentation Layer handles user interactions, the Application Layer manages business logic, the AI/NLP Layer performs intelligent analysis using BanglaBERT, the Data Layer manages storage, and the External Services Layer integrates with third-party services.
-
-\subsection{System Components}
-
-The system has five main components:
-
-\begin{enumerate}
-    \item \textbf{Input Module:} Complaints are received from citizens through a web or mobile interface in Bengali, English, or mixed languages.
-    
-    \item \textbf{Preprocessing Module:} The text is cleaned and prepared for analysis, including removing unnecessary spaces and handling special characters.
-    
-    \item \textbf{BanglaBERT Analysis Engine:} The core of the system uses the BanglaBERT model to understand complaint meaning and simultaneously performs:
-    \begin{enumerate}
-        \item Sentiment Analysis (negative, neutral, or positive)
-        \item Priority Detection (high, medium, or low priority)
-        \item Category Classification (quality issues, health problems, expired products, price issues, weight issues, fraud, packaging problems, or other)
-    \end{enumerate}
-    
-    \item \textbf{Routing Module:} Based on the category, complaints are automatically sent to the correct government department for action.
-    
-    \item \textbf{Dashboard and Reporting:} Provides visualizations and reports for government officials to monitor complaints and track response times.
-\end{enumerate}
-
-\subsection{BanglaBERT Model}
-
-BanglaBERT is a transformer-based language model that was pre-trained on large amounts of Bengali text. The model has 12 layers and 110 million parameters. BanglaBERT has been fine-tuned on the complaint dataset to understand government marketplace complaints better.
-
-The fine-tuning process involved:
-\begin{enumerate}
-    \item Training on 512 labeled complaints
-    \item 80\% data for training and 20\% for testing
-    \item Training for 10 epochs with a learning rate of 2e-5
-    \item Cross-entropy loss function for optimization
-\end{enumerate}
-
-\subsection{Key Features}
-
-The system provides several important features:
-\begin{enumerate}
-    \item Fast processing: Can analyze hundreds of complaints per second
-    \item Bilingual support: Handles both Bengali and English complaints
-    \item Mixed language handling: Understands complaints mixing Bengali and English
-    \item High accuracy: Achieves over 90\% accuracy in classification
-    \item Real-time analysis: Provides instant results
-    \item Scalability: Can handle increasing volumes without performance loss
-    \item User-friendly dashboard: Easy interface for government officials
-\end{enumerate}
-
-\section{Results and Performance Analysis}
-
-The system has been evaluated using several metrics to measure its performance.
-
-\subsection{Dataset Statistics}
-
-The dataset contains 512 complaints collected from government marketplace users:
-
-\begin{enumerate}
-    \item \textbf{Language Distribution:} 48.8\% English, 14.8\% Bengali, 36.3\% Banglish (mixed)
-    \item \textbf{Priority Distribution:} 70\% Medium priority, 30\% High priority
-    \item \textbf{Sentiment Distribution:} 95\% negative sentiment, 5\% neutral sentiment
-    \item \textbf{Category Distribution:} "Other" is most common, followed by health problems, quality issues, expired products, weight issues, price complaints, fraud, and packaging problems
-\end{enumerate}
-
-\subsection{Model Performance}
-
-The system's performance has been measured using standard metrics:
-
-\begin{enumerate}
-    \item \textbf{Accuracy:} 91.5\% - Complaints are correctly classified
-    \item \textbf{Processing Speed:} Average 0.15 seconds per complaint (vs 3-5 days manual)
-    \item \textbf{Precision:} 89.3\% - Correct category predictions
-    \item \textbf{Recall:} 88.7\% - Successfully identified complaints
-    \item \textbf{F1-Score:} 89.0\% - Balanced performance
-\end{enumerate}
-
-\subsection{Comparison with Previous Systems}
-
-The system outperforms previous approaches:
+\subsection{Model Accuracy}
+The hybrid Random Forest model achieved 58.00 percent accuracy. Weighted precision, weighted recall, and weighted F1 were 0.59, 0.58, and 0.58. This is a useful baseline, but the model still struggles when complaint meanings are very similar.
 
 \begin{table}[!ht]
 \centering
-\caption{Comparison with previous systems}
-\label{tab:comparison}
-\begin{tabular}{|l|c|l|}
+\caption{Classification performance from the model training results}
+\label{tab:metrics}
+\begin{tabular}{|l|c|c|c|c|}
 \hline
-\textbf{System} & \textbf{Accuracy} & \textbf{Languages} \\
+Class & Precision & Recall & F1 score & Support \\
 \hline
-Rule-based \cite{zhang2019} & 60\% & English \\
-SVM \cite{patel2020} & 78\% & English, Hindi \\
-Chinese DL \cite{wang2021} & 89\% & Chinese \\
-\textbf{BanglaBERT (This Work)} & \textbf{91.5\%} & \textbf{Bengali, English} \\
+Weak & 0.31 & 0.29 & 0.30 & 14 \\
+Medium & 0.70 & 0.63 & 0.66 & 62 \\
+High & 0.48 & 0.62 & 0.55 & 24 \\
+\hline
+Weighted Avg & 0.59 & 0.58 & 0.58 & 100 \\
 \hline
 \end{tabular}
 \end{table}
 
-As shown in Table \ref{tab:comparison}, improvements of 11.5\% over rule-based systems, 13.5\% over traditional machine learning, and 2.5\% over previous deep learning approaches have been achieved.
+\subsection{Classification Reports}
+The pipeline generated a detailed classification report. The medium class had the best precision and F1 score because it has the most samples. The weak class had fewer samples and lower separability, so its score is lower. SMOTE helps with class balance, but it cannot fully remove text overlap between classes.
 
-\subsection{Real-World Impact}
+\subsection{Confusion Matrix Evaluation}
+The confusion matrix shows many predictions around the medium class. There are also errors between weak and high severity boundaries. This means current text signals are not strong enough to clearly separate all classes.
 
-Deploying the system in government offices could provide significant benefits:
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/confusion_matrix.png}
+\caption{Confusion matrix generated from the test split.}
+\label{fig:confusion_matrix}
+\end{figure}
 
-\begin{enumerate}
-    \item \textbf{Time Savings:} Reduce processing time from 3-5 days to seconds (>99\% reduction)
-    \item \textbf{Cost Savings:} Reduce manual labor costs through automation
-    \item \textbf{Improved Citizen Satisfaction:} Faster responses lead to happier citizens
-    \item \textbf{Better Resource Allocation:} Automatic priority detection helps focus on urgent complaints
-    \item \textbf{Data Insights:} Visualizations help officials understand complaint trends
-\end{enumerate}
+\subsection{Feature Space and Cluster Analysis}
+To better understand class separation, we analyzed PCA cluster plots from the experiment outputs. The plots show partial grouping with visible overlap between classes. This explains the moderate class wise performance.
 
-\section{Discussion}
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/nlp_pca_clusters.png}
+\caption{PCA view of transformed complaint feature space.}
+\label{fig:pca_clusters}
+\end{figure}
 
-The research demonstrates that AI and Bengali NLP technology can significantly improve government services in Bangladesh. Several important findings have emerged:
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/kmeans_clusters_pca.png}
+\caption{K Means cluster projection over PCA components.}
+\label{fig:kmeans_pca}
+\end{figure}
 
-First, BanglaBERT has been found to be highly effective for Bengali text classification tasks. The model's deep understanding of Bengali language allows it to capture the meaning and context of complaints accurately.
-
-Second, multi-task learning improves overall performance. By training the model to perform sentiment analysis, priority detection, and category classification simultaneously, better results have been achieved than training separate models for each task.
-
-Third, real-world challenges are handled effectively by the system. Government complaints often contain spelling errors, informal language, and mixed Bengali-English text. The system can handle these variations and still provide accurate classifications.
-
-\subsection{Limitations}
-
-The system has some limitations that future research should address:
-
-\begin{enumerate}
-    \item \textbf{Dataset Size:} The dataset contains 512 complaints. A larger dataset would help improve accuracy further.
-    \item \textbf{Category Coverage:} Common categories are focused on. Some rare complaint types might not be classified accurately.
-    \item \textbf{Response Generation:} Complaints are classified but automatic responses are not generated.
-    \item \textbf{Dialect Variations:} The system is trained on standard Bengali and might not handle all dialects equally well.
-\end{enumerate}
-
-\section{Future Work}
-
-This research can be extended in several directions:
-
-\begin{enumerate}
-    \item Automatic response generation with suggested templates for common complaint types
-    \item Voice input allowing citizens to submit complaints by speaking
-    \item Larger dataset collection to improve model accuracy
-    \item Multi-language support for other regional languages in Bangladesh
-    \item Integration with existing government IT infrastructure
-    \item Mobile application development for easier complaint submission
-    \item Follow-up tracking features to monitor complaint resolution
-\end{enumerate}
+The current pipeline is still practical for deployment because it is lightweight and fast on CPU systems. For better accuracy, future work should collect more complaints, improve label quality, and compare this baseline with Bengali transformer models.
 
 \section{Conclusion}
 
-An AI-enhanced complaint management system designed specifically for government marketplaces in Bangladesh has been presented in this paper. BanglaBERT, a state-of-the-art Bengali language model, is used to automatically read, understand, and classify complaints written in Bengali or English.
-
-Several important contributions have been made through this research:
-
-\begin{enumerate}
-    \item The first comprehensive AI system for Bengali government complaint management has been built
-    \item BanglaBERT has been demonstrated to achieve high accuracy (91.5\%) in complaint classification
-    \item The system has been shown to be much faster than manual processing (seconds vs days)
-    \item A practical, deployable system that government offices can use immediately has been created
-    \item A dataset of 512 real complaints has been collected and analyzed
-\end{enumerate}
-
-An important real-world problem is addressed by the system and it has the potential to improve government services for millions of Bangladeshi citizens. This research also contributes to the growing field of Bengali Natural Language Processing and demonstrates that transformer-based models can be effectively applied to practical applications in developing countries.
+We built an AI complaint management system to classify user issues on the NityMulya platform. By combining TF IDF text features with Supabase backend numeric features, we created a practical Random Forest baseline on 500 verified complaints. The model achieved 58.00 percent test accuracy. It performs better on the majority class, while minority class confusion is still a challenge. Even so, this workflow is reproducible, lightweight, and useful as a strong base for future improvements with more data, better labels, and advanced Bengali language models.
 
 \begin{thebibliography}{99}
 
-\bibitem{kumar2018}
-Kumar, R., \& Singh, P. (2018). 
-Manual complaint processing in government services: Challenges and delays. 
-\textit{Journal of Public Administration}, 45(3), 234-249.
+\bibitem{arif2024}
+Arif, M. A. I., Rahman, M. M., Alam, M. G. R., \& Akhtaruzzaman, M. (2024). 
+Analyzing the performance of deep learning models for detecting hate speech on social media platforms. 
+\textit{MIST International Journal of Science and Technology}, 12, 29--42.
 
-\bibitem{zhang2019}
-Zhang, L., Wang, Y., \& Chen, M. (2019). 
-Rule-based text classification systems: Limitations and accuracy issues. 
-\textit{International Conference on Text Processing}, 156-163.
+\bibitem{ahmed2023}
+Ahmed, L., Polok, I. K., Islam, M. A., Akhtaruzzaman, M., Mukta, M. S. H., \& Rahman, M. M. (2023). 
+Context based emotion recognition from bengali text using transformers. 
+\textit{2023 5th International Conference on Smart Systems and Inventive Technology (ICSSIT)}, 1478--1484. IEEE.
 
-\bibitem{devlin2019}
-Devlin, J., Chang, M. W., Lee, K., \& Toutanova, K. (2019). 
-BERT: Pre-training of deep bidirectional transformers for language understanding. 
-\textit{NAACL-HLT}, 4171-4186.
+\bibitem{ali2023}
+Ali, N. F., Tanvin, J. U., Islam, M. R., Ahmed, J., \& Akhtaruzzaman, M. (2023). 
+ROUGE score analysis and performance evaluation between Google T5 and SpaCy for YouTube news video summarization. 
+\textit{2023 26th International Conference on Computer and Information Technology (ICCIT)}, 1--6. IEEE.
 
-\bibitem{liu2019}
-Liu, Y., \& Zhang, Q. (2019). 
-Customer complaint classification using BERT: An empirical study. 
-\textit{Journal of Customer Service Technology}, 12(2), 89-103.
+\bibitem{chawla2002}
+Chawla, N. V., Bowyer, K. W., Hall, L. O., \& Kegelmeyer, W. P. (2002).
+SMOTE: Synthetic Minority Over-sampling Technique.
+\textit{Journal of Artificial Intelligence Research}, 16, 321-357.
 
-\bibitem{alam2020}
-Alam, M., Rahman, S., \& Hossain, T. (2020). 
-Bengali natural language processing: Current state and future directions. 
-\textit{ACM Transactions on Asian Language Processing}, 19(4), 1-28.
+\bibitem{trstenjak2014}
+Trstenjak, B., Mikac, S., \& Donko, D. (2014).
+KNN with TF-IDF based framework for text categorization.
+\textit{Procedia Engineering}, 69, 1356-1364.
 
-\bibitem{sarkar2021}
-Sarkar, A. (2021). 
-Bengali text classification for news categorization using deep learning. 
-\textit{International Journal of Computational Linguistics}, 8(1), 45-59.
-
-\bibitem{bhattacharjee2022}
-Bhattacharjee, S., Das, P., \& Chakraborty, R. (2022). 
-Sentiment analysis of Bengali social media posts using neural networks. 
-\textit{Social Media Analytics Conference}, 234-241.
-
-\bibitem{sarker2020}
-Sarker, S. (2020). 
-BanglaBERT: Bengali language model for natural language understanding. 
-\textit{arXiv preprint arXiv:2010.07373}.
-
-\bibitem{patel2020}
-Patel, V., \& Kumar, A. (2020). 
-Machine learning approaches for government complaint management systems. 
-\textit{International Conference on E-Government}, 178-185.
-
-\bibitem{wang2021}
-Wang, H., Li, J., \& Zhang, W. (2021). 
-Deep learning for Chinese government complaint portal automation. 
-\textit{IEEE Transactions on Government Technology}, 5(3), 412-425.
-
-\bibitem{ruder2017}
-Ruder, S. (2017). 
-An overview of multi-task learning in deep neural networks. 
-\textit{arXiv preprint arXiv:1706.05098}.
-
-\bibitem{chen2020}
-Chen, X., Liu, M., \& Wang, Q. (2020). 
-Multi-task learning for customer service automation: Experiments and results. 
-\textit{Journal of AI Applications}, 15(4), 567-582.
+\bibitem{alruaily2018}
+Al-Ruaily, M., \& Ayesh, A. (2018).
+E-government and grievance redresal systems: An empirical study.
+\textit{Information Polity}, 23(1), 85-98.
 
 \end{thebibliography}
 
