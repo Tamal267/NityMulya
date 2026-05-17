@@ -1,0 +1,29 @@
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {2.1}{\ignorespaces Comparison with representative related work}}{12}{table.caption.9}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {3.1}{\ignorespaces Dataset class distribution}}{17}{table.caption.13}%
+\contentsline {table}{\numberline {3.2}{\ignorespaces Backend numeric feature summary}}{18}{table.caption.14}%
+\contentsline {table}{\numberline {3.3}{\ignorespaces Representative complaint examples}}{19}{table.caption.16}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {6.1}{\ignorespaces Final hold-out classification report for tuned Logistic Regression}}{32}{table.caption.19}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Five-fold TF-IDF comparison using Linear SVC}}{32}{table.caption.20}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Five-fold model comparison on the full hybrid feature set}}{33}{table.caption.21}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Ablation study with tuned Logistic Regression}}{34}{table.caption.22}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {A.1}{\ignorespaces Sample anonymized complaint records}}{48}{table.A.1}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {B.1}{\ignorespaces Selected Banglish normalization entries}}{49}{table.B.1}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {C.1}{\ignorespaces Hyperparameter search space}}{51}{table.C.1}%
+\addvspace {10\p@ }
+\contentsline {table}{\numberline {D.1}{\ignorespaces Confusion matrix rows=true, columns=predicted}}{52}{table.caption.26}%
+\contentsline {table}{\numberline {D.2}{\ignorespaces Hyperparameter tuning results}}{52}{table.caption.27}%
+\addvspace {10\p@ }
+\addvspace {10\p@ }
+\addvspace {10\p@ }
