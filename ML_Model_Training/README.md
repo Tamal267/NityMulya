@@ -10,10 +10,13 @@ ML_Model_Training/
 │   └── complaints_full.csv        # The full 500-instance dataset exported from postgres
 ├── notebooks/                     # For exploratory jupyter notebooks (if any)
 ├── results/                       # Plots and metrics files output
-│   ├── classification_report.txt  # Model precision, recall, f1, support metrics
-│   ├── confusion_matrix.png       # Generated heat map for the confusion matrix
-│   ├── feature_importance.png     # Evaluation of feature relevance in RandomForest
-│   └── kmeans_clusters_pca.png    # Exploratory PCA-KMeans Plot
+│   ├── classification_report.txt      # Final hold-out metrics
+│   ├── confusion_matrix.png           # Final hold-out confusion matrix
+│   ├── model_comparison.csv           # 5-fold classifier and SMOTE comparison
+│   ├── ablation_study.csv             # Text/category/numeric feature ablation
+│   ├── cross_validation_results.csv   # Combined CV results table
+│   ├── tfidf_variant_comparison.csv   # Word, character, and combined TF-IDF comparison
+│   └── kmeans_clusters_pca.png        # Exploratory SVD/KMeans plot
 ├── src/
 │   └── pipeline.py                # Main executable training pipeline
 ├── requirements.txt               # Dependencies
@@ -22,12 +25,12 @@ ML_Model_Training/
 
 ## ⚙️ Model Pipeline Details
 
-1. **Preprocessing**: Missing values are dropped, and textual features (`complaint_description`) are vectorized using a `TfidfVectorizer` utilizing a character WB-analyzer. This is highly effective at managing multi-lingual text contexts like Bangla + English + Banglish.
-2. **KMeans Exploration**: Explores the distribution of textual data into 3 classes.
-3. **Data Split**: The dataset is split into `80%` Training and `20%` Evaluation segments in a stratified manner.
-4. **Data Balancing**: The `SMOTE-Tomek` algorithm is applied to fix class imbalance (Since `medium` complaints hold the majority weighting).
-5. **K-Fold & Grid Search**: Using `StratifiedKFold` (5 folds), it fine tunes the `RandomForestClassifier` parameters.
-6. **Validation Evaluation**: Validation output includes plotting charts (ROC, Confusion Matrix) and calculates extensive metrics: Accuracy, Precision, Recall, F1, Support, Macro-Average, and Weighted-Average.
+1. **Preprocessing**: Missing values are dropped. Bengali, English, and Banglish complaint text is normalized with Unicode normalization, lowercasing, punctuation cleanup, repeated character cleanup, a Banglish dictionary, and optional Bengali stopword removal.
+2. **Feature extraction**: The pipeline compares word TF-IDF, character `char_wb` TF-IDF, and combined word-character TF-IDF. It also tests category one-hot encoding and scaled backend numeric features (`validity`, `priority`).
+3. **Data split**: The dataset is split into `80%` training and `20%` hold-out evaluation segments in a stratified manner.
+4. **Class imbalance**: Models use `class_weight='balanced'` where supported. SMOTE is tested inside an `imblearn` pipeline so oversampling occurs only on training folds.
+5. **K-fold and tuning**: Using `StratifiedKFold` with 5 folds, the script compares Logistic Regression, Linear SVC, Random Forest, and a Voting ensemble. `RandomizedSearchCV` tunes TF-IDF and model hyperparameters.
+6. **Evaluation**: Output includes classification report, confusion matrix, model comparison table, cross-validation table, imbalance comparison, ablation study, and SVD/KMeans plots.
 
 ## 🚀 How to Run
 

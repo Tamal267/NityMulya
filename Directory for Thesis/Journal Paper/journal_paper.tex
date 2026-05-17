@@ -8,6 +8,22 @@
 \usepackage[numbers]{natbib}
 \usepackage{graphicx}
 \usepackage{url}
+\usepackage{placeins}
+\usepackage{iftex}
+\setlength{\emergencystretch}{2em}
+\newcommand{\fixedtablecaption}[2]{%
+  \refstepcounter{table}\label{#1}%
+  \smallskip\noindent\small\textbf{Table~\thetable: #2}\par\smallskip}
+\newcommand{\fixedfigurecaption}[2]{%
+  \refstepcounter{figure}\label{#1}%
+  \smallskip\noindent\small\textbf{Figure~\thefigure: #2}\par\smallskip}
+\newcommand{\banglatext}[1]{#1}
+\ifLuaTeX
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX,Renderer=HarfBuzz}
+\newfontfamily\banglafont[Script=Bengali,Language=Bengali]{Noto Serif Bengali}
+\renewcommand{\banglatext}[1]{{\banglafont #1}}
+\fi
 
 \begin{document}
 \let\WriteBookmarks\relax
@@ -17,26 +33,33 @@
 \shorttitle{AI Enhanced Complaint Management System}
 \shortauthors{S.M. Islam et al.}
 
-\title[mode=title]{AI Enhanced Complaint Management System for Government Marketplaces A Hybrid NLP and Backend Data Approach}
+\title[mode=title]{AI Enhanced Complaint Management System for Government Marketplaces: A Hybrid NLP and Backend Data Approach}
 
 \author[1]{Syed Mafijul Islam}
+\fnmark[1]
 
 \author[1]{Nahidur Zaman}
+\fnmark[1]
 
 \author[1]{Sakif Shahrear}
+\fnmark[1]
 
 \author[1]{M. Aktaruzzaman}
+\cormark[1]
+\fnmark[2]
 
 \address[1]{Military Institute of Science and Technology (MIST) and Daffodil International University, Dhaka, Bangladesh}
 
-% Corresponding author note removed to avoid template thumbnail dependency.
+\cortext[cor1]{Corresponding author.}
+\fntext[fn1]{Student authors: Syed Mafijul Islam, Nahidur Zaman, and Sakif Shahrear.}
+\fntext[fn2]{Research supervisor: M. Aktaruzzaman.}
 
 \begin{abstract}
-Government marketplaces in Bangladesh receive many complaints every day. Most complaints are written in Bengali or mixed Bengali and English, so manual checking is slow and often inconsistent. This paper presents an AI based complaint management pipeline using data from the NityMulya application. We collected 500 complaints and stored them in a Supabase PostgreSQL database. Each record includes complaint text, product category, and backend numeric values such as validity and priority. We used TF IDF text features, one hot encoded product category features, and scaled numeric features in one machine learning pipeline. We handled class imbalance with SMOTE and trained a Random Forest classifier. On the test split (20 percent, 100 complaints), the model achieved 58.00 percent accuracy, weighted precision of 0.59, weighted recall of 0.58, and weighted F1 score of 0.58. The medium class performed best, while weak and high classes overlapped. This system gives a useful baseline and shows clear directions for future improvement.
+Government marketplaces in Bangladesh receive many complaints every day. Most complaints are written in Bengali, English, or Banglish, so manual review is slow and often inconsistent. This paper presents a lightweight AI based complaint classification pipeline using 500 NityMulya marketplace complaints stored in a Supabase PostgreSQL backend. Each record includes complaint text, product category, and backend numeric attributes such as validity and priority. The improved pipeline applies Unicode normalization, English and Banglish lowercasing, punctuation cleanup, repeated character normalization, a simple Banglish normalization dictionary, and optional Bengali stopword removal. We compare word TF-IDF, character TF-IDF, combined word-character TF-IDF, Logistic Regression, Linear SVC, Random Forest, a hard Voting ensemble, class weighting, SMOTE inside training folds, hyperparameter tuning, and an ablation study. The strongest hold-out model was tuned Logistic Regression using normalized text plus backend numeric features. On the 20\% stratified test split, it achieved 86.00\% accuracy, weighted precision of 0.8596, weighted recall of 0.8600, and weighted F1 score of 0.8594. Five-fold cross-validation and ablation results show that backend numeric feature fusion is the main performance driver, while product category features added noise for this small dataset. The contribution is a practical, reproducible, low-resource hybrid NLP and backend-data pipeline for government marketplace complaint triage.
 \end{abstract}
 
 \begin{keywords}
-Bengali NLP \sep Complaint Management \sep Text Classification \sep Random Forest \sep TF IDF \sep Supabase \sep NityMulya Application \sep E-Governance
+Bengali NLP \sep Banglish Normalization \sep Complaint Management \sep Text Classification \sep TF-IDF \sep Logistic Regression \sep Supabase \sep E-Governance
 \end{keywords}
 
 \maketitle
@@ -67,7 +90,7 @@ Traditional feature extraction methods are still useful for many tasks. Trstenja
 
 In public administration, Al-Ruaily et al. (2018) highlighted the need for automated grievance systems in e-governance platforms \cite{alruaily2018}.
 
-Unlike many text only deep learning studies, our work uses a hybrid model. We found that short government complaints are hard to classify with text alone. By combining backend numeric values with TF IDF features, we get a stronger and more practical system at lower cost.
+Unlike many text only deep learning studies, our work uses a hybrid low-resource model. We found that short government complaints are hard to classify with text alone. By combining TF-IDF features with backend validity and priority values, the system gives stronger practical triage support at lower deployment cost.
 
 \section{Data Collection and Analysis}
 
@@ -89,93 +112,183 @@ The primary features include:
 	\item Target Classification: The final label in three classes: weak, medium, and high.
 \end{enumerate}
 
+\subsubsection{Example Complaint Texts}
+To show language variation in the dataset, we provide three representative complaint examples below.
+
+\begin{itemize}
+	\item Bengali: ``\banglatext{আজকের বাজার থেকে কেনা দুধ নষ্ট ছিল, দোকানদার বদল দিতে রাজি হয়নি।}''
+    \item English: ``I bought rice from this shop, but the packet was torn and the quality was very poor.''
+    \item Banglish: ``Ei dokan theke oil kinlam, but price list er cheye beshi taka niyeche and receipt dayni.''
+\end{itemize}
+
 Most complaints express dissatisfaction, which is normal for a grievance platform. The label distribution is imbalanced, and this affects model learning. In the test split (100 records), class counts were 14 for weak, 62 for medium, and 24 for high. Supabase backend fields keep numeric values consistent with marketplace rules, but text still overlaps across classes.
 
-\begin{figure}[!ht]
+\begin{center}
 \centering
 \includegraphics[width=0.95\columnwidth]{figures/test_set_distribution.png}
-\caption{Distribution of evaluation samples in the test set generated by the training pipeline.}
-\label{fig:test_distribution}
-\end{figure}
+\fixedfigurecaption{fig:test_distribution}{Distribution of evaluation samples in the test set generated by the training pipeline.}
+\end{center}
 
-\section{System Architecture}
+\section{Methodology}
 
-The processing pipeline was built with Python and Scikit Learn. It converts raw complaint records into model predictions.
+The processing pipeline was built with Python, Scikit Learn, and Imbalanced Learn. It converts raw complaint records into severity predictions through text normalization, feature extraction, model comparison, cross-validation, hyperparameter tuning, and final hold-out evaluation.
+
+\subsection{Text Preprocessing}
+Complaint text was normalized before vectorization. The preprocessing stage applies Unicode NFKC normalization, lowercases English and Banglish tokens, removes noisy punctuation, compresses repeated characters, and replaces common Banglish marketplace terms using a simple dictionary. Bengali stopword removal was implemented as an optional pipeline parameter and was selected during tuning for the final Logistic Regression model.
 
 \subsection{Feature Engineering}
-Text cannot be used directly by Random Forest. Complaint text was converted to numeric vectors using TF IDF. We used a Feature Union with word and character level features. This helps the model handle spelling variation and mixed language text.
+The text feature extractor compared word-level TF-IDF with unigram and unigram-bigram ranges, character-level TF-IDF using \texttt{char\_wb} with 3 to 5 character n-grams, and a combined word-character FeatureUnion. Character features are useful for Banglish and spelling variation because they preserve partial word shapes even when users write the same Bengali concept with different Roman spellings.
 
-The numeric features validity and priority were processed with StandardScaler. This puts values on a comparable scale.
+Backend numeric features, validity and priority, were scaled using StandardScaler. Product category was encoded with OneHotEncoder. Four feature sets were tested in the ablation study: text only, text plus product category, text plus numeric features, and the full hybrid feature set.
 
-Product category is a categorical feature. We used OneHotEncoder to convert product category names into machine readable binary vectors.
+\subsection{Model Training}
+We compared Logistic Regression with balanced class weights, Linear SVC with balanced class weights, Random Forest, and a hard VotingClassifier combining Logistic Regression, Linear SVC, and Random Forest. We used StratifiedKFold with five folds for cross-validation. Accuracy, weighted precision, weighted recall, weighted F1, and standard deviation were recorded.
 
-\subsection{Data Balancing and Training}
-In real data, some classes have fewer samples. We used SMOTE to balance the training set without removing records.
+Class imbalance was tested in two ways. First, all linear models used balanced class weights. Second, SMOTE was inserted inside the Imbalanced Learn pipeline so that synthetic samples were generated only inside training folds. This prevents data leakage from validation folds into training data.
 
-Finally, the processed data was trained with RandomForestClassifier. Random Forest combines many decision trees and gives stable results.
-
-\subsection{Implementation Details}
-The main experiment was run from the model training workspace using the pipeline script. The workflow includes data loading, preprocessing, feature building, SMOTE balancing, model training, and automatic report generation. Output files include a classification report and visual charts: confusion matrix, test distribution, PCA clusters, and K Means PCA clusters.
+Hyperparameter tuning used RandomizedSearchCV on the training split. The tuned parameters included TF-IDF maximum features, word n-gram range, Logistic Regression C, Linear SVC C, and Random Forest \texttt{n\_estimators}, \texttt{max\_depth}, and \texttt{min\_samples\_split}. The final tuned model selected Logistic Regression with C=5.0, word TF-IDF maximum features of 2000, character TF-IDF maximum features of 500, word n-grams of (1,2), character n-grams of (3,5), Bengali stopword removal enabled, and no SMOTE.
 
 \section{Results and Analysis}
 
-We evaluated the system on a hold out test split of 20 percent from the 500 complaint dataset. This gives 100 records for final testing.
+The original Random Forest baseline achieved 58.00\% accuracy and 0.58 weighted F1 on the same 20\% hold-out test split. After preprocessing, model comparison, tuning, and ablation, the best final model was tuned Logistic Regression using normalized text plus backend numeric features. It achieved 86.00\% hold-out accuracy and 0.8594 weighted F1.
 
-\subsection{Model Accuracy}
-The hybrid Random Forest model achieved 58.00 percent accuracy. Weighted precision, weighted recall, and weighted F1 were 0.59, 0.58, and 0.58. This is a useful baseline, but the model still struggles when complaint meanings are very similar.
+\subsection{TF-IDF Comparison}
 
-\begin{table}[!ht]
+\begin{center}
+\fixedtablecaption{tab:tfidf_comparison}{Five-fold TF-IDF comparison using Linear SVC}
 \centering
-\caption{Classification performance from the model training results}
-\label{tab:metrics}
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{|l|c|c|c|}
+\hline
+Feature extractor & Accuracy & Weighted F1 & F1 std. \\
+\hline
+Character wb (3,5) & 0.8220 & 0.8225 & 0.0286 \\
+Word (1,2) & 0.8220 & 0.8209 & 0.0359 \\
+Word + character & 0.8100 & 0.8092 & 0.0342 \\
+Word (1,1) & 0.8040 & 0.8041 & 0.0432 \\
+\hline
+\end{tabular}
+\end{center}
+
+Character n-grams gave the strongest average TF-IDF result in the comparison, showing that subword patterns are helpful for mixed Bengali and Banglish complaints. The tuned final search used combined word-character features so that the selected Logistic Regression pipeline could retain both whole-token and spelling-variation signals.
+\FloatBarrier
+
+\subsection{Cross-Validation Results}
+
+\begin{center}
+\fixedtablecaption{tab:model_comparison}{Five-fold model comparison on the full hybrid feature set}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{|p{0.25\columnwidth}|p{0.30\columnwidth}|c|c|c|}
+\hline
+Classifier & Imbalance handling & Accuracy & Weighted F1 & F1 std. \\
+\hline
+Linear SVC & Class weight & 0.8100 & 0.8092 & 0.0342 \\
+Voting ensemble & Class weight & 0.8020 & 0.8013 & 0.0314 \\
+Logistic Regression & Class weight & 0.7980 & 0.8000 & 0.0291 \\
+Linear SVC & Class weight + SMOTE & 0.7820 & 0.7814 & 0.0378 \\
+Voting ensemble & Class weight + SMOTE & 0.7580 & 0.7601 & 0.0320 \\
+Logistic Regression & Class weight + SMOTE & 0.7400 & 0.7461 & 0.0344 \\
+Random Forest & Class weight & 0.6460 & 0.6224 & 0.0492 \\
+Random Forest & Class weight + SMOTE & 0.6160 & 0.6083 & 0.0309 \\
+\hline
+\end{tabular}
+\end{center}
+
+The cross-validation comparison shows that linear classifiers performed better than Random Forest on sparse TF-IDF features. SMOTE did not improve performance in this setting. Because SMOTE creates synthetic points in a high-dimensional sparse representation, it can blur class boundaries when the dataset is small and the text is short.
+\FloatBarrier
+
+\subsection{Ablation Study}
+
+\begin{center}
+\fixedtablecaption{tab:ablation}{Ablation study with tuned Logistic Regression}
+\centering
+\small
+\renewcommand{\arraystretch}{1.12}
+\begin{tabular}{|l|c|c|c|}
+\hline
+Feature set & Accuracy & Weighted F1 & F1 std. \\
+\hline
+Text + numeric features & 0.8500 & 0.8503 & 0.0299 \\
+Full hybrid feature set & 0.8260 & 0.8249 & 0.0247 \\
+Text only & 0.5580 & 0.5559 & 0.0419 \\
+Text + product category & 0.5400 & 0.5410 & 0.0328 \\
+\hline
+\end{tabular}
+\end{center}
+
+The ablation study shows that backend numeric features are essential for this task. Text alone reached only 0.5559 weighted F1, while text plus validity and priority reached 0.8503 weighted F1. Product category did not help in this dataset and reduced performance, likely because category names were sparse and not always severity-specific.
+\FloatBarrier
+
+\subsection{Hold-Out Classification Report}
+
+\begin{center}
+\fixedtablecaption{tab:metrics}{Final hold-out classification report for tuned Logistic Regression}
+\centering
+\small
+\renewcommand{\arraystretch}{1.12}
 \begin{tabular}{|l|c|c|c|c|}
 \hline
 Class & Precision & Recall & F1 score & Support \\
 \hline
-Weak & 0.31 & 0.29 & 0.30 & 14 \\
-Medium & 0.70 & 0.63 & 0.66 & 62 \\
-High & 0.48 & 0.62 & 0.55 & 24 \\
+Weak & 0.9231 & 0.8571 & 0.8889 & 14 \\
+Medium & 0.8750 & 0.9032 & 0.8889 & 62 \\
+High & 0.7826 & 0.7500 & 0.7660 & 24 \\
 \hline
-Weighted Avg & 0.59 & 0.58 & 0.58 & 100 \\
+Weighted Avg & 0.8596 & 0.8600 & 0.8594 & 100 \\
 \hline
 \end{tabular}
-\end{table}
+\end{center}
 
-\subsection{Classification Reports}
-The pipeline generated a detailed classification report. The medium class had the best precision and F1 score because it has the most samples. The weak class had fewer samples and lower separability, so its score is lower. SMOTE helps with class balance, but it cannot fully remove text overlap between classes.
+The weak class improved from the earlier F1 score of about 0.30 to 0.8889 on the hold-out split. The high class remained the hardest class, but its F1 score improved to 0.7660. The final confusion matrix had 12 correct weak predictions out of 14, 56 correct medium predictions out of 62, and 18 correct high predictions out of 24.
 
-\subsection{Confusion Matrix Evaluation}
-The confusion matrix shows many predictions around the medium class. There are also errors between weak and high severity boundaries. This means current text signals are not strong enough to clearly separate all classes.
-
-\begin{figure}[!ht]
+\begin{center}
 \centering
 \includegraphics[width=0.95\columnwidth]{figures/confusion_matrix.png}
-\caption{Confusion matrix generated from the test split.}
-\label{fig:confusion_matrix}
-\end{figure}
+\fixedfigurecaption{fig:confusion_matrix}{Confusion matrix for the final tuned Logistic Regression model.}
+\end{center}
+\FloatBarrier
 
 \subsection{Feature Space and Cluster Analysis}
-To better understand class separation, we analyzed PCA cluster plots from the experiment outputs. The plots show partial grouping with visible overlap between classes. This explains the moderate class wise performance.
+To better understand class separation, we visualized the transformed feature space using a two-dimensional SVD projection and K Means clustering. The plots show that backend numeric features create clearer separation than text alone, but medium and high complaints still overlap in some regions.
 
-\begin{figure}[!ht]
+\begin{center}
 \centering
 \includegraphics[width=0.95\columnwidth]{figures/nlp_pca_clusters.png}
-\caption{PCA view of transformed complaint feature space.}
-\label{fig:pca_clusters}
-\end{figure}
+\fixedfigurecaption{fig:pca_clusters}{Two-dimensional SVD view of transformed complaint feature space.}
+\end{center}
 
-\begin{figure}[!ht]
+\begin{center}
 \centering
 \includegraphics[width=0.95\columnwidth]{figures/kmeans_clusters_pca.png}
-\caption{K Means cluster projection over PCA components.}
-\label{fig:kmeans_pca}
-\end{figure}
+\fixedfigurecaption{fig:kmeans_pca}{K Means cluster projection over transformed feature components.}
+\end{center}
+\FloatBarrier
 
-The current pipeline is still practical for deployment because it is lightweight and fast on CPU systems. For better accuracy, future work should collect more complaints, improve label quality, and compare this baseline with Bengali transformer models.
+\section{Discussion}
+
+The improved results show that a lightweight classical machine learning pipeline can work well for low-resource government marketplace complaints when text signals are fused with backend data. The strongest improvement came from validity and priority, which are structured backend attributes connected to complaint legitimacy and urgency. This supports the hybrid NLP and backend-data framing of the system.
+
+The experiment also shows that more features are not always better. Product category looked useful conceptually, but the ablation study showed lower performance when category was added. In a 500 record dataset, category one-hot features can create sparse dimensions that do not generalize well across folds. For deployment, the best current choice is therefore text plus numeric backend features, while keeping category available for future experiments when more records are collected.
+
+The target accuracy range of 0.65 to 0.72 was exceeded. However, this should be interpreted carefully. The result does not mean text alone fully understands complaint severity. Rather, the system works because it combines normalized multilingual complaint text with rule-guided backend attributes.
+
+\section{Limitations}
+
+The dataset contains only 500 complaints and remains imbalanced, with fewer weak and high examples than medium examples. The final test split contains only 14 weak complaints, so class-wise scores can change if more weak complaints are evaluated.
+
+The backend validity and priority features are strong predictors. This is useful for deployment, but it also means the model partly depends on the quality and consistency of backend rules. If those rules change, the classifier should be retrained and revalidated.
+
+The Banglish normalization dictionary is simple and cannot cover all spelling variations. We did not use transformer models because the goal was a lightweight CPU-friendly pipeline, but transformer baselines may be useful in future work if more labeled complaints and computing resources become available.
 
 \section{Conclusion}
 
-We built an AI complaint management system to classify user issues on the NityMulya platform. By combining TF IDF text features with Supabase backend numeric features, we created a practical Random Forest baseline on 500 verified complaints. The model achieved 58.00 percent test accuracy. It performs better on the majority class, while minority class confusion is still a challenge. Even so, this workflow is reproducible, lightweight, and useful as a strong base for future improvements with more data, better labels, and advanced Bengali language models.
+We developed and re-evaluated an AI enhanced complaint management pipeline for the NityMulya platform. The improved system normalizes Bengali, English, and Banglish text, compares word and character TF-IDF features, evaluates multiple classical classifiers, handles imbalance without validation leakage, tunes hyperparameters, and performs ablation analysis. The final tuned Logistic Regression model using text plus backend numeric features achieved 86.00\% hold-out accuracy and 0.8594 weighted F1 on 500 complaints. The study shows that a practical, low-resource hybrid NLP and backend-data pipeline can support government marketplace complaint triage without requiring larger datasets or expensive deep learning infrastructure.
+
+\FloatBarrier
 
 \begin{thebibliography}{99}
 

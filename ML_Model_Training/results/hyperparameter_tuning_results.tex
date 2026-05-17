@@ -1,0 +1,9 @@
+\begin{tabular}{llll}
+\toprule
+classifier & best\_mean\_f1\_weighted & best\_std\_f1\_weighted & best\_params \\
+\midrule
+Logistic Regression & 0.8093 & 0.0409 & \{"classifier\_\_C": "5.0", "features\_\_text\_\_normalize\_\_remove\_bengali\_stopwords": "True", "features\_\_text\_\_tfidf\_\_char\_\_max\_features": "500", "features\_\_text\_\_tfidf\_\_word\_\_max\_features": "2000", "features\_\_text\_\_tfidf\_\_word\_\_ngram\_range": "(1, 2)", "smote": "passthrough"\} \\
+Linear SVC & 0.8045 & 0.0407 & \{"classifier\_\_C": "1.0", "features\_\_text\_\_normalize\_\_remove\_bengali\_stopwords": "True", "features\_\_text\_\_tfidf\_\_char\_\_max\_features": "500", "features\_\_text\_\_tfidf\_\_word\_\_max\_features": "500", "features\_\_text\_\_tfidf\_\_word\_\_ngram\_range": "(1, 1)", "smote": "passthrough"\} \\
+Random Forest & 0.6547 & 0.0559 & \{"classifier\_\_max\_depth": "8", "classifier\_\_min\_samples\_split": "2", "classifier\_\_n\_estimators": "200", "features\_\_text\_\_normalize\_\_remove\_bengali\_stopwords": "True", "features\_\_text\_\_tfidf\_\_char\_\_max\_features": "500", "features\_\_text\_\_tfidf\_\_word\_\_max\_features": "500", "features\_\_text\_\_tfidf\_\_word\_\_ngram\_range": "(1, 1)", "smote": "passthrough"\} \\
+\bottomrule
+\end{tabular}

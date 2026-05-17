@@ -1,0 +1,17 @@
+\begin{tabular}{llllllllllll}
+\toprule
+experiment & classifier & feature\_set & imbalance\_handling & mean\_accuracy & std\_accuracy & mean\_precision\_weighted & std\_precision\_weighted & mean\_recall\_weighted & std\_recall\_weighted & mean\_f1\_weighted & std\_f1\_weighted \\
+\midrule
+Tuned Logistic Regression & Tuned Logistic Regression & Full hybrid feature set & No SMOTE & 0.8260 & 0.0215 & 0.8309 & 0.0243 & 0.8260 & 0.0215 & 0.8249 & 0.0247 \\
+Linear SVC (no SMOTE) & Linear SVC & Full hybrid feature set & class\_weight=balanced & 0.8100 & 0.0341 & 0.8183 & 0.0281 & 0.8100 & 0.0341 & 0.8092 & 0.0342 \\
+Tuned Linear SVC & Tuned Linear SVC & Full hybrid feature set & No SMOTE & 0.8040 & 0.0413 & 0.8148 & 0.0410 & 0.8040 & 0.0413 & 0.8037 & 0.0439 \\
+Voting Ensemble (no SMOTE) & Voting Ensemble & Full hybrid feature set & class\_weight=balanced & 0.8020 & 0.0319 & 0.8035 & 0.0298 & 0.8020 & 0.0319 & 0.8013 & 0.0314 \\
+Logistic Regression (no SMOTE) & Logistic Regression & Full hybrid feature set & class\_weight=balanced & 0.7980 & 0.0279 & 0.8072 & 0.0307 & 0.7980 & 0.0279 & 0.8000 & 0.0291 \\
+Linear SVC (SMOTE) & Linear SVC & Full hybrid feature set & class\_weight=balanced + SMOTE & 0.7820 & 0.0371 & 0.7924 & 0.0321 & 0.7820 & 0.0371 & 0.7814 & 0.0378 \\
+Voting Ensemble (SMOTE) & Voting Ensemble & Full hybrid feature set & class\_weight=balanced + SMOTE & 0.7580 & 0.0319 & 0.7701 & 0.0305 & 0.7580 & 0.0319 & 0.7601 & 0.0320 \\
+Logistic Regression (SMOTE) & Logistic Regression & Full hybrid feature set & class\_weight=balanced + SMOTE & 0.7400 & 0.0335 & 0.7720 & 0.0384 & 0.7400 & 0.0335 & 0.7461 & 0.0344 \\
+Tuned Random Forest & Tuned Random Forest & Full hybrid feature set & No SMOTE & 0.6700 & 0.0544 & 0.6628 & 0.0585 & 0.6700 & 0.0544 & 0.6613 & 0.0583 \\
+Random Forest (no SMOTE) & Random Forest & Full hybrid feature set & class\_weight=balanced & 0.6460 & 0.0496 & 0.6276 & 0.0610 & 0.6460 & 0.0496 & 0.6224 & 0.0492 \\
+Random Forest (SMOTE) & Random Forest & Full hybrid feature set & class\_weight=balanced + SMOTE & 0.6160 & 0.0332 & 0.6094 & 0.0347 & 0.6160 & 0.0332 & 0.6083 & 0.0309 \\
+\bottomrule
+\end{tabular}

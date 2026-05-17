@@ -1,12 +1,54 @@
-Original Dataset Metrics - NLP + Backend Pricing variables + Subcategory contexts
-Final Accuracy: 58.00%
-==================================================
+AI Enhanced Complaint Management System
+Final hold-out evaluation on 20% stratified test split
+========================================================================
+Dataset: complaints_full.csv
+Rows: 500 complaints
+Final model: Tuned Logistic Regression (Text + numeric features)
+Pipeline: Pipeline(steps=[('features',
+                 ColumnTransformer(transformers=[('text',
+                                                  Pipeline(steps=[('normalize',
+                                                                   ComplaintTextNormalizer(remove_bengali_stopwords=True)),
+                                                                  ('tfidf',
+                                                                   FeatureUnion(transformer_list=[('word',
+                                                                                                   TfidfVectorizer(max_features=2000,
+                                                                                                                   ngram_range=(1,
+                                                                                                                                2),
+                                                                                                                   sublinear_tf=True)),
+                                                                                                  ('char',
+                                                                                                   TfidfVectorizer(analyzer='char_wb',
+                                                                                                                   max_features=500,
+                                                                                                                   ngram_range=(3,
+                                                                                                                                5),
+                                                                                                                   sublinear_tf=True))]))]),
+                                                  'complaint_description'),
+                                                 ('numeric',
+                                                  StandardScaler(with_mean=False),
+                                                  ['validity', 'priority'])])),
+                ('smote', 'passthrough'),
+                ('classifier',
+                 LogisticRegression(C=5.0, class_weight='balanced',
+                                    max_iter=5000, random_state=42,
+                                    solver='liblinear'))])
+
+Hold-out metrics
+accuracy: 0.8600
+weighted_precision: 0.8596
+weighted_recall: 0.8600
+weighted_f1: 0.8594
+
+Classification report
               precision    recall  f1-score   support
 
-    weak (0)       0.31      0.29      0.30        14
-  medium (1)       0.70      0.63      0.66        62
-    high (2)       0.48      0.62      0.55        24
+        weak     0.9231    0.8571    0.8889        14
+      medium     0.8750    0.9032    0.8889        62
+        high     0.7826    0.7500    0.7660        24
 
-    accuracy                           0.58       100
-   macro avg       0.50      0.51      0.50       100
-weighted avg       0.59      0.58      0.58       100
+    accuracy                         0.8600       100
+   macro avg     0.8602    0.8368    0.8479       100
+weighted avg     0.8596    0.8600    0.8594       100
+
+Confusion matrix rows=true, columns=predicted
+        weak  medium  high
+weak      12       2     0
+medium     1      56     5
+high       0       6    18
