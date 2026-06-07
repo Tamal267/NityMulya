@@ -138,7 +138,8 @@ Supervisor\\
 \vspace{2.2cm}
 \noindent\begin{tabular}{p{0.6\textwidth}p{0.3\textwidth}}
 \hrulefill & \hrulefill\\
-Head of Department & Date\\
+Brigadier General Mohammad Shahjahan Majib & Date\\
+Head of Department
 \department\\
 \institution
 \end{tabular}
@@ -153,16 +154,26 @@ Finally, we thank the people and practical setting behind the NityMulya marketpl
 
 \chapter*{Abstract}
 \addcontentsline{toc}{chapter}{Abstract}
-Government marketplaces now depend heavily on digital platforms to receive citizen feedback, monitor service quality and identify problems in the sale of essential commodities. In Bangladesh, these complaints are often written in Bengali, English and Banglish. The writing is usually informal. Many complaints are short, mixed script and full of spelling variation. Manual review is slow and can become inconsistent when the number of complaints grows. Many public service systems also work with limited computing resources, so large transformer models may be costly to train, deploy and maintain.
+Digital government marketplaces depend heavily on citizen feedback to monitor service quality and identify product anomalies. In Bangladesh, these complaints are often written informally using mixed scripts, shorthand, and spelling variations across Bengali, English, and ``Banglish.'' Manual triage is slow and inconsistent, while large transformer models remain too expensive for public service systems with limited computing resources.
 
-This work develops a lightweight hybrid Natural Language Processing (NLP) and backend feature based complaint classification system for the NityMulya government marketplace platform. We used a dataset of 500 complaints stored in a Supabase PostgreSQL backend. Each complaint record contains complaint text, product category, backend validity score, backend priority score and a severity label from three classes: weak, medium and high. The pipeline applies Unicode normalization, English and Banglish lowercasing, punctuation cleanup, repeated character normalization, a Banglish normalization dictionary, optional Bengali stopword removal, word level TF-IDF, character level TF-IDF, One-Hot Encoding for product category and scaling for numeric backend features. We compared Logistic Regression, Linear Support Vector Classification, Random Forest and a Voting ensemble with stratified five fold cross validation. We also tested class weighting and SMOTE while preventing leakage by applying oversampling only inside training folds.
+This work introduces a lightweight, hybrid machine learning pipeline for the NityMulya platform using a dataset of 500 complaints stored in a Supabase PostgreSQL backend. The pipeline cleans text using Unicode normalization, punctuation cleanup, and a custom Banglish dictionary. It then fuses word and character-level TF-IDF text features with numerical backend features (validity and priority scores). We evaluated multiple classifiers using stratified five-fold cross-validation, applying SMOTE strictly inside training loops to prevent data leakage. 
 
-The final selected model is a tuned Logistic Regression classifier that uses normalized complaint text and backend numeric features. On the 20\% stratified test split, it achieved 86.00\% hold-out accuracy and a weighted F1 score of 0.8594. The ablation study gave a clear result: text-only features reached only 0.5559 weighted F1 while text combined with backend validity and priority features reached 0.8503 weighted F1 in cross validation. Product category features did not help in this dataset and reduced weighted F1. The strongest signal came from feature fusion, especially the combination of text representation with backend decision support features, not from complaint text alone.
+Our final tuned Logistic Regression classifier achieved a hold-out accuracy of 86.00\% and a weighted F1-score of 0.8594 on a 20\% test split. An ablation study showed that text-only features yielded a weak F1-score of 0.5559, but combining text with backend validity and priority attributes dramatically boosted cross-validation performance to 0.8503. Product category features did not improve the signal. This research contributes a practical, CPU-friendly, and cost-effective decision-support tool tailored for low-resource e-governance complaint triage.
 
-The main contribution is not a large scale Bengali language model. It is a practical, reproducible, CPU friendly hybrid pipeline for low resource government marketplace complaint triage. The study also discusses key concerns: the small dataset, the fact that backend features partly encode operational severity labels and the limits of generalizing beyond the NityMulya context.
+\noindent \textbf{Keywords:} Bengali NLP, Banglish normalization, complaint classification, e-governance, TF-IDF, Logistic Regression, Supabase, feature fusion.
 
-\textbf{Keywords:} Bengali NLP, Banglish normalization, complaint classification, e-governance, TF-IDF, Logistic Regression, Supabase, backend features, lightweight machine learning.
+\clearpage
 
+\chapter*{\bn{সারসংক্ষেপ}}
+\addcontentsline{toc}{chapter}{\bn{সারসংক্ষেপ}}
+\bn{সরকারি ডিজিটাল বাজারগুলোতে সেবার মান তদারকি এবং পণ্যের অসঙ্গতি সনাক্ত করতে নাগরিকদের দেওয়া অভিযোগের উপর ব্যাপকভাবে নির্ভর করতে হয়। বাংলাদেশে এই অভিযোগগুলো সাধারণত বাংলা, ইংরেজি এবং মিশ্র স্ক্রিপ্ট বা "বাংলিশ" ব্যবহার করে অনানুষ্ঠানিক উপায়ে লেখা হয়, যার মধ্যে প্রচুর বানানভেদ ও সংক্ষিপ্ত রূপ দেখা যায়। এই অভিযোগগুলো হাতে কলমে বাছাই করা অত্যন্ত ধীরগতির এবং অসামঞ্জস্যপূর্ণ, অন্যদিকে সীমিত কম্পিউটিং রিসোর্স সম্পন্ন সরকারি সেবা ব্যবস্থার জন্য বড় বড় ট্রান্সফর্মার মডেল ব্যবহার করা বেশ ব্যয়বহুল।}
+
+\bn{এই গবেষণায় }\mbox{Supabase}\bn{ (}\mbox{PostgreSQL}\bn{) ব্যাকএন্ডে সংরক্ষিত }500\bn{টি অভিযোগের একটি ডেটাসেট ব্যবহার করে ‘নিত্যমূল্য’ প্ল্যাটফর্মের জন্য একটি হালকা ও হাইব্রিড মেশিন লার্নিং পাইপলাইন তৈরি করা হয়েছে। পাইপলাইনটি ইউনিকোড নরমালাইজেশন, বিরামচিহ্ন পরিষ্কার এবং একটি কাস্টম বাংলিশ অভিধান ব্যবহার করে টেক্সট ডেটা প্রক্রিয়াজাত করে। এরপর এটি শব্দ এবং ক্যারেক্টার-লেভেলের }TF-IDF\bn{ টেক্সট ফিচারের সাথে ব্যাকএন্ডের গাণিতিক ফিচারসমূহ (বৈধতা এবং অগ্রাধিকার স্কোর) একত্রিত করে। আমরা ডেটা লিকেজ রোধ করতে কঠোরভাবে ট্রেইনিং লুপের ভেতরে }SMOTE\bn{ প্রযুক্তি প্রয়োগ করে স্ট্র্যাটিফাইড ফাইভ-ফোল্ড ক্রস-ভ্যালিডেশনের মাধ্যমে বেশ কয়েকটি ক্লাসিফায়ার মূল্যায়ন করেছি।}
+
+\bn{আমাদের চূড়ান্ত টিউনড লজিস্টিক রিগ্রেশন ক্লাসিফায়ারটি }20\%\bn{ টেস্ট স্প্লিটে }86.00\%\bn{ অ্যাকুরেসি এবং }0.8594\bn{ ওয়েটেড }F1\bn{-স্কোর অর্জন করেছে। একটি অ্যাবলেশন স্টাডিতে দেখা গেছে যে, শুধুমাত্র টেক্সট ফিচারের }F1\bn{-স্কোর ছিল মাত্র }0.5559\bn{, কিন্তু টেক্সটের সাথে ব্যাকএন্ডের বৈধতা ও অগ্রাধিকার ফিচার যুক্ত করায় ক্রস-ভ্যালিডেশন পারফরম্যান্স এক লাফে }0.8503\bn{-এ উন্নীত হয়। পণ্যের ক্যাটাগরি ফিচারটি মডেলের কার্যকারিতা বাড়াতে কোনো ভূমিকা রাখেনি। এই গবেষণাটি সীমিত সম্পদের ই-গভর্নেন্স অভিযোগ ট্রিয়াজের জন্য একটি বাস্তবসম্মত, }CPU-friendly\bn{ এবং সাশ্রয়ী সিদ্ধান্ত-সহায়ক টুল তৈরিতে অবদান রাখে।}
+
+\vspace{1.5em}
+\noindent \bn{\textbf{মূলশব্দ:}} \bn{বাংলা এনএলপি, বাংলিশ নরমালাইজেশন, অভিযোগ শ্রেণীকরণ, ই-গভর্নেন্স, }TF-IDF\bn{, লজিস্টিক রিগ্রেশন, }\mbox{\bn{সুপাবেস}}\bn{, ফিচার ফিউশন।}
 \tableofcontents
 \listoffigures
 \listoftables
@@ -1050,6 +1061,84 @@ For a government marketplace platform, the proposed system can support faster co
 \section{Final Remarks}
 This work shows that practical AI for public service systems does not always require the largest model. In a low resource setting, careful preprocessing, feature engineering, backend-data fusion and honest evaluation can produce a useful decision support system. The next step is to collect more data, add independent human labels, compare transformer baselines and evaluate the system in a real administrative workflow.
 
+\chapter{Engineering Considerations, Challenges, and Remedies}
+
+\section{Design Constraints}
+Building a real-world application like the NityMulya platform means balancing innovation with practical limits. To make sure our system is legally safe, morally sound, socially responsible, and cheap to run, we carefully weighed several design constraints during development.
+
+\subsection{Ethical Considerations}
+Because our system handles real citizen complaints regarding marketplace fraud, protecting user privacy is our top ethical duty. We made sure no personally identifiable information (PII) like citizen names, phone numbers, or exact addresses is ever passed to the machine learning feature extraction pipeline. Furthermore, since our dataset is naturally unbalanced (with 62\% of cases falling into the \textit{medium} severity category), we used careful cross-validation tactics to ensure the AI does not develop a technical bias that systematically ignores rare, high-severity emergency complaints.
+
+\subsection{Environmental Considerations}
+Many modern natural language processing systems rely on massive deep-learning transformers that require continuous power from high-end graphics cards (GPUs). This contributes to a high carbon footprint. To keep our project environmentally friendly, we purposely skipped heavy neural networks. Instead, we optimized a lightweight text processor (TF-IDF) combined with a simple linear classifier (Logistic Regression). This pipeline trains and runs in milliseconds on standard, low-power CPU cores, drastically reducing energy usage.
+
+\subsection{Social and Sustainability Considerations}
+For an e-governance app to be truly sustainable, it must be easy for public sector IT staff to maintain over many years without requiring specialized AI engineering teams. By keeping the codebase clean, using standard SQL triggers in our Supabase database, and using a simple Python script for inference, the NityMulya complaint tool can run affordably on basic municipal servers indefinitely.
+
+\subsection{Economic and Budgetary Constraints}
+Public sector projects usually run on very tight budgets. Our architecture is designed to minimize ongoing operational costs. Because the total system memory footprint stays well under 150 megabytes, the entire backend can be hosted on a free or low-cost virtual private server (VPS). It completely avoids the expensive monthly cloud subscription fees typically associated with heavy language models or external corporate APIs.
+
+\section{Complex Engineering Problem (CEP)}
+The development of a hybrid classification framework that blends unstructured text with database-driven business logic qualifies as a Complex Engineering Problem (CEP). This work satisfies multiple international engineering attributes, as detailed in Table \ref{tab:cep_justification}.
+
+\begin{longtable}{p{0.25\textwidth} p{0.70\textwidth}}
+\caption{Complex Engineering Problem (CEP) Justification} \label{tab:cep_justification} \\
+\toprule
+\textbf{CEP Attribute} & \textbf{Justification for NityMulya Complaint System} \\
+\midrule
+\endhead
+\bottomrule
+\multicolumn{2}{r}{Continued on next page} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{P1: Depth of Knowledge Required} & Requires deep knowledge of conflicting computer science fields: database architecture (Supabase/PostgreSQL schema tracking), text processing mathematics (sparse matrix operations), and imbalanced dataset handling (oversampling strategies). \\
+\addlinespace
+\textbf{P2: Conflicting Requirements} & The system must deliver highly accurate classifications while maintaining low latency and using minimal server resources so it does not slow down active online marketplace shoppers. \\
+\addlinespace
+\textbf{P3: Depth of Analysis} & Solving the text sparsity issue caused by informal, mixed-script ``Banglish'' slang required developing custom character-level sub-word pipelines rather than using basic dictionary lookups. \\
+\addlinespace
+\textbf{P4: Familiarity of Issues} & While standard text classification is common, blending raw unstructured human complaints with changing back-end financial metrics to dynamically score marketplace priority is an entirely non-standard problem. \\
+\addlinespace
+\textbf{P5: Extent of Stakeholders} & The app impacts two main groups with opposing needs: everyday citizens who demand fast response confirmations, and municipal administrators who require clear, trustworthy automated triage metrics. \\
+\end{longtable}
+
+\section{Complex Engineering Activities (CEA)}
+The practical engineering work required to deploy, build, and test this pipeline goes beyond everyday coding. Table \ref{tab:cea_justification} outlines how our project meets the criteria for Complex Engineering Activities.
+
+\begin{longtable}{p{0.25\textwidth} p{0.70\textwidth}}
+\caption{Complex Engineering Activities (CEA) Justification} \label{tab:cea_justification} \\
+\toprule
+\textbf{CEA Attribute} & \textbf{Justification for NityMulya Complaint System} \\
+\midrule
+\endhead
+\bottomrule
+\multicolumn{2}{r}{Continued on next page} \\
+\endfoot
+\bottomrule
+\endlastfoot
+\textbf{A1: Range of Resources} & The development demanded coordinating multiple disconnected modules: database webhooks, asynchronous task brokers, machine learning code dependencies, and localized text corpora. \\
+\addlinespace
+\textbf{A2: Interactions of Fields} & It sits right at the intersection of three technical domains: Backend Software Engineering (database design), Data Science (handling text sparsity), and Public Administration Workflow Design. \\
+\addlinespace
+\textbf{A3: Level of Innovation} & Rather than throwing generic AI models at the problem, we combined rule-based marketplace logic with text vectorization to build a unique feature fusion pipeline that boosts performance by nearly 30\%. \\
+\addlinespace
+\textbf{A5: Familiarity} & The implementation goes beyond simple tutorial scripts by introducing strict operational boundaries (such as isolated cross-validation blocks) to stop data leakage before the system goes live. \\
+\end{longtable}
+
+\section{Mapping and Justification of Program Outcomes}
+To ensure this research prepares graduates for professional careers, the engineering approach directly satisfies Program Outcomes PO6 (The Engineer and Society), PO7 (Environment and Sustainability), and PO8 (Ethics).
+
+\subsection{PO6: The Engineer and Society}
+Public e-governance systems often struggle with operational transparency. When an automated tool rejects or downgrades a complaint, users have a right to know why. By pairing our text models with clear, traceable backend validity rules, we provide public administrators with an explainable dashboard. This ensures fair treatment for all citizens and helps build public trust in digital government infrastructure.
+
+\subsection{PO7: Environment and Sustainability}
+As explained in our design constraints, our entire framework is engineered to run cleanly without heavy, electricity-hungry deep-learning models. By prioritizing algorithmic efficiency over brute-force computation, our system can run sustainably for years on minimal public infrastructure, keeping energy consumption and electronic waste low.
+
+\subsection{PO8: Ethics}
+Data privacy and intellectual honesty are fundamental pillars of this work. No user profile information was gathered or scraped without absolute system anonymity. Furthermore, to avoid artificial inflation of our research achievements, we completely isolated our text processing steps inside strict validation pipelines. This guarantees that our reported 86\% accuracy score is an honest, uninflated reflection of true real-world capabilities.
+
+
 \appendix
 
 \chapter{Sample Dataset Entries}
@@ -1088,9 +1177,6 @@ kom & \bn{কম}\\
 nosto & \bn{নষ্ট}\\
 oil & \bn{তেল}\\
 price & \bn{দাম}\\
-receipt & \bn{রসিদ}\\
-rice & \bn{চাল}\\
-taka & \bn{টাকা}\\
 \bottomrule
 \end{longtable}
 

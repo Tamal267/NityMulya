@@ -2,7 +2,8 @@
 \contentsline {chapter}{Approval Sheet}{iii}{chapter*.2}%
 \contentsline {chapter}{Acknowledgement}{iv}{chapter*.3}%
 \contentsline {chapter}{Abstract}{v}{chapter*.4}%
-\contentsline {chapter}{Abbreviation List}{xiv}{chapter*.8}%
+\contentsline {chapter}{{\banglafont সারসংক্ষেপ}}{vi}{chapter*.5}%
+\contentsline {chapter}{Abbreviation List}{xv}{chapter*.9}%
 \contentsline {chapter}{\numberline {1}Introduction}{1}{chapter.1}%
 \contentsline {section}{\numberline {1.1}Background of E-Governance Systems}{1}{section.1.1}%
 \contentsline {section}{\numberline {1.2}Government Marketplace Complaint Management}{2}{section.1.2}%
@@ -117,9 +118,21 @@
 \contentsline {section}{\numberline {9.3}Contributions}{45}{section.9.3}%
 \contentsline {section}{\numberline {9.4}Practical Significance}{46}{section.9.4}%
 \contentsline {section}{\numberline {9.5}Final Remarks}{46}{section.9.5}%
-\contentsline {chapter}{\numberline {A}Sample Dataset Entries}{47}{appendix.A}%
-\contentsline {chapter}{\numberline {B}Banglish Normalization Dictionary}{48}{appendix.B}%
-\contentsline {chapter}{\numberline {C}Hyperparameter Search Space}{50}{appendix.C}%
-\contentsline {chapter}{\numberline {D}Full Classification Reports}{51}{appendix.D}%
-\contentsline {chapter}{\numberline {E}Source Code Snippets}{52}{appendix.E}%
-\contentsline {chapter}{\numberline {F}Supabase Schema Examples}{54}{appendix.F}%
+\contentsline {chapter}{\numberline {10}Engineering Considerations, Challenges, and Remedies}{47}{chapter.10}%
+\contentsline {section}{\numberline {10.1}Design Constraints}{47}{section.10.1}%
+\contentsline {subsection}{\numberline {10.1.1}Ethical Considerations}{47}{subsection.10.1.1}%
+\contentsline {subsection}{\numberline {10.1.2}Environmental Considerations}{47}{subsection.10.1.2}%
+\contentsline {subsection}{\numberline {10.1.3}Social and Sustainability Considerations}{48}{subsection.10.1.3}%
+\contentsline {subsection}{\numberline {10.1.4}Economic and Budgetary Constraints}{48}{subsection.10.1.4}%
+\contentsline {section}{\numberline {10.2}Complex Engineering Problem (CEP)}{48}{section.10.2}%
+\contentsline {section}{\numberline {10.3}Complex Engineering Activities (CEA)}{49}{section.10.3}%
+\contentsline {section}{\numberline {10.4}Mapping and Justification of Program Outcomes}{50}{section.10.4}%
+\contentsline {subsection}{\numberline {10.4.1}PO6: The Engineer and Society}{50}{subsection.10.4.1}%
+\contentsline {subsection}{\numberline {10.4.2}PO7: Environment and Sustainability}{51}{subsection.10.4.2}%
+\contentsline {subsection}{\numberline {10.4.3}PO8: Ethics}{51}{subsection.10.4.3}%
+\contentsline {chapter}{\numberline {A}Sample Dataset Entries}{52}{appendix.A}%
+\contentsline {chapter}{\numberline {B}Banglish Normalization Dictionary}{53}{appendix.B}%
+\contentsline {chapter}{\numberline {C}Hyperparameter Search Space}{54}{appendix.C}%
+\contentsline {chapter}{\numberline {D}Full Classification Reports}{55}{appendix.D}%
+\contentsline {chapter}{\numberline {E}Source Code Snippets}{56}{appendix.E}%
+\contentsline {chapter}{\numberline {F}Supabase Schema Examples}{58}{appendix.F}%

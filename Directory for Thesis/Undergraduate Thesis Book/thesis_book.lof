@@ -1,18 +1,19 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces High-level workflow of the NityMulya complaint classification system}}{15}{figure.caption.10}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Simplified database schema used by the complaint dataset}}{16}{figure.caption.11}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Dataset collection and experimental preparation flow}}{17}{figure.caption.12}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Distribution of complaint classes in the 20\% stratified hold-out test set}}{18}{figure.caption.15}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces High-level workflow of the NityMulya complaint classification system}}{15}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Simplified database schema used by the complaint dataset}}{16}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Dataset collection and experimental preparation flow}}{17}{figure.caption.13}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Distribution of complaint classes in the 20\% stratified hold-out test set}}{18}{figure.caption.16}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Machine learning pipeline used in the thesis}}{21}{figure.caption.17}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Machine learning pipeline used in the thesis}}{21}{figure.caption.18}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {5.1}{\ignorespaces Training and evaluation workflow}}{30}{figure.caption.18}%
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Training and evaluation workflow}}{30}{figure.caption.19}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {6.1}{\ignorespaces Confusion matrix for the final tuned Logistic Regression model}}{36}{figure.caption.23}%
-\contentsline {figure}{\numberline {6.2}{\ignorespaces Two-dimensional SVD projection of hybrid complaint features}}{38}{figure.caption.24}%
-\contentsline {figure}{\numberline {6.3}{\ignorespaces K-Means cluster projection over transformed hybrid features}}{38}{figure.caption.25}%
+\contentsline {figure}{\numberline {6.1}{\ignorespaces Confusion matrix for the final tuned Logistic Regression model}}{36}{figure.caption.24}%
+\contentsline {figure}{\numberline {6.2}{\ignorespaces Two-dimensional SVD projection of hybrid complaint features}}{38}{figure.caption.25}%
+\contentsline {figure}{\numberline {6.3}{\ignorespaces K-Means cluster projection over transformed hybrid features}}{38}{figure.caption.26}%
+\addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
